@@ -1,0 +1,275 @@
+package relay;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.security.GeneralSecurityException;
+import java.security.MessageDigest;
+import java.security.SecureRandom;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
+
+import static relay.Database.*;
+
+public final class Desk {
+    private static final SecureRandom RANDOM = new SecureRandom();
+    private static final String DUMMY_HASH = "0".repeat(32) + ":" + "0".repeat(64);
+    private final Database database;
+    private final Incidents incidents;
+
+    public Desk(Path path, boolean demo) {
+        database = new Database(path);
+        incidents = new Incidents(database);
+        String schema;
+        try (var stream = Objects.requireNonNull(Desk.class.getResourceAsStream("/schema.sql"), "Missing database schema")) {
+            schema = new String(stream.readAllBytes(), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new IllegalStateException("Could not read the database schema", e);
+        }
+        database.transaction(true, c -> {
+            for (String statement : schema.split(";")) {
+                if (!statement.isBlank()) exec(c, statement);
+            }
+            if (rows(c, "PRAGMA table_info(incidents)").stream().noneMatch(r -> "suggestion_source_id".equals(r.get("name")))) {
+                exec(c, "ALTER TABLE incidents ADD COLUMN suggestion_source_id INTEGER REFERENCES incidents");
+                exec(c, "UPDATE incidents SET suggested_resolution=''");
+            }
+            if (one(c, "SELECT 1 FROM settings LIMIT 1") == null) initialize(c, demo);
+            return null;
+        });
+    }
+
+    private void initialize(Connection c, boolean demo) throws SQLException {
+        var categories = List.of("Application", "Network", "Authentication", "Database", "Storage", "Hardware", "Cloud", "Security", "Software");
+        for (String category : categories) exec(c, "INSERT INTO categories VALUES(?)", category);
+        var names = List.of("Payment gateway", "Corporate network", "Identity platform", "Analytics database", "Cloud storage", "Workplace devices");
+        int[] criticality = {3, 3, 3, 2, 2, 1};
+        for (int i = 0; i < names.size(); i++) {
+            exec(c, "INSERT INTO services(name,category,criticality) VALUES(?,?,?)", names.get(i), categories.get(i), criticality[i]);
+        }
+        int[][] targets = {{5, 30}, {15, 120}, {60, 480}, {240, 1440}};
+        for (int i = 0; i < targets.length; i++) {
+            exec(c, "INSERT INTO policies VALUES(?,?,?)", "P" + (i + 1), targets[i][0], targets[i][1]);
+        }
+        exec(c, "INSERT INTO settings VALUES('strategy','skill')");
+        if (!demo) return;
+        String[][] accounts = {
+            {"Alex Morgan", "admin", "admin", ""}, {"Sam Rivera", "tech", "technician", "Application"},
+            {"Jordan Lee", "employee", "employee", ""}, {"Priya Shah", "priya", "technician", "Network"},
+            {"Noah Chen", "noah", "technician", "Authentication"}
+        };
+        for (String[] a : accounts) {
+            exec(c, "INSERT INTO users(name,email,role,skill,password) VALUES(?,?,?,?,?)",
+                    a[0], a[1] + "@relay.test", a[2], a[3], hash("RelayDemo2026!"));
+        }
+        seedIncidents(c);
+    }
+
+    private record Example(String title, int service, int impact, int urgency, int ageMinutes, int transitions) {}
+
+    private void seedIncidents(Connection c) throws SQLException {
+        var examples = List.of(
+            new Example("Checkout requests timing out", 1, 3, 3, 7, 0),
+            new Example("VPN drops during video calls", 2, 2, 2, 22, 2),
+            new Example("Password reset link expired", 3, 1, 1, 16, 0),
+            new Example("Warehouse query latency", 4, 2, 3, 52, 1),
+            new Example("Shared drive sync stalled", 5, 2, 1, 18, 3),
+            new Example("Laptop docking station offline", 6, 1, 1, 25, 5)
+        );
+        var states = List.of("Acknowledged", "In progress", "Resolved", "Verified", "Closed");
+        var reporter = user(c, 3);
+        var now = Instant.now().truncatedTo(ChronoUnit.SECONDS);
+        for (var example : examples) {
+            var at = now.minus(example.ageMinutes(), ChronoUnit.MINUTES);
+            var data = Map.<String,Object>of("title", example.title(), "description", example.title() + ". Please investigate.",
+                    "service_id", example.service(), "impact", example.impact(), "urgency", example.urgency());
+            int id = incidents.create(c, reporter, data, at);
+            for (int i = 0; i < example.transitions(); i++) {
+                var incident = one(c, "SELECT * FROM incidents WHERE id=?", id);
+                var actor = i >= 3 ? reporter : user(c, ((Number) incident.get("technician_id")).intValue());
+                incidents.transition(c, actor, id, Map.of("status", states.get(i), "resolution", "Restored service and confirmed normal operation."),
+                        at.plus(i + 1L, ChronoUnit.MINUTES));
+            }
+        }
+    }
+
+    static Map<String,Object> publicUser(Map<String,Object> row) {
+        var safe = new LinkedHashMap<String,Object>();
+        for (String key : List.of("id", "name", "email", "role", "skill", "available", "capacity")) safe.put(key, row.get(key));
+        return safe;
+    }
+
+    private static Map<String,Object> user(Connection c, int uid) throws SQLException {
+        var row = one(c, "SELECT * FROM users WHERE id=?", uid);
+        if (row == null) throw new Problem(401, "Sign in to continue.");
+        return row;
+    }
+
+    private static byte[] digest(String password, String salt) {
+        var spec = new PBEKeySpec(password.toCharArray(), salt.getBytes(StandardCharsets.UTF_8), 300000, 256);
+        try {
+            return SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256").generateSecret(spec).getEncoded();
+        } catch (GeneralSecurityException e) {
+            throw new IllegalStateException("PBKDF2 is unavailable", e);
+        } finally {
+            spec.clearPassword();
+        }
+    }
+
+    private static String hash(Object value) {
+        if (!(value instanceof String password) || password.codePointCount(0, password.length()) < 8
+                || password.codePointCount(0, password.length()) > 256) {
+            throw new Problem(400, "Use a password between 8 and 256 characters.");
+        }
+        byte[] bytes = new byte[16];
+        RANDOM.nextBytes(bytes);
+        String salt = HexFormat.of().formatHex(bytes);
+        return salt + ":" + HexFormat.of().formatHex(digest(password, salt));
+    }
+
+    public Map<String,Object> login(String email, String password) {
+        if (email == null || password == null || password.codePointCount(0, password.length()) > 256)
+            throw new Problem(401, "Invalid email or password.");
+        var account = database.transaction(false, c -> one(c, "SELECT * FROM users WHERE email=?", email.strip()));
+        String encoded = account == null ? DUMMY_HASH : (String) account.get("password");
+        String[] parts = encoded.split(":", 2);
+        if (!MessageDigest.isEqual(digest(password, parts[0]), HexFormat.of().parseHex(parts[1])) || account == null)
+            throw new Problem(401, "Invalid email or password.");
+        return publicUser(account);
+    }
+
+    public Map<String,Object> register(Map<String,Object> data) {
+        var employee = new HashMap<String,Object>();
+        for (String key : List.of("name", "email", "password")) employee.put(key, data.get(key));
+        employee.put("role", "employee");
+        return database.transaction(true, c -> publicUser(user(c, saveUser(c, employee))));
+    }
+
+    public Map<String,Object> bootstrapAdmin(String name, String email, String password) {
+        return database.transaction(true, c -> {
+            if (one(c, "SELECT 1 FROM users WHERE role='admin' LIMIT 1") != null)
+                throw new Problem(409, "An administrator already exists.");
+            return publicUser(user(c, saveUser(c, Map.of("name", name, "email", email, "password", password, "role", "admin"))));
+        });
+    }
+
+    static String required(Map<String,Object> data, String key, int limit) {
+        if (!(data.get(key) instanceof String text) || text.isBlank() || text.codePointCount(0, text.length()) > limit)
+            throw new Problem(400, "Enter a valid " + key.replace('_', ' ') + " (up to " + limit + " characters).");
+        return text.strip();
+    }
+
+    static int number(Map<String,Object> data, String key, int min, int max) {
+        int value;
+        try {
+            value = Integer.parseInt(String.valueOf(data.get(key)));
+        } catch (NumberFormatException e) {
+            throw new Problem(400, "Enter a whole number for " + key + ".");
+        }
+        if (value < min || value > max) throw new Problem(400, key + " must be between " + min + " and " + max + ".");
+        return value;
+    }
+
+    private static void category(Connection c, String value) throws SQLException {
+        if (one(c, "SELECT 1 FROM categories WHERE name=?", value) == null)
+            throw new Problem(400, "Choose an existing category.");
+    }
+
+    private int saveUser(Connection c, Map<String,Object> data) throws SQLException {
+        boolean editing = data.containsKey("id");
+        var existing = editing ? user(c, number(data, "id", 1, Integer.MAX_VALUE)) : Map.<String,Object>of();
+        var fields = new HashMap<>(existing);
+        fields.putAll(data);
+        String name = required(fields, "name", 100);
+        String email = required(fields, "email", 254).toLowerCase(Locale.ROOT);
+        if (!email.matches("[^\\s@]+@[^\\s@]+\\.[^\\s@]+")) throw new Problem(400, "Enter a valid email address.");
+        Object role = fields.getOrDefault("role", "employee");
+        if (!Arrays.asList("employee", "technician", "admin").contains(role)) throw new Problem(400, "Choose a valid role.");
+        String skill = String.valueOf(fields.getOrDefault("skill", "")).strip();
+        if (!skill.isEmpty()) category(c, skill);
+        fields.putIfAbsent("capacity", 20);
+        int capacity = number(fields, "capacity", 1, 1000);
+        Object available = fields.getOrDefault("available", 1);
+        int availability;
+        if (Boolean.TRUE.equals(available) || (available instanceof Number && "1".equals(available.toString()))) availability = 1;
+        else if (Boolean.FALSE.equals(available) || (available instanceof Number && "0".equals(available.toString()))) availability = 0;
+        else throw new Problem(400, "Availability must be true or false.");
+        if ("admin".equals(existing.get("role")) && !"admin".equals(role) &&
+                one(c, "SELECT 1 FROM users WHERE role='admin' AND id<>?", existing.get("id")) == null)
+            throw new Problem(400, "Keep at least one administrator.");
+        if ("technician".equals(existing.get("role")) && !"technician".equals(role) &&
+                one(c, "SELECT 1 FROM incidents WHERE technician_id=? AND status NOT IN ('Closed','Resolved','Verified')", existing.get("id")) != null)
+            throw new Problem(400, "Reassign this technician's active incidents before changing their role.");
+        Object password = data.get("password");
+        Object encoded = editing && (password == null || "".equals(password)) ? existing.get("password") : hash(password);
+        if (editing) {
+            exec(c, "UPDATE users SET name=?,email=?,role=?,skill=?,available=?,capacity=?,password=? WHERE id=?",
+                    name, email, role, skill, availability, capacity, encoded, existing.get("id"));
+            return ((Number) existing.get("id")).intValue();
+        }
+        return insert(c, "INSERT INTO users(name,email,role,skill,available,capacity,password) VALUES(?,?,?,?,?,?,?)",
+                name, email, role, skill, availability, capacity, encoded);
+    }
+
+    public Object snapshot(int uid) {
+        return database.transaction(true, c -> incidents.snapshot(c, publicUser(user(c, uid))));
+    }
+
+    public void monitor() {
+        database.transaction(true, c -> { incidents.monitor(c); return null; });
+    }
+
+    public Object mutate(int uid, String action, Map<String,Object> data) {
+        return database.transaction(true, c -> {
+            var actor = publicUser(user(c, uid));
+            if (action == null || data == null) throw new Problem(400, "Enter a valid command.");
+            return switch (action) {
+                case "create" -> Map.of("id", incidents.create(c, actor, data, Instant.now().truncatedTo(ChronoUnit.SECONDS)));
+                case "assign", "feedback", "transition", "update", "note" -> incidents.act(c, actor, action, data);
+                default -> {
+                    if (!"admin".equals(actor.get("role"))) throw new Problem(403, "Administrator access is required.");
+                    yield configure(c, action, data);
+                }
+            };
+        });
+    }
+
+    private Object configure(Connection c, String action, Map<String,Object> data) throws SQLException {
+        switch (action) {
+            case "user": return Map.of("id", saveUser(c, data));
+            case "strategy":
+                String strategy = required(data, "strategy", 16);
+                if (!List.of("load", "skill").contains(strategy)) throw new Problem(400, "Unknown assignment strategy.");
+                exec(c, "UPDATE settings SET value=? WHERE name='strategy'", strategy);
+                break;
+            case "category":
+                exec(c, "INSERT INTO categories VALUES(?)", required(data, "name", 80));
+                break;
+            case "policy":
+                String priority = required(data, "priority", 2);
+                int response = number(data, "response_minutes", 1, 525600);
+                int resolution = number(data, "resolution_minutes", response, 525600);
+                if (!List.of("P1", "P2", "P3", "P4").contains(priority)) throw new Problem(400, "Choose a valid priority.");
+                exec(c, "UPDATE policies SET response_minutes=?,resolution_minutes=? WHERE priority=?", response, resolution, priority);
+                break;
+            case "service":
+                String name = required(data, "name", 120);
+                String category = required(data, "category", 80);
+                category(c, category);
+                int criticality = number(data, "criticality", 1, 3);
+                if (!data.containsKey("id"))
+                    return Map.of("id", insert(c, "INSERT INTO services(name,category,criticality) VALUES(?,?,?)", name, category, criticality));
+                int updated = exec(c, "UPDATE services SET name=?,category=?,criticality=? WHERE id=?", name, category, criticality,
+                        number(data, "id", 1, Integer.MAX_VALUE));
+                if (updated == 0) throw new Problem(404, "Service not found.");
+                break;
+            default: throw new Problem(404, "Unknown command.");
+        }
+        return Map.of();
+    }
+}

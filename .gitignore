@@ -1,0 +1,9 @@
+target/
+.idea/
+*.iml
+data/
+*.sqlite3*
+*.db*
+.DS_Store
+.env
+__pycache__/

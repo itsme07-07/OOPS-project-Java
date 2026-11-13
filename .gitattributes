@@ -1,0 +1,7 @@
+*.pdf binary
+
+# Exclude generated Maven launchers from language statistics.
+mvnw linguist-generated=true
+mvnw.cmd linguist-generated=true
+# These browser resources are maintained as part of Relay.
+src/main/resources/static/** linguist-vendored=false
