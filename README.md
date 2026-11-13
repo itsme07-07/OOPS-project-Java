@@ -54,3 +54,17 @@ docs/
 ## Deployment scope
 
 The included server is configured for local course demonstrations. Hosting the application requires a JVM and persistent storage for SQLite. For a public deployment, configure TLS, individual credentials and database backups. Email notifications are simulated in the application.
+
+## Email verification for employee registration
+
+Set these environment variables in the terminal that starts Relay, then restart the server. Use a sender authorized by your SMTP provider.
+
+| Variable | Value |
+|---|---|
+| RELAY_SMTP_HOST | SMTP server hostname |
+| RELAY_SMTP_PORT | STARTTLS port, default 587 |
+| RELAY_SMTP_USER | SMTP account username |
+| RELAY_SMTP_PASSWORD | SMTP credential or provider-issued app password |
+| RELAY_SMTP_FROM | Verified sender email address |
+
+New employees receive a six-digit email code before their account is created. Codes expire after ten minutes or five incorrect guesses. Resending is available after one minute. Restarting Relay invalidates pending codes. Existing users, demo accounts and administrator-provisioned accounts retain their usual sign-in flow. Keep SMTP credentials in the environment and out of source control.

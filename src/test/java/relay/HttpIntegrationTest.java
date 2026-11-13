@@ -19,12 +19,13 @@ class HttpIntegrationTest {
     @TempDir static Path directory;
     private static RelayServer server;
     private static URI base;
+    private static final Map<String,String> mailbox = new java.util.concurrent.ConcurrentHashMap<>();
     private static final HttpClient CLIENT = HttpClient.newHttpClient();
     private static final Gson JSON = new Gson();
 
     @BeforeAll static void start() throws Exception {
         Desk desk = new Desk(directory.resolve("desk.sqlite3"), true);
-        server = new RelayServer(new InetSocketAddress("127.0.0.1", 0), desk, true, false);
+        server = new RelayServer(new InetSocketAddress("127.0.0.1", 0), desk, true, false, mailbox::put);
         server.start();
         base = URI.create("http://127.0.0.1:" + server.port());
     }
@@ -103,7 +104,17 @@ class HttpIntegrationTest {
     }
 
     @Test void registrationRejectsPrivilegeEscalation() throws Exception {
-        var data = Map.of("name","HTTP reporter","role","admin","email","http-user@example.org","password","StrongPass1!");
+        var data = new java.util.HashMap<>(Map.of("name","HTTP reporter","role","admin","email","http-user@example.org","password","StrongPass1!"));
+        assertEquals(400,post("/api/register",JSON.toJson(data)).statusCode());
+        String email = data.get("email");
+        var sent = post("/api/verification-code", JSON.toJson(Map.of("email",email)));
+        assertEquals(200,sent.statusCode());
+        assertTrue(mailbox.get(email).matches("[0-9]{6}"));
+        assertFalse(JsonParser.parseString(sent.body()).getAsJsonObject().has("code"));
+        data.put("challenge",JsonParser.parseString(sent.body()).getAsJsonObject().get("challenge").getAsString());
+        data.put("code","invalid");
+        assertEquals(400,post("/api/register",JSON.toJson(data)).statusCode());
+        data.put("code",mailbox.get(email));
         var res = post("/api/register", JSON.toJson(data));
         assertEquals(200, res.statusCode());
         var user = JsonParser.parseString(res.body()).getAsJsonObject().getAsJsonObject("user");
