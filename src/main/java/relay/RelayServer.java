@@ -17,6 +17,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.Base64;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -29,10 +30,11 @@ final class RelayServer implements AutoCloseable {
     private static final Gson JSON = new GsonBuilder().serializeNulls().create();
     private static final String COOKIE = "relay_session";
     private static final int MAX_BODY = 65536;
+    private static final int MAX_ATTACHMENT_BODY = 1500000;
     private static final Map<String, String> ASSETS = Map.of(
         "/index.html", "text/html; charset=utf-8", "/app.js", "text/javascript; charset=utf-8",
         "/style.css", "text/css; charset=utf-8", "/mark.svg", "image/svg+xml");
-    private static final Set<String> POST_ENDPOINTS = Set.of("/api/register", "/api/login", "/api/logout", "/api/action");
+    private static final Set<String> POST_ENDPOINTS = Set.of("/api/register", "/api/login", "/api/logout", "/api/action", "/api/attachment");
     private static final System.Logger LOG = System.getLogger(RelayServer.class.getName());
 
     private final HttpServer server;
@@ -94,6 +96,16 @@ final class RelayServer implements AutoCloseable {
         String method = ex.getRequestMethod();
         String path = ex.getRequestURI().getPath();
         if (method.equals("GET") || method.equals("HEAD")) {
+            if (path.startsWith("/api/attachment/")) {
+                int id;
+                try { id = Integer.parseInt(path.substring("/api/attachment/".length())); }
+                catch (NumberFormatException e) { throw new Problem(404, "Attachment not found."); }
+                var attachment = desk.attachment(sessions.resolve(token(ex)), id);
+                String safeName = attachment.fileName().replaceAll("[^A-Za-z0-9._-]", "_");
+                ex.getResponseHeaders().set("Content-Disposition", "attachment; filename=\"" + safeName + "\"");
+                send(ex, 200, attachment.mediaType(), attachment.content());
+                return;
+            }
             switch (path) {
                 case "/api/config" -> json(ex, 200, Map.of("demo", demo));
                 case "/healthz" -> json(ex, 200, Map.of("status", "ok"));
@@ -107,7 +119,7 @@ final class RelayServer implements AutoCloseable {
             throw new Problem(405, "Unsupported HTTP method.");
         }
         if (!POST_ENDPOINTS.contains(path)) throw new Problem(404, "Unknown endpoint.");
-        Map<String,Object> data = input(ex);
+        Map<String,Object> data = input(ex, path.equals("/api/attachment") ? MAX_ATTACHMENT_BODY : MAX_BODY);
         String previous = token(ex);
         switch (path) {
             case "/api/logout" -> {
@@ -132,11 +144,22 @@ final class RelayServer implements AutoCloseable {
                 }
                 json(ex, 200, desk.mutate(userId, action, data));
             }
+            case "/api/attachment" -> {
+                int userId = sessions.resolve(previous);
+                int incidentId = Desk.number(data, "incident_id", 1, Integer.MAX_VALUE);
+                String fileName = Desk.required(data, "file_name", 160);
+                String mediaType = Desk.required(data, "media_type", 80);
+                String encoded = Desk.required(data, "content", MAX_ATTACHMENT_BODY);
+                byte[] content;
+                try { content = Base64.getDecoder().decode(encoded); }
+                catch (IllegalArgumentException e) { throw new Problem(400, "The attachment is not valid base64 data."); }
+                json(ex, 200, Map.of("id", desk.addAttachment(userId, incidentId, fileName, mediaType, content)));
+            }
             default -> throw new Problem(404, "Unknown endpoint.");
         }
     }
 
-    private static Map<String,Object> input(HttpExchange ex) throws IOException {
+    private static Map<String,Object> input(HttpExchange ex, int limit) throws IOException {
         Headers h = ex.getRequestHeaders();
         String origin = h.getFirst("Origin");
         if (origin != null) {
@@ -150,9 +173,9 @@ final class RelayServer implements AutoCloseable {
         if (type == null || !"application/json".equalsIgnoreCase(type.split(";", 2)[0].trim())) {
             throw new Problem(415, "Send a JSON object using application/json.");
         }
-        byte[] bytes = ex.getRequestBody().readNBytes(MAX_BODY + 1);
-        if (bytes.length == 0 || bytes.length > MAX_BODY) {
-            throw new Problem(413, "The request must be between 1 byte and 64 KiB.");
+        byte[] bytes = ex.getRequestBody().readNBytes(limit + 1);
+        if (bytes.length == 0 || bytes.length > limit) {
+            throw new Problem(413, "The request exceeds the allowed size.");
         }
         String raw;
         try {

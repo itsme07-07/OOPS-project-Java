@@ -150,6 +150,61 @@ class DeskTest {
         assertThrows(Problem.class, () -> desk.mutate(stranger,"note",Map.of("id",ticket,"text","Unrelated")));
     }
 
+    @Test void attachmentsAreLimitedAndPrivateToIncidentParticipants() throws Exception {
+        int ticket=report(1,3,3);
+        int stranger=id(desk.register(registration("stranger@example.org",PASSWORD)));
+        byte[] content="What happened".getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        int fileId=desk.addAttachment(employee,ticket,"error.txt","text/plain",content);
+        assertArrayEquals(content,desk.attachment(admin,fileId).content());
+        assertEquals("error.txt",desk.attachment(employee,fileId).fileName());
+        assertEquals(404,assertThrows(Problem.class,()->desk.attachment(stranger,fileId)).status);
+        assertEquals(404,assertThrows(Problem.class,()->desk.addAttachment(stranger,ticket,"x.txt","text/plain",content)).status);
+        assertEquals(415,assertThrows(Problem.class,()->desk.addAttachment(employee,ticket,"x.html","text/html",content)).status);
+        assertEquals(1,((List<?>)incident(ticket).get("attachments")).size());
+    }
+
+    @Test void internalNotesStayHiddenFromReporter() throws Exception {
+        int ticket=report(1,3,3);
+        int technician=((Number)incident(ticket).get("technician_id")).intValue();
+        assertEquals(403,assertThrows(Problem.class,()->desk.mutate(employee,"note",
+                Map.of("id",ticket,"text","Private","visibility","internal"))).status);
+        desk.mutate(technician,"note",Map.of("id",ticket,"text","Check server logs","visibility","internal"));
+        desk.mutate(technician,"note",Map.of("id",ticket,"text","We are investigating","visibility","public"));
+        assertTrue(list(admin,"audit").stream().anyMatch(a->"Internal note".equals(a.get("action"))));
+        assertFalse(list(employee,"audit").stream().anyMatch(a->"Internal note".equals(a.get("action"))));
+        assertFalse(list(employee,"notifications").stream().anyMatch(n->"Check server logs".equals(n.get("message"))));
+        assertTrue(list(employee,"notifications").stream().anyMatch(n->"We are investigating".equals(n.get("message"))));
+    }
+
+    @Test void reporterCanReopenResolvedIncidentAndStaffCanReviewP1() throws Exception {
+        int ticket=report(1,3,3);
+        int technician=((Number)incident(ticket).get("technician_id")).intValue();
+        for(String status:List.of("Acknowledged","In progress","Resolved"))
+            desk.mutate(technician,"transition",Map.of("id",ticket,"status",status,"resolution","Fixed gateway"));
+        assertEquals(403,assertThrows(Problem.class,()->desk.mutate(employee,"review",
+                Map.of("id",ticket,"root_cause","Bad config","impact","Payments failed","prevention","Review changes"))).status);
+        desk.mutate(technician,"review",Map.of("id",ticket,"root_cause","Bad config",
+                "impact","Payments failed","prevention","Review changes"));
+        assertNotNull(incident(ticket).get("review"));
+        desk.mutate(employee,"reopen",Map.of("id",ticket,"reason","Payments failed again"));
+        assertEquals("In progress",incident(ticket).get("status"));
+        assertNull(incident(ticket).get("resolved_at"));
+        assertTrue(list(employee,"audit").stream().anyMatch(a->"Reopened".equals(a.get("action"))));
+        assertEquals(409,assertThrows(Problem.class,()->desk.mutate(employee,"reopen",
+                Map.of("id",ticket,"reason","Again"))).status);
+    }
+
+    @Test void knowledgeArticlesAreReadableAndStaffManaged() throws Exception {
+        int technician=id(desk.login("tech@relay.test",PASSWORD));
+        var article=Map.<String,Object>of("title","Restore checkout","summary","Check gateway status",
+                "steps","Restart the gateway after approval.","service_id",1);
+        assertEquals(403,assertThrows(Problem.class,()->desk.mutate(employee,"article-save",article)).status);
+        int articleId=id(desk.mutate(technician,"article-save",article));
+        assertTrue(list(employee,"articles").stream().anyMatch(a->id(a)==articleId));
+        desk.mutate(admin,"article-delete",Map.of("id",articleId));
+        assertTrue(list(employee,"articles").isEmpty());
+    }
+
     @Test void loadRoutingChoosesLeastBusyEligibleTechnician() throws Exception {
         desk.mutate(admin,"strategy",Map.of("strategy","load"));
         Map<Integer,Integer> loads=new TreeMap<>();

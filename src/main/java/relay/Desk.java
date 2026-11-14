@@ -255,6 +255,47 @@ public final class Desk {
         return database.transaction(true, c -> incidents.snapshot(c, publicUser(user(c, uid))));
     }
 
+    public int addAttachment(int uid, int incidentId, String fileName, String mediaType, byte[] content) {
+        return database.transaction(true, c -> incidents.addAttachment(c, publicUser(user(c, uid)),
+                incidentId, fileName, mediaType, content));
+    }
+
+    public Incidents.Attachment attachment(int uid, int id) {
+        return database.transaction(false, c -> incidents.attachment(c, publicUser(user(c, uid)), id));
+    }
+
+    private Object saveArticle(Connection c, Map<String,Object> actor, Map<String,Object> data) throws SQLException {
+        if ("employee".equals(actor.get("role"))) throw new Problem(403, "IT staff access is required.");
+        String title = required(data, "title", 160);
+        String summary = required(data, "summary", 1000);
+        String steps = required(data, "steps", 6000);
+        int serviceId = number(data, "service_id", 1, Integer.MAX_VALUE);
+        if (one(c, "SELECT 1 FROM services WHERE id=?", serviceId) == null) throw new Problem(404, "Service not found.");
+        String at = Instant.now().truncatedTo(ChronoUnit.SECONDS).toString();
+        if (!data.containsKey("id")) return Map.of("id", insert(c, """
+            INSERT INTO knowledge_articles(title,service_id,summary,steps,author_id,created_at,updated_at)
+            VALUES(?,?,?,?,?,?,?)
+            """, title, serviceId, summary, steps, actor.get("id"), at, at));
+        int id = number(data, "id", 1, Integer.MAX_VALUE);
+        var existing = one(c, "SELECT author_id FROM knowledge_articles WHERE id=?", id);
+        if (existing == null) throw new Problem(404, "Article not found.");
+        if (!"admin".equals(actor.get("role")) && !existing.get("author_id").equals(actor.get("id")))
+            throw new Problem(403, "Only the article author or an administrator can edit it.");
+        exec(c, "UPDATE knowledge_articles SET title=?,service_id=?,summary=?,steps=?,updated_at=? WHERE id=?",
+                title, serviceId, summary, steps, at, id);
+        return Map.of("id", id);
+    }
+
+    private Object deleteArticle(Connection c, Map<String,Object> actor, Map<String,Object> data) throws SQLException {
+        int id = number(data, "id", 1, Integer.MAX_VALUE);
+        var existing = one(c, "SELECT author_id FROM knowledge_articles WHERE id=?", id);
+        if (existing == null) throw new Problem(404, "Article not found.");
+        if (!"admin".equals(actor.get("role")) && !existing.get("author_id").equals(actor.get("id")))
+            throw new Problem(403, "Only the article author or an administrator can remove it.");
+        exec(c, "DELETE FROM knowledge_articles WHERE id=?", id);
+        return Map.of("id", id);
+    }
+
     public void monitor() {
         database.transaction(true, c -> { incidents.monitor(c); return null; });
     }
@@ -266,7 +307,9 @@ public final class Desk {
             return switch (action) {
                 case "create" -> Map.of("id", incidents.create(c, actor, data, Instant.now().truncatedTo(ChronoUnit.SECONDS)));
                 case "profile" -> saveProfile(c, uid, data);
-                case "assign", "feedback", "transition", "update", "note" -> incidents.act(c, actor, action, data);
+                case "article-save" -> saveArticle(c, actor, data);
+                case "article-delete" -> deleteArticle(c, actor, data);
+                case "assign", "feedback", "transition", "update", "note", "reopen", "review" -> incidents.act(c, actor, action, data);
                 default -> {
                     if (!"admin".equals(actor.get("role"))) throw new Problem(403, "Administrator access is required.");
                     if ("remove-user".equals(action)) yield removeUser(c, uid, data);

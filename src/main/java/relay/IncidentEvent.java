@@ -27,9 +27,10 @@ record IncidentEvent(Map<String,Object> incident, String actor, String action, S
     static final class NotificationOutbox implements Observer {
         public void record(Connection c, IncidentEvent e) throws SQLException {
             Set<Object> recipients = new HashSet<>();
-            recipients.add(e.incident.get("reporter_id"));
+            if (!e.action.equals("Internal note")) recipients.add(e.incident.get("reporter_id"));
             recipients.add(e.incident.get("technician_id"));
-            if (e.action.startsWith("SLA") || e.action.equals("Awaiting assignment") || e.action.equals("Escalated")) {
+            if (e.action.startsWith("SLA") || e.action.equals("Awaiting assignment") ||
+                    e.action.equals("Escalated") || e.action.equals("Internal note")) {
                 for (var user : Database.rows(c, "SELECT id FROM users WHERE role='admin' AND active=1")) {
                     recipients.add(user.get("id"));
                 }

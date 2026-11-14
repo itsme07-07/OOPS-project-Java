@@ -25,3 +25,14 @@ CREATE TABLE IF NOT EXISTS notifications(
  message TEXT NOT NULL, channel TEXT NOT NULL, created_at TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS sla_events(
  incident_id INTEGER REFERENCES incidents, target TEXT, kind TEXT, PRIMARY KEY(incident_id,target,kind));
+CREATE TABLE IF NOT EXISTS attachments(
+ id INTEGER PRIMARY KEY, incident_id INTEGER NOT NULL REFERENCES incidents, uploader_id INTEGER NOT NULL REFERENCES users,
+ file_name TEXT NOT NULL, media_type TEXT NOT NULL, content BLOB NOT NULL, size INTEGER NOT NULL, created_at TEXT NOT NULL);
+CREATE INDEX IF NOT EXISTS incident_attachments ON attachments(incident_id);
+CREATE TABLE IF NOT EXISTS knowledge_articles(
+ id INTEGER PRIMARY KEY, title TEXT NOT NULL, service_id INTEGER NOT NULL REFERENCES services,
+ summary TEXT NOT NULL, steps TEXT NOT NULL, author_id INTEGER NOT NULL REFERENCES users,
+ created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS incident_reviews(
+ incident_id INTEGER PRIMARY KEY REFERENCES incidents, root_cause TEXT NOT NULL, impact TEXT NOT NULL,
+ prevention TEXT NOT NULL, author_id INTEGER NOT NULL REFERENCES users, updated_at TEXT NOT NULL);

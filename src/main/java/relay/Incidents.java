@@ -222,9 +222,18 @@ final class Incidents {
         if (!visible(user, i)) throw new Problem(404, "Incident not found.");
         switch (action) {
             case "transition" -> transition(c, user, id, data, at);
+            case "reopen" -> reopen(c, user, i, data, at);
             case "update" -> update(c, user, i, data, at);
             case "assign" -> assign(c, user, i, number(data, "technician_id", 1, Integer.MAX_VALUE), at);
-            case "note" -> event(c, i, user.get("name"), "Note", required(data, "text", 6000), null, null, at);
+            case "note" -> {
+                String visibility = String.valueOf(data.getOrDefault("visibility", "public"));
+                if (!List.of("public", "internal").contains(visibility)) throw new Problem(400, "Choose a valid note visibility.");
+                if (visibility.equals("internal") && !isAdmin(user) && !"technician".equals(user.get("role")))
+                    throw new Problem(403, "Only IT staff can add internal notes.");
+                event(c, i, user.get("name"), visibility.equals("internal") ? "Internal note" : "Note",
+                        required(data, "text", 6000), null, null, at);
+            }
+            case "review" -> review(c, user, i, data, at);
             case "feedback" -> {
                 if (!owns(user, i) || !COMPLETE.contains(i.get("status")))
                     throw new Problem(403, "Only the reporter can give feedback after resolution.");
@@ -235,6 +244,72 @@ final class Incidents {
             default -> throw new Problem(404, "Unknown command.");
         }
         return Map.of("id", id);
+    }
+
+    private void reopen(Connection c, Map<String,Object> user, Map<String,Object> i,
+                        Map<String,Object> data, Instant at) throws SQLException {
+        if (!isAdmin(user) && !owns(user, i)) throw new Problem(403, "Only the reporter or an administrator can reopen this incident.");
+        if (!COMPLETE.contains(i.get("status"))) throw new Problem(409, "Only resolved incidents can be reopened.");
+        String reason = required(data, "reason", 3000);
+        var technician = i.get("technician_id") == null ? null :
+                one(c, "SELECT id FROM users WHERE id=? AND role='technician' AND active=1", i.get("technician_id"));
+        String status = technician == null ? "Classified" : "In progress";
+        var p = policy(c, i.get("priority").toString());
+        exec(c, """
+            UPDATE incidents SET status=?,technician_id=?,resolved_at=NULL,closed_at=NULL,
+                resolution='',feedback='',resolution_due=?,acknowledged_at=? WHERE id=?
+            """, status, technician == null ? null : technician.get("id"),
+            due(at, p, "resolution_minutes"), technician == null ? null : i.get("acknowledged_at"), i.get("id"));
+        exec(c, "DELETE FROM sla_events WHERE incident_id=? AND target='resolution'", i.get("id"));
+        event(c, incident(c, i.get("id")), user.get("name"), "Reopened", reason,
+                i.get("status").toString(), status, at);
+    }
+
+    private void review(Connection c, Map<String,Object> user, Map<String,Object> i,
+                        Map<String,Object> data, Instant at) throws SQLException {
+        if (!"P1".equals(i.get("priority")) || !COMPLETE.contains(i.get("status")))
+            throw new Problem(409, "A post-incident review is available after a P1 incident is resolved.");
+        if (!isAdmin(user) && !("technician".equals(user.get("role")) && sameId(user.get("id"), i.get("technician_id"))))
+            throw new Problem(403, "Only the assigned technician or an administrator can write this review.");
+        String root = required(data, "root_cause", 6000);
+        String impact = required(data, "impact", 6000);
+        String prevention = required(data, "prevention", 6000);
+        exec(c, """
+            INSERT INTO incident_reviews(incident_id,root_cause,impact,prevention,author_id,updated_at)
+            VALUES(?,?,?,?,?,?) ON CONFLICT(incident_id) DO UPDATE SET
+            root_cause=excluded.root_cause,impact=excluded.impact,prevention=excluded.prevention,
+            author_id=excluded.author_id,updated_at=excluded.updated_at
+            """, i.get("id"), root, impact, prevention, user.get("id"), at.toString());
+        event(c, i, user.get("name"), "Post-incident review", "Root cause, impact and prevention recorded.", null, null, at);
+    }
+
+    private static final Set<String> ATTACHMENT_TYPES = Set.of("image/png", "image/jpeg", "application/pdf", "text/plain");
+
+    int addAttachment(Connection c, Map<String,Object> user, int incidentId, String fileName,
+                      String mediaType, byte[] content) throws SQLException {
+        var i = incident(c, incidentId);
+        if (!visible(user, i)) throw new Problem(404, "Incident not found.");
+        if (fileName == null || fileName.isBlank() || fileName.length() > 160 ||
+                fileName.matches(".*[/\\\\\\p{Cntrl}].*")) throw new Problem(400, "Choose a valid file name.");
+        if (!ATTACHMENT_TYPES.contains(mediaType)) throw new Problem(415, "Use a PNG, JPEG, PDF or text file.");
+        if (content == null || content.length == 0 || content.length > 1024 * 1024)
+            throw new Problem(413, "Attachments must be between 1 byte and 1 MiB.");
+        Instant at = now();
+        int id = insert(c, """
+            INSERT INTO attachments(incident_id,uploader_id,file_name,media_type,content,size,created_at)
+            VALUES(?,?,?,?,?,?,?)
+            """, incidentId, user.get("id"), fileName.strip(), mediaType, content, content.length, at.toString());
+        event(c, i, user.get("name"), "Attachment added", fileName.strip(), null, null, at);
+        return id;
+    }
+
+    record Attachment(String fileName, String mediaType, byte[] content) {}
+
+    Attachment attachment(Connection c, Map<String,Object> user, int id) throws SQLException {
+        var row = one(c, "SELECT incident_id,file_name,media_type,content FROM attachments WHERE id=?", id);
+        if (row == null || !visible(user, incident(c, row.get("incident_id"))))
+            throw new Problem(404, "Attachment not found.");
+        return new Attachment(row.get("file_name").toString(), row.get("media_type").toString(), (byte[]) row.get("content"));
     }
 
     private record SlaEvent(String target, String kind) {}
@@ -301,15 +376,31 @@ final class Incidents {
             i.put("sla_status", slaStatus(i, at));
             i.put("escalated", one(c, "SELECT 1 AS value FROM sla_events WHERE incident_id=? AND target='response' AND kind='Escalated'",
                     i.get("id")) != null);
+            i.put("attachments", rows(c, """
+                SELECT a.id,a.file_name,a.media_type,a.size,a.created_at,u.name AS uploader
+                FROM attachments a JOIN users u ON u.id=a.uploader_id
+                WHERE a.incident_id=? ORDER BY a.id DESC
+                """, i.get("id")));
+            i.put("review", one(c, """
+                SELECT r.root_cause,r.impact,r.prevention,r.updated_at,u.name AS author
+                FROM incident_reviews r JOIN users u ON u.id=r.author_id WHERE r.incident_id=?
+                """, i.get("id")));
         }
         var audit = rows(c, "SELECT * FROM audit ORDER BY julianday(created_at) DESC,id DESC")
-                .stream().filter(row -> visibleIds.contains(row.get("incident_id"))).toList();
+                .stream().filter(row -> visibleIds.contains(row.get("incident_id")) &&
+                        (!"employee".equals(user.get("role")) || !"Internal note".equals(row.get("action")))).toList();
         var notices = rows(c, "SELECT * FROM notifications WHERE user_id=? ORDER BY id DESC", user.get("id"))
                 .stream().filter(row -> visibleIds.contains(row.get("incident_id"))).toList();
         var users = rows(c, "SELECT " + PUBLIC_USER + " FROM users WHERE active=1 AND (? OR id=?) ORDER BY name",
                 isAdmin(user) ? 1 : 0, user.get("id"));
         return Map.of("user", Desk.publicUser(user),
                 "users", users, "incidents", visible, "audit", audit, "notifications", notices,
+                "articles", rows(c, """
+                    SELECT a.id,a.title,a.service_id,s.name AS service,a.summary,a.steps,a.author_id,
+                    u.name AS author,a.created_at,a.updated_at
+                    FROM knowledge_articles a JOIN services s ON s.id=a.service_id
+                    JOIN users u ON u.id=a.author_id ORDER BY a.updated_at DESC,a.id DESC
+                    """),
                 "services", rows(c, "SELECT * FROM services ORDER BY id"),
                 "categories", rows(c, "SELECT name FROM categories ORDER BY name").stream().map(r -> r.get("name")).toList(),
                 "policies", rows(c, "SELECT * FROM policies ORDER BY priority"), "strategy", configuredStrategy(c));

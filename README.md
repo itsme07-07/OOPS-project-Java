@@ -55,3 +55,5 @@ docs/
 ## Deployment scope
 
 The included server is configured for local course demonstrations. Hosting the application requires a JVM and persistent storage for SQLite. For a public deployment, configure TLS, individual credentials and database backups. Email notifications are simulated in the application.
+
+Incident attachments are stored in the SQLite database. Back up the database to preserve uploaded files, incident history and knowledge articles.

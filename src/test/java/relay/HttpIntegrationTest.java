@@ -82,6 +82,17 @@ class HttpIntegrationTest {
         assertEquals(401, get("/api/state","Cookie",token).statusCode());
     }
 
+    @Test void attachmentDownloadRequiresIncidentAccess() throws Exception {
+        var login=post("/api/login",JSON.toJson(Map.of("email","employee@relay.test","password","RelayDemo2026!")));
+        String cookie=login.headers().firstValue("Set-Cookie").orElseThrow().split(";",2)[0];
+        var upload=post("/api/attachment",JSON.toJson(Map.of("incident_id",1,"file_name","error.txt",
+                "media_type","text/plain","content","SGVsbG8=")),"Cookie",cookie);
+        assertEquals(200,upload.statusCode());
+        int id=JsonParser.parseString(upload.body()).getAsJsonObject().get("id").getAsInt();
+        assertEquals("Hello",get("/api/attachment/"+id,"Cookie",cookie).body());
+        assertEquals(401,get("/api/attachment/"+id).statusCode());
+    }
+
     @Test void blocksCrossOriginMutation() throws Exception {
         assertEquals(403, post("/api/logout", "{}", "Origin", "https://elsewhere.test").statusCode());
     }

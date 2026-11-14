@@ -73,3 +73,10 @@ dialog::backdrop{background:#1c1534c9}
 .profile-panel{max-width:620px}
 .danger{border:1px solid #f1b7c2;background:#fff0f2;color:#aa3650}
 .danger:hover{background:#ffe4e9}
+.knowledge-search{display:flex;max-width:520px}
+.knowledge-search input{width:100%}
+.file-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+.file-row:last-child{border-bottom:0}
+.file-row small{color:var(--muted)}
+.information dd{overflow-wrap:anywhere;white-space:pre-wrap}
+@media(max-width:760px){.file-row{align-items:flex-start;flex-direction:column;gap:4px}}
