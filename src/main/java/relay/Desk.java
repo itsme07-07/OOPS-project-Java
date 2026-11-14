@@ -45,8 +45,13 @@ public final class Desk {
                 exec(c, "ALTER TABLE users ADD COLUMN username TEXT");
             exec(c, "CREATE UNIQUE INDEX IF NOT EXISTS users_username_unique ON users(username)");
             if (one(c, "SELECT 1 FROM settings LIMIT 1") == null) initialize(c, demo);
-            for (var row : rows(c, "SELECT id,role FROM users WHERE username IS NULL"))
-                exec(c, "UPDATE users SET username=? WHERE id=?", newUsername(c, row.get("role").toString()), row.get("id"));
+            for (var row : rows(c, "SELECT id,role,username FROM users")) {
+                Object current = row.get("username");
+                String updated = current == null ? newUsername(c, row.get("role").toString()) :
+                        current.toString().matches("example@service\\.(adm|tech|emp)[A-F0-9]{8}") ?
+                        formatUsername(row.get("role").toString(), current.toString().substring(current.toString().length() - 8)) : null;
+                if (updated != null) exec(c, "UPDATE users SET username=? WHERE id=?", updated, row.get("id"));
+            }
             return null;
         });
     }
@@ -197,13 +202,18 @@ public final class Desk {
         };
     }
 
+    private static String formatUsername(String role, String code) {
+        return "example" + code + "@service." + roleCode(role);
+    }
+
     private static String newUsername(Connection c, String role) throws SQLException {
         for (int attempt = 0; attempt < 20; attempt++) {
             byte[] bytes = new byte[4];
             RANDOM.nextBytes(bytes);
             String code = HexFormat.of().withUpperCase().formatHex(bytes);
-            if (one(c, "SELECT 1 FROM users WHERE username LIKE ?", "%" + code) == null)
-                return "example@service." + roleCode(role) + code;
+            if (one(c, "SELECT 1 FROM users WHERE substr(username,8,8)=? OR substr(username,length(username)-7,8)=?",
+                    code, code) == null)
+                return formatUsername(role, code);
         }
         throw new Problem(503, "Could not create a unique username. Try again.");
     }
@@ -237,7 +247,7 @@ public final class Desk {
         Object encoded = editing && (password == null || "".equals(password)) ? existing.get("password") : hash(password);
         String username = editing ? existing.get("username").toString() : newUsername(c, role.toString());
         if (editing && !role.equals(existing.get("role")))
-            username = "example@service." + roleCode(role.toString()) + username.substring(username.length() - 8);
+            username = formatUsername(role.toString(), username.substring(7, 15));
         if (editing) {
             exec(c, "UPDATE users SET name=?,email=?,username=?,role=?,skill=?,available=?,capacity=?,password=? WHERE id=?",
                     name, email, username, role, skill, availability, capacity, encoded, existing.get("id"));

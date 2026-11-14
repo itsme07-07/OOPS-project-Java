@@ -15,7 +15,7 @@ On Windows use `mvnw.cmd clean verify`. The first build downloads Maven and the 
 
 The first local launch creates `data/itsm.sqlite3` and demo accounts. If you already ran the earlier release, start the JAR from the same project directory to reuse the existing database. Sign in again after restarting the server.
 
-ServiceForce generates a unique username for each account. You can sign in with that username or your existing email address. Your username appears in **My profile** after sign-in. The `example@service.*` usernames are identifiers, not working email addresses; keep a real contact email in your profile.
+ServiceForce generates a unique username for each account, such as `exampleA1B2C3D4@service.tech`. You can sign in with that username or your existing email address. Your username appears in **My profile** after sign-in. These usernames are identifiers, not working email addresses; keep a real contact email in your profile.
 
 | Workspace | Demo email | Password |
 |---|---|---|

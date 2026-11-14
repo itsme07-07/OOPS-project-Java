@@ -75,13 +75,13 @@ class DeskTest {
         var adminAccount=(Map<?,?>)((Map<?,?>)desk.snapshot(admin)).get("user");
         int technician=id(desk.login("tech@relay.test",PASSWORD));
         var technicianAccount=(Map<?,?>)((Map<?,?>)desk.snapshot(technician)).get("user");
-        assertTrue(employeeAccount.get("username").toString().matches("example@service\\.emp[A-F0-9]{8}"));
-        assertTrue(adminAccount.get("username").toString().matches("example@service\\.adm[A-F0-9]{8}"));
-        assertTrue(technicianAccount.get("username").toString().matches("example@service\\.tech[A-F0-9]{8}"));
+        assertTrue(employeeAccount.get("username").toString().matches("example[A-F0-9]{8}@service\\.emp"));
+        assertTrue(adminAccount.get("username").toString().matches("example[A-F0-9]{8}@service\\.adm"));
+        assertTrue(technicianAccount.get("username").toString().matches("example[A-F0-9]{8}@service\\.tech"));
         assertEquals(employee,id(desk.login(employeeAccount.get("username").toString(),PASSWORD)));
         assertEquals(employee,id(desk.login("employee@relay.test",PASSWORD)));
         assertTrue(list(admin,"users").stream().noneMatch(u->u.containsKey("username")));
-        desk.mutate(admin,"user",Map.of("id",employee,"username","example@service.emp00000000"));
+        desk.mutate(admin,"user",Map.of("id",employee,"username","example00000000@service.emp"));
         assertEquals(employeeAccount.get("username"),((Map<?,?>)((Map<?,?>)desk.snapshot(employee)).get("user")).get("username"));
     }
 
@@ -98,7 +98,20 @@ class DeskTest {
         var upgraded=new Desk(old,true);
         int existing=id(upgraded.login("admin@relay.test",PASSWORD));
         var current=(Map<?,?>)((Map<?,?>)upgraded.snapshot(existing)).get("user");
-        assertTrue(current.get("username").toString().startsWith("example@service.adm"));
+        assertTrue(current.get("username").toString().matches("example[A-F0-9]{8}@service\\.adm"));
+    }
+
+    @Test void oldUsernameFormatMigratesWithoutChangingCode() throws Exception {
+        try(var c=DriverManager.getConnection("jdbc:sqlite:"+db);
+            var ps=c.prepareStatement("UPDATE users SET username=? WHERE id=?")) {
+            ps.setString(1,"example@service.empA1B2C3D4");
+            ps.setInt(2,employee);
+            ps.executeUpdate();
+        }
+        var upgraded=new Desk(db,false);
+        var current=(Map<?,?>)((Map<?,?>)upgraded.snapshot(employee)).get("user");
+        assertEquals("exampleA1B2C3D4@service.emp",current.get("username"));
+        assertEquals(employee,id(upgraded.login("exampleA1B2C3D4@service.emp",PASSWORD)));
     }
 
     @Test void everyRoleCanEditOnlyItsOwnProfile() throws Exception {
