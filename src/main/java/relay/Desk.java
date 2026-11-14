@@ -41,7 +41,12 @@ public final class Desk {
             }
             if (rows(c, "PRAGMA table_info(users)").stream().noneMatch(r -> "active".equals(r.get("name"))))
                 exec(c, "ALTER TABLE users ADD COLUMN active INTEGER NOT NULL DEFAULT 1");
+            if (rows(c, "PRAGMA table_info(users)").stream().noneMatch(r -> "username".equals(r.get("name"))))
+                exec(c, "ALTER TABLE users ADD COLUMN username TEXT");
+            exec(c, "CREATE UNIQUE INDEX IF NOT EXISTS users_username_unique ON users(username)");
             if (one(c, "SELECT 1 FROM settings LIMIT 1") == null) initialize(c, demo);
+            for (var row : rows(c, "SELECT id,role FROM users WHERE username IS NULL"))
+                exec(c, "UPDATE users SET username=? WHERE id=?", newUsername(c, row.get("role").toString()), row.get("id"));
             return null;
         });
     }
@@ -102,7 +107,7 @@ public final class Desk {
 
     static Map<String,Object> publicUser(Map<String,Object> row) {
         var safe = new LinkedHashMap<String,Object>();
-        for (String key : List.of("id", "name", "email", "role", "skill", "available", "capacity")) safe.put(key, row.get(key));
+        for (String key : List.of("id", "name", "email", "username", "role", "skill", "available", "capacity")) safe.put(key, row.get(key));
         return safe;
     }
 
@@ -134,14 +139,16 @@ public final class Desk {
         return salt + ":" + HexFormat.of().formatHex(digest(password, salt));
     }
 
-    public Map<String,Object> login(String email, String password) {
-        if (email == null || password == null || password.codePointCount(0, password.length()) > 256)
-            throw new Problem(401, "Invalid email or password.");
-        var account = database.transaction(false, c -> one(c, "SELECT * FROM users WHERE email=? AND active=1", email.strip()));
+    public Map<String,Object> login(String identifier, String password) {
+        if (identifier == null || password == null || password.codePointCount(0, password.length()) > 256)
+            throw new Problem(401, "Invalid username or password.");
+        var account = database.transaction(false, c -> one(c,
+                "SELECT * FROM users WHERE active=1 AND (username=? COLLATE NOCASE OR email=?)",
+                identifier.strip(), identifier.strip()));
         String encoded = account == null ? DUMMY_HASH : (String) account.get("password");
         String[] parts = encoded.split(":", 2);
         if (!MessageDigest.isEqual(digest(password, parts[0]), HexFormat.of().parseHex(parts[1])) || account == null)
-            throw new Problem(401, "Invalid email or password.");
+            throw new Problem(401, "Invalid username or password.");
         return publicUser(account);
     }
 
@@ -182,6 +189,25 @@ public final class Desk {
             throw new Problem(400, "Choose an existing category.");
     }
 
+    private static String roleCode(String role) {
+        return switch (role) {
+            case "admin" -> "adm";
+            case "technician" -> "tech";
+            default -> "emp";
+        };
+    }
+
+    private static String newUsername(Connection c, String role) throws SQLException {
+        for (int attempt = 0; attempt < 20; attempt++) {
+            byte[] bytes = new byte[4];
+            RANDOM.nextBytes(bytes);
+            String code = HexFormat.of().withUpperCase().formatHex(bytes);
+            if (one(c, "SELECT 1 FROM users WHERE username LIKE ?", "%" + code) == null)
+                return "example@service." + roleCode(role) + code;
+        }
+        throw new Problem(503, "Could not create a unique username. Try again.");
+    }
+
     private int saveUser(Connection c, Map<String,Object> data) throws SQLException {
         boolean editing = data.containsKey("id");
         var existing = editing ? user(c, number(data, "id", 1, Integer.MAX_VALUE)) : Map.<String,Object>of();
@@ -209,13 +235,16 @@ public final class Desk {
             throw new Problem(400, "Reassign this technician's active incidents before changing their role.");
         Object password = data.get("password");
         Object encoded = editing && (password == null || "".equals(password)) ? existing.get("password") : hash(password);
+        String username = editing ? existing.get("username").toString() : newUsername(c, role.toString());
+        if (editing && !role.equals(existing.get("role")))
+            username = "example@service." + roleCode(role.toString()) + username.substring(username.length() - 8);
         if (editing) {
-            exec(c, "UPDATE users SET name=?,email=?,role=?,skill=?,available=?,capacity=?,password=? WHERE id=?",
-                    name, email, role, skill, availability, capacity, encoded, existing.get("id"));
+            exec(c, "UPDATE users SET name=?,email=?,username=?,role=?,skill=?,available=?,capacity=?,password=? WHERE id=?",
+                    name, email, username, role, skill, availability, capacity, encoded, existing.get("id"));
             return ((Number) existing.get("id")).intValue();
         }
-        return insert(c, "INSERT INTO users(name,email,role,skill,available,capacity,password) VALUES(?,?,?,?,?,?,?)",
-                name, email, role, skill, availability, capacity, encoded);
+        return insert(c, "INSERT INTO users(name,email,username,role,skill,available,capacity,password) VALUES(?,?,?,?,?,?,?,?)",
+                name, email, username, role, skill, availability, capacity, encoded);
     }
 
     private Object saveProfile(Connection c, int uid, Map<String,Object> data) throws SQLException {

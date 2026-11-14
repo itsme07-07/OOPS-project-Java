@@ -129,10 +129,11 @@ final class RelayServer implements AutoCloseable {
             }
             case "/api/login", "/api/register" -> {
                 limiter.check(ex.getRemoteAddress().getAddress().getHostAddress());
-                if (!(data.get("email") instanceof String email) || !(data.get("password") instanceof String password)) {
-                    throw new Problem(400, "Enter an email address and password.");
+                Object identifier = path.equals("/api/login") ? data.getOrDefault("identifier", data.get("email")) : data.get("email");
+                if (!(identifier instanceof String addressOrUsername) || !(data.get("password") instanceof String password)) {
+                    throw new Problem(400, "Enter your username or email and password.");
                 }
-                Map<String,Object> user = path.equals("/api/login") ? desk.login(email, password) : desk.register(data);
+                Map<String,Object> user = path.equals("/api/login") ? desk.login(addressOrUsername, password) : desk.register(data);
                 sessions.revoke(previous);
                 setCookie(ex, sessions.create(((Number)user.get("id")).intValue()));
                 json(ex, 200, Map.of("user", user));

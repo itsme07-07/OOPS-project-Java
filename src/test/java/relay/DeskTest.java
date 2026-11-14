@@ -70,6 +70,37 @@ class DeskTest {
         assertEquals(id(person), id(new Desk(db, false).login("test@example.org", PASSWORD)));
     }
 
+    @Test void systemGeneratesPrivateRoleBasedUsernames() throws Exception {
+        var employeeAccount=(Map<?,?>)((Map<?,?>)desk.snapshot(employee)).get("user");
+        var adminAccount=(Map<?,?>)((Map<?,?>)desk.snapshot(admin)).get("user");
+        int technician=id(desk.login("tech@relay.test",PASSWORD));
+        var technicianAccount=(Map<?,?>)((Map<?,?>)desk.snapshot(technician)).get("user");
+        assertTrue(employeeAccount.get("username").toString().matches("example@service\\.emp[A-F0-9]{8}"));
+        assertTrue(adminAccount.get("username").toString().matches("example@service\\.adm[A-F0-9]{8}"));
+        assertTrue(technicianAccount.get("username").toString().matches("example@service\\.tech[A-F0-9]{8}"));
+        assertEquals(employee,id(desk.login(employeeAccount.get("username").toString(),PASSWORD)));
+        assertEquals(employee,id(desk.login("employee@relay.test",PASSWORD)));
+        assertTrue(list(admin,"users").stream().noneMatch(u->u.containsKey("username")));
+        desk.mutate(admin,"user",Map.of("id",employee,"username","example@service.emp00000000"));
+        assertEquals(employeeAccount.get("username"),((Map<?,?>)((Map<?,?>)desk.snapshot(employee)).get("user")).get("username"));
+    }
+
+    @Test void existingDatabaseReceivesGeneratedUsernames() throws Exception {
+        Path old=folder.resolve("old.sqlite3");
+        try(var c=DriverManager.getConnection("jdbc:sqlite:"+old);
+            var statement=c.createStatement()) {
+            statement.execute("""
+                CREATE TABLE users(id INTEGER PRIMARY KEY,name TEXT NOT NULL,email TEXT UNIQUE NOT NULL,
+                password TEXT NOT NULL,role TEXT NOT NULL,skill TEXT NOT NULL DEFAULT '',
+                available INTEGER NOT NULL DEFAULT 1,capacity INTEGER NOT NULL DEFAULT 20,active INTEGER NOT NULL DEFAULT 1)
+                """);
+        }
+        var upgraded=new Desk(old,true);
+        int existing=id(upgraded.login("admin@relay.test",PASSWORD));
+        var current=(Map<?,?>)((Map<?,?>)upgraded.snapshot(existing)).get("user");
+        assertTrue(current.get("username").toString().startsWith("example@service.adm"));
+    }
+
     @Test void everyRoleCanEditOnlyItsOwnProfile() throws Exception {
         int technician=id(desk.login("tech@relay.test",PASSWORD));
         for (int actor : List.of(employee, technician, admin)) {
