@@ -8,6 +8,7 @@
 - Administrator management of people, roles, technician skills, availability and workload capacity.
 - Every signed-in person can edit their own name, email address, password and (for technicians) primary skill after confirming their current password.
 - Administrators can remove accounts. Removed people lose access, while incident history remains available; active technician cases must be reassigned first.
+- Administrators can open a technician's assigned incident list from the People page, including open and completed cases.
 
 ## Incident work
 
