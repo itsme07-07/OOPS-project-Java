@@ -6,6 +6,8 @@
 - Password-based sign-in and sign-out with sessions. Demo accounts are available in local demo mode.
 - Employee, technician and administrator roles. Employees see their own incidents, technicians see assignments, and administrators see the full queue and settings.
 - Administrator management of people, roles, technician skills, availability and workload capacity.
+- Every signed-in person can edit their own name, email address, password and (for technicians) primary skill after confirming their current password.
+- Administrators can remove accounts. Removed people lose access, while incident history remains available; active technician cases must be reassigned first.
 
 ## Incident work
 

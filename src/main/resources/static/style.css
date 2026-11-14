@@ -65,3 +65,11 @@ dialog{border-color:#dcd6f2;box-shadow:0 25px 90px #2214536b}
 dialog::backdrop{background:#1c1534c9}
 #toast{background:#2d206b;box-shadow:0 7px 24px #2d206b44}
 @media(max-width:760px){.cover{background:linear-gradient(125deg,#271454,#6c3bab)}.rail{box-shadow:15px 0 40px #1d104753}}
+.brand{white-space:nowrap;letter-spacing:-.035em;line-height:1.2;flex-shrink:0}
+.rail .brand{font-size:18px;gap:7px}
+.rail .brand img{width:28px;height:28px}
+.profile button{margin-left:0}
+.profile button:first-of-type{margin-left:auto}
+.profile-panel{max-width:620px}
+.danger{border:1px solid #f1b7c2;background:#fff0f2;color:#aa3650}
+.danger:hover{background:#ffe4e9}

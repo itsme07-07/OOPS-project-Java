@@ -30,7 +30,7 @@ record IncidentEvent(Map<String,Object> incident, String actor, String action, S
             recipients.add(e.incident.get("reporter_id"));
             recipients.add(e.incident.get("technician_id"));
             if (e.action.startsWith("SLA") || e.action.equals("Awaiting assignment") || e.action.equals("Escalated")) {
-                for (var user : Database.rows(c, "SELECT id FROM users WHERE role='admin'")) {
+                for (var user : Database.rows(c, "SELECT id FROM users WHERE role='admin' AND active=1")) {
                     recipients.add(user.get("id"));
                 }
             }

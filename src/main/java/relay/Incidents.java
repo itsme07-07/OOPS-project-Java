@@ -63,7 +63,7 @@ final class Incidents {
         return rows(c, """
             SELECT u.id,u.skill,u.name,count(i.id) AS workload FROM users u
             LEFT JOIN incidents i ON i.technician_id=u.id AND i.status NOT IN ('Closed','Resolved','Verified')
-            WHERE u.role='technician' AND u.available=1 GROUP BY u.id HAVING count(i.id)<u.capacity
+            WHERE u.role='technician' AND u.available=1 AND u.active=1 GROUP BY u.id HAVING count(i.id)<u.capacity
             """);
     }
 
@@ -306,7 +306,7 @@ final class Incidents {
                 .stream().filter(row -> visibleIds.contains(row.get("incident_id"))).toList();
         var notices = rows(c, "SELECT * FROM notifications WHERE user_id=? ORDER BY id DESC", user.get("id"))
                 .stream().filter(row -> visibleIds.contains(row.get("incident_id"))).toList();
-        var users = rows(c, "SELECT " + PUBLIC_USER + " FROM users WHERE ? OR id=? ORDER BY name",
+        var users = rows(c, "SELECT " + PUBLIC_USER + " FROM users WHERE active=1 AND (? OR id=?) ORDER BY name",
                 isAdmin(user) ? 1 : 0, user.get("id"));
         return Map.of("user", Desk.publicUser(user),
                 "users", users, "incidents", visible, "audit", audit, "notifications", notices,

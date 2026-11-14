@@ -70,6 +70,34 @@ class DeskTest {
         assertEquals(id(person), id(new Desk(db, false).login("test@example.org", PASSWORD)));
     }
 
+    @Test void everyRoleCanEditOnlyItsOwnProfile() throws Exception {
+        int technician=id(desk.login("tech@relay.test",PASSWORD));
+        for (int actor : List.of(employee, technician, admin)) {
+            String email="profile-"+actor+"@example.org";
+            desk.mutate(actor,"profile",Map.of("name","Updated Person","email",email,
+                    "current_password",PASSWORD,"password","NewPassword2026!"));
+            assertEquals(actor,id(desk.login(email,"NewPassword2026!")));
+            var current=(Map<?,?>)((Map<?,?>)desk.snapshot(actor)).get("user");
+            assertEquals("Updated Person",current.get("name"));
+            assertThrows(Problem.class,()->desk.mutate(actor,"profile",Map.of("name","Wrong","email",email,
+                    "current_password","wrong")));
+        }
+    }
+
+    @Test void adminCanRemovePersonWithoutLosingIncidentHistory() throws Exception {
+        int ticket=report(1,3,3);
+        assertEquals(403,assertThrows(Problem.class,()->desk.mutate(employee,"remove-user",Map.of("id",admin))).status);
+        assertEquals(409,assertThrows(Problem.class,()->desk.mutate(admin,"remove-user",
+                Map.of("id",incident(ticket).get("technician_id")))).status);
+        assertEquals(400,assertThrows(Problem.class,()->desk.mutate(admin,"remove-user",Map.of("id",admin))).status);
+        desk.mutate(admin,"remove-user",Map.of("id",employee));
+        assertThrows(Problem.class,()->desk.login("employee@relay.test",PASSWORD));
+        assertEquals(401,assertThrows(Problem.class,()->desk.snapshot(employee)).status);
+        assertEquals(ticket,id(incident(ticket)));
+        assertFalse(list(admin,"users").stream().anyMatch(u->id(u)==employee));
+        assertEquals("employee",desk.register(registration("employee@relay.test",PASSWORD)).get("role"));
+    }
+
     @Test void employeeCannotConfigureRouting() {
         assertEquals(403, assertThrows(Problem.class,
                 () -> desk.mutate(employee,"strategy",Map.of("strategy","load"))).status);

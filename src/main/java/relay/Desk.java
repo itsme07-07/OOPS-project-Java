@@ -39,6 +39,8 @@ public final class Desk {
                 exec(c, "ALTER TABLE incidents ADD COLUMN suggestion_source_id INTEGER REFERENCES incidents");
                 exec(c, "UPDATE incidents SET suggested_resolution=''");
             }
+            if (rows(c, "PRAGMA table_info(users)").stream().noneMatch(r -> "active".equals(r.get("name"))))
+                exec(c, "ALTER TABLE users ADD COLUMN active INTEGER NOT NULL DEFAULT 1");
             if (one(c, "SELECT 1 FROM settings LIMIT 1") == null) initialize(c, demo);
             return null;
         });
@@ -106,7 +108,7 @@ public final class Desk {
 
     private static Map<String,Object> user(Connection c, int uid) throws SQLException {
         var row = one(c, "SELECT * FROM users WHERE id=?", uid);
-        if (row == null) throw new Problem(401, "Sign in to continue.");
+        if (row == null || ((Number) row.get("active")).intValue() == 0) throw new Problem(401, "Sign in to continue.");
         return row;
     }
 
@@ -135,7 +137,7 @@ public final class Desk {
     public Map<String,Object> login(String email, String password) {
         if (email == null || password == null || password.codePointCount(0, password.length()) > 256)
             throw new Problem(401, "Invalid email or password.");
-        var account = database.transaction(false, c -> one(c, "SELECT * FROM users WHERE email=?", email.strip()));
+        var account = database.transaction(false, c -> one(c, "SELECT * FROM users WHERE email=? AND active=1", email.strip()));
         String encoded = account == null ? DUMMY_HASH : (String) account.get("password");
         String[] parts = encoded.split(":", 2);
         if (!MessageDigest.isEqual(digest(password, parts[0]), HexFormat.of().parseHex(parts[1])) || account == null)
@@ -200,7 +202,7 @@ public final class Desk {
         else if (Boolean.FALSE.equals(available) || (available instanceof Number && "0".equals(available.toString()))) availability = 0;
         else throw new Problem(400, "Availability must be true or false.");
         if ("admin".equals(existing.get("role")) && !"admin".equals(role) &&
-                one(c, "SELECT 1 FROM users WHERE role='admin' AND id<>?", existing.get("id")) == null)
+                one(c, "SELECT 1 FROM users WHERE role='admin' AND active=1 AND id<>?", existing.get("id")) == null)
             throw new Problem(400, "Keep at least one administrator.");
         if ("technician".equals(existing.get("role")) && !"technician".equals(role) &&
                 one(c, "SELECT 1 FROM incidents WHERE technician_id=? AND status NOT IN ('Closed','Resolved','Verified')", existing.get("id")) != null)
@@ -214,6 +216,39 @@ public final class Desk {
         }
         return insert(c, "INSERT INTO users(name,email,role,skill,available,capacity,password) VALUES(?,?,?,?,?,?,?)",
                 name, email, role, skill, availability, capacity, encoded);
+    }
+
+    private Object saveProfile(Connection c, int uid, Map<String,Object> data) throws SQLException {
+        var existing = user(c, uid);
+        String current = required(data, "current_password", 256);
+        String[] parts = existing.get("password").toString().split(":", 2);
+        if (!MessageDigest.isEqual(digest(current, parts[0]), HexFormat.of().parseHex(parts[1])))
+            throw new Problem(403, "Current password is incorrect.");
+        String name = required(data, "name", 100);
+        String email = required(data, "email", 254).toLowerCase(Locale.ROOT);
+        if (!email.matches("[^\\s@]+@[^\\s@]+\\.[^\\s@]+")) throw new Problem(400, "Enter a valid email address.");
+        Object password = data.get("password");
+        String encoded = password == null || "".equals(password) ? existing.get("password").toString() : hash(password);
+        String skill = existing.get("skill").toString();
+        if ("technician".equals(existing.get("role")) && data.get("skill") instanceof String value) {
+            skill = value.equals("general") ? "" : value.strip();
+            if (!skill.isEmpty()) category(c, skill);
+        }
+        exec(c, "UPDATE users SET name=?,email=?,password=?,skill=? WHERE id=?", name, email, encoded, skill, uid);
+        return Map.of("id", uid);
+    }
+
+    private Object removeUser(Connection c, int actorId, Map<String,Object> data) throws SQLException {
+        int id = number(data, "id", 1, Integer.MAX_VALUE);
+        if (id == actorId) throw new Problem(400, "You cannot remove your own account.");
+        var target = user(c, id);
+        if ("admin".equals(target.get("role")) &&
+                one(c, "SELECT 1 FROM users WHERE role='admin' AND active=1 AND id<>?", id) == null)
+            throw new Problem(400, "Keep at least one administrator.");
+        if (one(c, "SELECT 1 FROM incidents WHERE technician_id=? AND status NOT IN ('Closed','Resolved','Verified')", id) != null)
+            throw new Problem(409, "Reassign this person's active incidents before removing them.");
+        exec(c, "UPDATE users SET active=0,available=0,email=? WHERE id=?", "removed+" + id + "@serviceforce.invalid", id);
+        return Map.of("id", id);
     }
 
     public Object snapshot(int uid) {
@@ -230,9 +265,11 @@ public final class Desk {
             if (action == null || data == null) throw new Problem(400, "Enter a valid command.");
             return switch (action) {
                 case "create" -> Map.of("id", incidents.create(c, actor, data, Instant.now().truncatedTo(ChronoUnit.SECONDS)));
+                case "profile" -> saveProfile(c, uid, data);
                 case "assign", "feedback", "transition", "update", "note" -> incidents.act(c, actor, action, data);
                 default -> {
                     if (!"admin".equals(actor.get("role"))) throw new Problem(403, "Administrator access is required.");
+                    if ("remove-user".equals(action)) yield removeUser(c, uid, data);
                     yield configure(c, action, data);
                 }
             };
