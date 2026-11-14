@@ -1,194 +1,1453 @@
 %PDF-1.4
-%“Œ‹ž ReportLab Generated PDF document (opensource)
+%âãÏÓ
 1 0 obj
 <<
-/F1 2 0 R /F2 3 0 R /F3 4 0 R
+/Producer (pypdf)
+/Title (ServiceForce \174 Incident management system design and evaluation)
+/Subject (Current implementation\054 demo access\054 system design and evaluation)
 >>
 endobj
 2 0 obj
 <<
-/BaseFont /Helvetica /Encoding /WinAnsiEncoding /Name /F1 /Subtype /Type1 /Type /Font
+/Type /Pages
+/Count 8
+/Kids [ 5 0 R 11 0 R 13 0 R 15 0 R 17 0 R 19 0 R 21 0 R 22 0 R ]
 >>
 endobj
 3 0 obj
 <<
-/BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding /Name /F2 /Subtype /Type1 /Type /Font
+/Type /Catalog
+/Pages 2 0 R
 >>
 endobj
 4 0 obj
 <<
-/BaseFont /Helvetica-Oblique /Encoding /WinAnsiEncoding /Name /F3 /Subtype /Type1 /Type /Font
+/Length 3928
 >>
+stream
+1 0 0 1 0 0 cm  BT /F1 12 Tf 14.4 TL ET
+.929412 .960784 .94902 rg
+n 0 730 595 112 re f*
+.090196 .4 .360784 rg
+BT /F2 10 Tf 12 TL ET
+BT 1 0 0 1 42 798 Tm (SERVICEFORCE   /   SYSTEM DESIGN) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F2 26 Tf 31.2 TL ET
+BT 1 0 0 1 42 759 Tm (Problem and requirements) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F3 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 703 Tm (Project scope   /   shared organizational service desk) Tj T* ET
+.090196 .4 .360784 rg
+BT /F2 13 Tf 15.6 TL ET
+BT 1 0 0 1 42 672 Tm (Problem) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 651 Tm (A failing payment application can generate multiple reports before support knows its reach. A queue) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 635 Tm (ordered only by arrival can bury a widespread outage beneath routine requests. Separate channels also) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 619 Tm (make it difficult to identify who acknowledged the incident and when.) Tj T* ET
+.090196 .4 .360784 rg
+BT /F2 13 Tf 15.6 TL ET
+BT 1 0 0 1 42 590 Tm (Employee) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 569 Tm (Report an affected service, describe the symptoms, choose impact and urgency, follow progress,) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 553 Tm (answer questions, verify a resolution and give feedback. Employees need access to their own history.) Tj T* ET
+.090196 .4 .360784 rg
+BT /F2 13 Tf 15.6 TL ET
+BT 1 0 0 1 42 524 Tm (Technician) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 503 Tm (Review assigned work, acknowledge ownership, record investigations, ask for more information and) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 487 Tm (supply a resolution. Workload and upcoming commitments must be visible.) Tj T* ET
+.090196 .4 .360784 rg
+BT /F2 13 Tf 15.6 TL ET
+BT 1 0 0 1 42 458 Tm (Administrator) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 437 Tm (Manage the service catalog, users, categories, routing and SLA targets. Inspect individual incidents,) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 421 Tm (audit events, workload, deadline violations and service-level trends.) Tj T* ET
+.090196 .4 .360784 rg
+BT /F2 13 Tf 15.6 TL ET
+BT 1 0 0 1 42 392 Tm (Business rules) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 371 Tm (The server determines access from the authenticated user. Qualification, availability and active) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 355 Tm (workload guide routing. Response and resolution have separate targets. Completion follows) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 339 Tm (investigation and resolution, with reporter verification before closure.) Tj T* ET
+.090196 .4 .360784 rg
+BT /F2 13 Tf 15.6 TL ET
+BT 1 0 0 1 42 310 Tm (Quality and operating assumptions) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 289 Tm (This implementation targets a single organization and a modest departmental queue. It needs durable) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 273 Tm (records, safe simultaneous updates, keyboard-accessible forms, readable mobile layouts and a) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 257 Tm (reproducible installation. In-app notices and simulated email support a demonstration without a mail) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 241 Tm (provider.) Tj T* ET
+.090196 .4 .360784 rg
+BT /F1 9 Tf 10.8 TL ET
+BT 1 0 0 1 42 29 Tm (CS F213 / MAC F212     |     Intelligent IT Service Management) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 9 Tf 10.8 TL ET
+BT 1 0 0 1 539 29 Tm (1) Tj T* ET
+ 
+
+endstream
 endobj
 5 0 obj
 <<
-/Contents 15 0 R /MediaBox [ 0 0 595 842 ] /Parent 14 0 R /Resources <<
-/Font 1 0 R /ProcSet [ /PDF /Text /ImageB /ImageC /ImageI ]
->> /Rotate 0 /Trans <<
-
->> 
-  /Type /Page
+/Contents 4 0 R
+/MediaBox [ 0 0 595 842 ]
+/Resources <<
+/Font 6 0 R
+/ProcSet [ /PDF /Text /ImageB /ImageC /ImageI ]
+>>
+/Rotate 0
+/Trans <<
+>>
+/Type /Page
+/Parent 2 0 R
 >>
 endobj
 6 0 obj
 <<
-/Contents 16 0 R /MediaBox [ 0 0 595 842 ] /Parent 14 0 R /Resources <<
-/Font 1 0 R /ProcSet [ /PDF /Text /ImageB /ImageC /ImageI ]
->> /Rotate 0 /Trans <<
-
->> 
-  /Type /Page
+/F1 7 0 R
+/F2 8 0 R
+/F3 9 0 R
 >>
 endobj
 7 0 obj
 <<
-/Contents 17 0 R /MediaBox [ 0 0 595 842 ] /Parent 14 0 R /Resources <<
-/Font 1 0 R /ProcSet [ /PDF /Text /ImageB /ImageC /ImageI ]
->> /Rotate 0 /Trans <<
-
->> 
-  /Type /Page
+/BaseFont /Helvetica
+/Encoding /WinAnsiEncoding
+/Name /F1
+/Subtype /Type1
+/Type /Font
 >>
 endobj
 8 0 obj
 <<
-/Contents 18 0 R /MediaBox [ 0 0 595 842 ] /Parent 14 0 R /Resources <<
-/Font 1 0 R /ProcSet [ /PDF /Text /ImageB /ImageC /ImageI ]
->> /Rotate 0 /Trans <<
-
->> 
-  /Type /Page
+/BaseFont /Helvetica-Bold
+/Encoding /WinAnsiEncoding
+/Name /F2
+/Subtype /Type1
+/Type /Font
 >>
 endobj
 9 0 obj
 <<
-/Contents 19 0 R /MediaBox [ 0 0 595 842 ] /Parent 14 0 R /Resources <<
-/Font 1 0 R /ProcSet [ /PDF /Text /ImageB /ImageC /ImageI ]
->> /Rotate 0 /Trans <<
-
->> 
-  /Type /Page
+/BaseFont /Helvetica-Oblique
+/Encoding /WinAnsiEncoding
+/Name /F3
+/Subtype /Type1
+/Type /Font
 >>
 endobj
 10 0 obj
 <<
-/Contents 20 0 R /MediaBox [ 0 0 595 842 ] /Parent 14 0 R /Resources <<
-/Font 1 0 R /ProcSet [ /PDF /Text /ImageB /ImageC /ImageI ]
->> /Rotate 0 /Trans <<
-
->> 
-  /Type /Page
+/Length 5610
 >>
+stream
+1 0 0 1 0 0 cm  BT /F1 12 Tf 14.4 TL ET
+.929412 .960784 .94902 rg
+n 0 730 595 112 re f*
+.090196 .4 .360784 rg
+BT /F2 10 Tf 12 TL ET
+BT 1 0 0 1 42 798 Tm (SERVICEFORCE   /   SYSTEM DESIGN) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F2 26 Tf 31.2 TL ET
+BT 1 0 0 1 42 759 Tm (Architecture and technology) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F3 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 703 Tm (Three layers   /   one deployable application) Tj T* ET
+.945098 .964706 .956863 rg
+.52549 .65098 .615686 RG
+n
+46 572 m
+180 572 l
+183.3168 572 186 574.6832 186 578 c
+186 638 l
+186 641.3168 183.3168 644 180 644 c
+46 644 l
+42.6832 644 40 641.3168 40 638 c
+40 578 l
+40 574.6832 42.6832 572 46 572 c
+h
+B*
+.090196 .4 .360784 rg
+BT /F2 11 Tf 13.2 TL ET
+BT 1 0 0 1 50 624 Tm (Web client) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 50 606 Tm (HTML, CSS, JavaScript.) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 50 593 Tm (Forms, lists and) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 50 580 Tm (dashboards.) Tj T* ET
+.945098 .964706 .956863 rg
+.52549 .65098 .615686 RG
+n
+228 572 m
+366 572 l
+369.3168 572 372 574.6832 372 578 c
+372 638 l
+372 641.3168 369.3168 644 366 644 c
+228 644 l
+224.6832 644 222 641.3168 222 638 c
+222 578 l
+222 574.6832 224.6832 572 228 572 c
+h
+B*
+.090196 .4 .360784 rg
+BT /F2 11 Tf 13.2 TL ET
+BT 1 0 0 1 232 624 Tm (HTTP server) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 232 606 Tm (JSON API, session cookies) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 232 593 Tm (and static files.) Tj T* ET
+.945098 .964706 .956863 rg
+.52549 .65098 .615686 RG
+n
+415 572 m
+548 572 l
+551.3168 572 554 574.6832 554 578 c
+554 638 l
+554 641.3168 551.3168 644 548 644 c
+415 644 l
+411.6832 644 409 641.3168 409 638 c
+409 578 l
+409 574.6832 411.6832 572 415 572 c
+h
+B*
+.090196 .4 .360784 rg
+BT /F2 11 Tf 13.2 TL ET
+BT 1 0 0 1 419 624 Tm (Domain service) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 419 606 Tm (Authorization, lifecycle and) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 419 593 Tm (policies.) Tj T* ET
+.090196 .4 .360784 RG
+n 186 606 m 222 606 l S
+n 222 606 m 215.8569 609.356 l S
+n 222 606 m 215.8569 602.644 l S
+.090196 .4 .360784 RG
+n 372 606 m 409 606 l S
+n 409 606 m 402.8569 609.356 l S
+n 409 606 m 402.8569 602.644 l S
+.945098 .964706 .956863 rg
+.52549 .65098 .615686 RG
+n
+415 460 m
+548 460 l
+551.3168 460 554 462.6832 554 466 c
+554 522 l
+554 525.3168 551.3168 528 548 528 c
+415 528 l
+411.6832 528 409 525.3168 409 522 c
+409 466 l
+409 462.6832 411.6832 460 415 460 c
+h
+B*
+.090196 .4 .360784 rg
+BT /F2 11 Tf 13.2 TL ET
+BT 1 0 0 1 419 508 Tm (SQLite) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 419 490 Tm (Persistent operational) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 419 477 Tm (records.) Tj T* ET
+.090196 .4 .360784 RG
+n 479 572 m 479 528 l S
+n 479 528 m 482.356 534.1431 l S
+n 479 528 m 475.644 534.1431 l S
+.090196 .4 .360784 rg
+BT /F2 13 Tf 15.6 TL ET
+BT 1 0 0 1 42 425 Tm (Language and backend) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 404 Tm (Java 17 supplies interfaces, records, cryptography and an HTTP server. Gson handles JSON and the) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 388 Tm (SQLite JDBC driver handles persistence. Maven packages these dependencies with the browser) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 372 Tm (resources in one runnable JAR. JUnit tests exercise rules independently of the interface.) Tj T* ET
+.090196 .4 .360784 rg
+BT /F2 13 Tf 15.6 TL ET
+BT 1 0 0 1 42 343 Tm (Browser interface) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 322 Tm (Native controls and JavaScript let all three roles use the same browser entry point. The role-specific) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 306 Tm (views share the same server-side rules. React would add a component ecosystem and a build) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 290 Tm (toolchain.) Tj T* ET
+.090196 .4 .360784 rg
+BT /F2 13 Tf 15.6 TL ET
+BT 1 0 0 1 42 261 Tm (Storage and trade-offs) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 240 Tm (SQLite provides transactions and relational joins in one file. PostgreSQL would better support a large) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 224 Tm (number of concurrent writers. A document store would require additional care to maintain relationships) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 208 Tm (among users, services and incident events.) Tj T* ET
+.090196 .4 .360784 rg
+BT /F2 13 Tf 15.6 TL ET
+BT 1 0 0 1 42 179 Tm (Growth path) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 158 Tm (Move storage to PostgreSQL, paginate and index high-volume queries, give SLA polling a dedicated) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 142 Tm (worker, and deliver email through a retryable queue. Deploy behind HTTPS with a production server) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 126 Tm (and integrate organizational identity.) Tj T* ET
+.090196 .4 .360784 rg
+BT /F1 9 Tf 10.8 TL ET
+BT 1 0 0 1 42 29 Tm (CS F213 / MAC F212     |     Intelligent IT Service Management) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 9 Tf 10.8 TL ET
+BT 1 0 0 1 539 29 Tm (2) Tj T* ET
+ 
+
+endstream
 endobj
 11 0 obj
 <<
-/Contents 21 0 R /MediaBox [ 0 0 595 842 ] /Parent 14 0 R /Resources <<
-/Font 1 0 R /ProcSet [ /PDF /Text /ImageB /ImageC /ImageI ]
->> /Rotate 0 /Trans <<
-
->> 
-  /Type /Page
+/Contents 10 0 R
+/MediaBox [ 0 0 595 842 ]
+/Resources <<
+/Font 6 0 R
+/ProcSet [ /PDF /Text /ImageB /ImageC /ImageI ]
+>>
+/Rotate 0
+/Trans <<
+>>
+/Type /Page
+/Parent 2 0 R
 >>
 endobj
 12 0 obj
 <<
-/PageMode /UseNone /Pages 14 0 R /Type /Catalog
+/Length 6101
 >>
+stream
+1 0 0 1 0 0 cm  BT /F1 12 Tf 14.4 TL ET
+.929412 .960784 .94902 rg
+n 0 730 595 112 re f*
+.090196 .4 .360784 rg
+BT /F2 10 Tf 12 TL ET
+BT 1 0 0 1 42 798 Tm (SERVICEFORCE   /   SYSTEM DESIGN) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F2 26 Tf 31.2 TL ET
+BT 1 0 0 1 42 759 Tm (Roles and use cases) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F3 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 703 Tm (Use-case diagram   /   actions by primary actor) Tj T* ET
+.945098 .964706 .956863 rg
+.52549 .65098 .615686 RG
+n
+48 578 m
+161 578 l
+164.3168 578 167 580.6832 167 584 c
+167 625 l
+167 628.3168 164.3168 631 161 631 c
+48 631 l
+44.6832 631 42 628.3168 42 625 c
+42 584 l
+42 580.6832 44.6832 578 48 578 c
+h
+B*
+.090196 .4 .360784 rg
+BT /F2 11 Tf 13.2 TL ET
+BT 1 0 0 1 52 611 Tm (Employee) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 52 593 Tm (Authenticated user) Tj T* ET
+.52549 .65098 .615686 RG
+n
+548 650 m
+548 658.2843 483.0813 665 403 665 c
+322.9187 665 258 658.2843 258 650 c
+258 641.7157 322.9187 635 403 635 c
+483.0813 635 548 641.7157 548 650 c
+S
+BT /F1 11 Tf 13.2 TL ET
+.090196 .172549 .207843 rg
+BT 1 0 0 1 366.0125 647 Tm (Report incident) Tj T* ET
+.090196 .4 .360784 RG
+n 167 606 m 258 650 l S
+n 258 650 m 251.0086 650.3472 l S
+n 258 650 m 253.9303 644.3046 l S
+.52549 .65098 .615686 RG
+n
+548 609 m
+548 617.2843 483.0813 624 403 624 c
+322.9187 624 258 617.2843 258 609 c
+258 600.7157 322.9187 594 403 594 c
+483.0813 594 548 600.7157 548 609 c
+S
+BT /F1 11 Tf 13.2 TL ET
+.090196 .172549 .207843 rg
+BT 1 0 0 1 357.1465 606 Tm (Track and respond) Tj T* ET
+.090196 .4 .360784 RG
+n 167 606 m 258 609 l S
+n 258 609 m 251.7497 612.1517 l S
+n 258 609 m 251.9708 605.4434 l S
+.52549 .65098 .615686 RG
+n
+548 568 m
+548 576.2843 483.0813 583 403 583 c
+322.9187 583 258 576.2843 258 568 c
+258 559.7157 322.9187 553 403 553 c
+483.0813 553 548 559.7157 548 568 c
+S
+BT /F1 11 Tf 13.2 TL ET
+.090196 .172549 .207843 rg
+BT 1 0 0 1 342.775 565 Tm (Verify and give feedback) Tj T* ET
+.090196 .4 .360784 RG
+n 167 606 m 258 568 l S
+n 258 568 m 253.6245 573.464 l S
+n 258 568 m 251.0381 567.2703 l S
+.945098 .964706 .956863 rg
+.52549 .65098 .615686 RG
+n
+48 421 m
+161 421 l
+164.3168 421 167 423.6832 167 427 c
+167 468 l
+167 471.3168 164.3168 474 161 474 c
+48 474 l
+44.6832 474 42 471.3168 42 468 c
+42 427 l
+42 423.6832 44.6832 421 48 421 c
+h
+B*
+.090196 .4 .360784 rg
+BT /F2 11 Tf 13.2 TL ET
+BT 1 0 0 1 52 454 Tm (Technician) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 52 436 Tm (Authenticated user) Tj T* ET
+.52549 .65098 .615686 RG
+n
+548 493 m
+548 501.2843 483.0813 508 403 508 c
+322.9187 508 258 501.2843 258 493 c
+258 484.7157 322.9187 478 403 478 c
+483.0813 478 548 484.7157 548 493 c
+S
+BT /F1 11 Tf 13.2 TL ET
+.090196 .172549 .207843 rg
+BT 1 0 0 1 357.152 490 Tm (Acknowledge work) Tj T* ET
+.090196 .4 .360784 RG
+n 167 449 m 258 493 l S
+n 258 493 m 251.0086 493.3472 l S
+n 258 493 m 253.9303 487.3046 l S
+.52549 .65098 .615686 RG
+n
+548 452 m
+548 460.2843 483.0813 467 403 467 c
+322.9187 467 258 460.2843 258 452 c
+258 443.7157 322.9187 437 403 437 c
+483.0813 437 548 443.7157 548 452 c
+S
+BT /F1 11 Tf 13.2 TL ET
+.090196 .172549 .207843 rg
+BT 1 0 0 1 328.4035 449 Tm (Investigate and request details) Tj T* ET
+.090196 .4 .360784 RG
+n 167 449 m 258 452 l S
+n 258 452 m 251.7497 455.1517 l S
+n 258 452 m 251.9708 448.4434 l S
+.52549 .65098 .615686 RG
+n
+548 411 m
+548 419.2843 483.0813 426 403 426 c
+322.9187 426 258 419.2843 258 411 c
+258 402.7157 322.9187 396 403 396 c
+483.0813 396 548 402.7157 548 411 c
+S
+BT /F1 11 Tf 13.2 TL ET
+.090196 .172549 .207843 rg
+BT 1 0 0 1 348.286 408 Tm (Resolve with evidence) Tj T* ET
+.090196 .4 .360784 RG
+n 167 449 m 258 411 l S
+n 258 411 m 253.6245 416.464 l S
+n 258 411 m 251.0381 410.2703 l S
+.945098 .964706 .956863 rg
+.52549 .65098 .615686 RG
+n
+48 264 m
+161 264 l
+164.3168 264 167 266.6832 167 270 c
+167 311 l
+167 314.3168 164.3168 317 161 317 c
+48 317 l
+44.6832 317 42 314.3168 42 311 c
+42 270 l
+42 266.6832 44.6832 264 48 264 c
+h
+B*
+.090196 .4 .360784 rg
+BT /F2 11 Tf 13.2 TL ET
+BT 1 0 0 1 52 297 Tm (Administrator) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 52 279 Tm (Authenticated user) Tj T* ET
+.52549 .65098 .615686 RG
+n
+548 336 m
+548 344.2843 483.0813 351 403 351 c
+322.9187 351 258 344.2843 258 336 c
+258 327.7157 322.9187 321 403 321 c
+483.0813 321 548 327.7157 548 336 c
+S
+BT /F1 11 Tf 13.2 TL ET
+.090196 .172549 .207843 rg
+BT 1 0 0 1 326.891 333 Tm (Configure services and policies) Tj T* ET
+.090196 .4 .360784 RG
+n 167 292 m 258 336 l S
+n 258 336 m 251.0086 336.3472 l S
+n 258 336 m 253.9303 330.3046 l S
+.52549 .65098 .615686 RG
+n
+548 295 m
+548 303.2843 483.0813 310 403 310 c
+322.9187 310 258 303.2843 258 295 c
+258 286.7157 322.9187 280 403 280 c
+483.0813 280 548 286.7157 548 295 c
+S
+BT /F1 11 Tf 13.2 TL ET
+.090196 .172549 .207843 rg
+BT 1 0 0 1 339.1065 292 Tm (Manage users and routing) Tj T* ET
+.090196 .4 .360784 RG
+n 167 292 m 258 295 l S
+n 258 295 m 251.7497 298.1517 l S
+n 258 295 m 251.9708 291.4434 l S
+.52549 .65098 .615686 RG
+n
+548 254 m
+548 262.2843 483.0813 269 403 269 c
+322.9187 269 258 262.2843 258 254 c
+258 245.7157 322.9187 239 403 239 c
+483.0813 239 548 245.7157 548 254 c
+S
+BT /F1 11 Tf 13.2 TL ET
+.090196 .172549 .207843 rg
+BT 1 0 0 1 342.17 251 Tm (Review reports and audit) Tj T* ET
+.090196 .4 .360784 RG
+n 167 292 m 258 254 l S
+n 258 254 m 253.6245 259.464 l S
+n 258 254 m 251.0381 253.2703 l S
+.090196 .4 .360784 rg
+BT /F2 13 Tf 15.6 TL ET
+BT 1 0 0 1 42 190 Tm (Trust boundary) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 169 Tm (Navigation exposes the relevant tasks for the current role. Each write and each read of private incident) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 153 Tm (data also requires a server-side authorization decision. The API is the boundary that protects records.) Tj T* ET
+.090196 .4 .360784 rg
+BT /F1 9 Tf 10.8 TL ET
+BT 1 0 0 1 42 29 Tm (CS F213 / MAC F212     |     Intelligent IT Service Management) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 9 Tf 10.8 TL ET
+BT 1 0 0 1 539 29 Tm (3) Tj T* ET
+ 
+
+endstream
 endobj
 13 0 obj
 <<
-/Author (anonymous) /CreationDate (D:20261113161825+05'00') /Creator (anonymous) /Keywords () /ModDate (D:20261113161825+05'00') /Producer (ReportLab PDF Library - \(opensource\)) 
-  /Subject (unspecified) /Title (Relay | Incident management system design and evaluation) /Trapped /False
+/Contents 12 0 R
+/MediaBox [ 0 0 595 842 ]
+/Resources <<
+/Font 6 0 R
+/ProcSet [ /PDF /Text /ImageB /ImageC /ImageI ]
+>>
+/Rotate 0
+/Trans <<
+>>
+/Type /Page
+/Parent 2 0 R
 >>
 endobj
 14 0 obj
 <<
-/Count 7 /Kids [ 5 0 R 6 0 R 7 0 R 8 0 R 9 0 R 10 0 R 11 0 R ] /Type /Pages
+/Length 6375
 >>
+stream
+1 0 0 1 0 0 cm  BT /F1 12 Tf 14.4 TL ET
+.929412 .960784 .94902 rg
+n 0 730 595 112 re f*
+.090196 .4 .360784 rg
+BT /F2 10 Tf 12 TL ET
+BT 1 0 0 1 42 798 Tm (SERVICEFORCE   /   SYSTEM DESIGN) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F2 26 Tf 31.2 TL ET
+BT 1 0 0 1 42 759 Tm (Domain model) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F3 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 703 Tm (Class diagram   /   policy contracts and collaborating objects) Tj T* ET
+.945098 .964706 .956863 rg
+.52549 .65098 .615686 RG
+n
+194 584 m
+401 584 l
+404.3168 584 407 586.6832 407 590 c
+407 653 l
+407 656.3168 404.3168 659 401 659 c
+194 659 l
+190.6832 659 188 656.3168 188 653 c
+188 590 l
+188 586.6832 190.6832 584 194 584 c
+h
+B*
+.090196 .4 .360784 rg
+BT /F2 11 Tf 13.2 TL ET
+BT 1 0 0 1 198 639 Tm (Desk) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 198 621 Tm (database, incidents; snapshot\(\), mutate\(\),) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 198 608 Tm (monitor\(\)) Tj T* ET
+.945098 .964706 .956863 rg
+.52549 .65098 .615686 RG
+n
+44 444 m
+189 444 l
+192.3168 444 195 446.6832 195 450 c
+195 516 l
+195 519.3168 192.3168 522 189 522 c
+44 522 l
+40.6832 522 38 519.3168 38 516 c
+38 450 l
+38 446.6832 40.6832 444 44 444 c
+h
+B*
+.090196 .4 .360784 rg
+BT /F2 11 Tf 13.2 TL ET
+BT 1 0 0 1 48 502 Tm (AssignmentStrategy) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 48 484 Tm (choose\(candidates, category\);) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 48 471 Tm (ranking\(category\)) Tj T* ET
+.945098 .964706 .956863 rg
+.52549 .65098 .615686 RG
+n
+228 444 m
+369 444 l
+372.3168 444 375 446.6832 375 450 c
+375 516 l
+375 519.3168 372.3168 522 369 522 c
+228 522 l
+224.6832 522 222 519.3168 222 516 c
+222 450 l
+222 446.6832 224.6832 444 228 444 c
+h
+B*
+.090196 .4 .360784 rg
+BT /F2 11 Tf 13.2 TL ET
+BT 1 0 0 1 232 502 Tm (Incidents) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 232 484 Tm (create\(\), transition\(\), act\(\);) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 232 471 Tm (NEXT defines legal steps.) Tj T* ET
+.945098 .964706 .956863 rg
+.52549 .65098 .615686 RG
+n
+405 444 m
+550 444 l
+553.3168 444 556 446.6832 556 450 c
+556 516 l
+556 519.3168 553.3168 522 550 522 c
+405 522 l
+401.6832 522 399 519.3168 399 516 c
+399 450 l
+399 446.6832 401.6832 444 405 444 c
+h
+B*
+.090196 .4 .360784 rg
+BT /F2 11 Tf 13.2 TL ET
+BT 1 0 0 1 409 502 Tm (IncidentEvent.Observer) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 409 484 Tm (record\(connection, event\)) Tj T* ET
+.090196 .4 .360784 RG
+n 298 584 m 299 522 l S
+n 299 522 m 302.2565 528.1964 l S
+n 299 522 m 295.5454 528.0882 l S
+.090196 .4 .360784 RG
+n 222 480 m 195 480 l S
+n 195 480 m 201.1431 476.644 l S
+n 195 480 m 201.1431 483.356 l S
+.090196 .4 .360784 RG
+n 375 480 m 399 480 l S
+n 399 480 m 392.8569 483.356 l S
+n 399 480 m 392.8569 476.644 l S
+.945098 .964706 .956863 rg
+.52549 .65098 .615686 RG
+n
+42 304 m
+188 304 l
+191.3168 304 194 306.6832 194 310 c
+194 373 l
+194 376.3168 191.3168 379 188 379 c
+42 379 l
+38.6832 379 36 376.3168 36 373 c
+36 310 l
+36 306.6832 38.6832 304 42 304 c
+h
+B*
+.090196 .4 .360784 rg
+BT /F2 11 Tf 13.2 TL ET
+BT 1 0 0 1 46 359 Tm (SkillFirst) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 46 341 Tm (Rank by category match, then) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 46 328 Tm (workload.) Tj T* ET
+.945098 .964706 .956863 rg
+.52549 .65098 .615686 RG
+n
+42 200 m
+188 200 l
+191.3168 200 194 202.6832 194 206 c
+194 269 l
+194 272.3168 191.3168 275 188 275 c
+42 275 l
+38.6832 275 36 272.3168 36 269 c
+36 206 l
+36 202.6832 38.6832 200 42 200 c
+h
+B*
+.090196 .4 .360784 rg
+BT /F2 11 Tf 13.2 TL ET
+BT 1 0 0 1 46 255 Tm (LeastLoad) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 46 237 Tm (Prefer fewer active cases.) Tj T* ET
+.945098 .964706 .956863 rg
+.52549 .65098 .615686 RG
+n
+405 304 m
+550 304 l
+553.3168 304 556 306.6832 556 310 c
+556 373 l
+556 376.3168 553.3168 379 550 379 c
+405 379 l
+401.6832 379 399 376.3168 399 373 c
+399 310 l
+399 306.6832 401.6832 304 405 304 c
+h
+B*
+.090196 .4 .360784 rg
+BT /F2 11 Tf 13.2 TL ET
+BT 1 0 0 1 409 359 Tm (AuditLog) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 409 341 Tm (Persist actor, timestamp,) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 409 328 Tm (incident and change.) Tj T* ET
+.945098 .964706 .956863 rg
+.52549 .65098 .615686 RG
+n
+405 200 m
+550 200 l
+553.3168 200 556 202.6832 556 206 c
+556 269 l
+556 272.3168 553.3168 275 550 275 c
+405 275 l
+401.6832 275 399 272.3168 399 269 c
+399 206 l
+399 202.6832 401.6832 200 405 200 c
+h
+B*
+.090196 .4 .360784 rg
+BT /F2 11 Tf 13.2 TL ET
+BT 1 0 0 1 409 255 Tm (NotificationOutbox) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 409 237 Tm (Record messages for relevant) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 409 224 Tm (recipients.) Tj T* ET
+.090196 .4 .360784 RG
+n 115 379 m 115 444 l S
+n 115 444 m 111.644 437.8569 l S
+n 115 444 m 118.356 437.8569 l S
+n 36 240 m 25 240 l S
+n 25 240 m 25 462 l S
+.090196 .4 .360784 RG
+n 25 462 m 38 462 l S
+n 38 462 m 31.85692 465.356 l S
+n 38 462 m 31.85692 458.644 l S
+.090196 .4 .360784 RG
+n 477 379 m 477 444 l S
+n 477 444 m 473.644 437.8569 l S
+n 477 444 m 480.356 437.8569 l S
+n 556 240 m 568 240 l S
+n 568 240 m 568 462 l S
+.090196 .4 .360784 RG
+n 568 462 m 556 462 l S
+n 556 462 m 562.1431 458.644 l S
+n 556 462 m 562.1431 465.356 l S
+.090196 .4 .360784 rg
+BT /F2 13 Tf 15.6 TL ET
+BT 1 0 0 1 42 156 Tm (Composition and polymorphism) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 135 Tm (The domain service coordinates guards, assignment and event handling. Strategies implement the) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 119 Tm (same selection contract. Incidents associate a reporter, affected service and assigned technician; each) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 103 Tm (user or service can participate in many incidents.) Tj T* ET
+.090196 .4 .360784 rg
+BT /F1 9 Tf 10.8 TL ET
+BT 1 0 0 1 42 29 Tm (CS F213 / MAC F212     |     Intelligent IT Service Management) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 9 Tf 10.8 TL ET
+BT 1 0 0 1 539 29 Tm (4) Tj T* ET
+ 
+
+endstream
 endobj
 15 0 obj
 <<
-/Filter [ /ASCII85Decode /FlateDecode ] /Length 1566
+/Contents 14 0 R
+/MediaBox [ 0 0 595 842 ]
+/Resources <<
+/Font 6 0 R
+/ProcSet [ /PDF /Text /ImageB /ImageC /ImageI ]
 >>
-stream
-Gatm:@;jmY&H/2-E?D[,;(]nqUQ9,U%KW#,M[^*n84t=u%7R:mAAc<6r#SG?8;D:m!6'b1b7sd?hRduudLr`?>cWnKh2^?@81Desf20%N<j_`pGIsoObfU[g-KTQa\QRm><A$)5m?P\TRs[dr=\stjQDo.NPq:*i>-8/N,^Fb?CW#QXV9?)i2XQL9klbL]dAFRM>t7+BhL3'86ptt`^\tOqh*'+<GME"%J,>XWT5"$HTXpYVDR*_O;Ngj>nn1I(CO]<T-Jphb.)TK.>I.DdOjGrepbGIb*UCPTiiF-ILTp@<S[HZpB78oW+BOu&VZ>O==K]cu<bV;q(o5PGO^ia&'iWBFkp7T.ju*_mMIcZ0M"N*A*q1]>97IZ5\k'`i\'t\_Ui*.JB:hU*IBR/rU7t7nC0@kX"&h.Y62$1uoA8-9d@M9Z!P,K0hs!_%P9Yo+/;reTcn0Y`H/r+:k='o<Cs@M5Xj4:<PH\(/6%T?S+"_BW8V2d?:p=[S7*EBH=UYP@pb"E/mB@O76<ikHLp8uHX][Xsb*cC`Vbt'sG[f`iC=tGL6:PZC"Jg@*c'_<36_a..<*ZngD`D.4Y/5d`pX=\916]A.EZ$ReFhKPCSs?6`*TMPV=oi^X9nPc!9N.W9I&0eCmQ!]"c<WZ%c7Qh_0b.W9]r5DeUP/uSo7@mUPW;TZ9l&Fm`N4lR=Re_i'3bgl5Rd_?Of^!$5VUK^0iWm_e]K-'PI]P&Z\0rFFJNme4B@!rks]jFOu[5;82hB4SrLO%'d2tT3bVYfTk@*@A:]ehP^F\6S8:%a3uRq&GV2o:)I%EIr;nFJ:n,hudAO/_;[S5*!dU(mD\uC4@j`mSS.kMZAeQkF:K$(JQI)6(Xpk4NBWA70kC!kZSK'ruJ]5/#2F0jt,TM"\SlS;HP.*;DKEP[?`m,KG*lEF<g)F=rVl:]Qab;M;Jk"PceHMFXNKoIKd0SKgO6stl)?^Dlqr,53^$g8FfCC?U&^G]BTm;Q6Q,PX,`Yt_qa)F:?Qm^$\KW(11lD$0cMCG3hU:XHN7+#CFf5<4LnhPCEGGE't-t,1eIa)j%_l30$N-[GQ"M:XY@,(MK0#l:@dfh);Lb&=SB<D_$-M.NkOj2CQ;-laLENr"Y+3l#oE))eLXI+puGq[rL4$jGo#po5"Ad`d,R``>_jZsl7OAgZ-Wj)4%DTQ<U2"c,-SB('hN=Ggo).Y)m0G#-:(^MaD)18=/VGbEnFuCG`e(AUAHP9<p/!65rL!G\AJR7AXjs%Dd-a?8+S#Qh5EX[#`"$R$j[i"M(ca6P?Y\`rG$nS!e@$<9s0\=,fL=#3*eY<lKb?87l@eY]g"fC3G"!L6#KaQ(:FKk6QR_hirI,5fNlg%Y6hR\-En\^$Ps#`,kJb!2HiXEdq'+qS1/N+8K9IKL8"V=QnUam@MGL^I;f;&jjR3s*JnV"L9%OM$qQ57Pc#9ikCiMl<E"`@*@QHb;6'tjmOiUlW*s/5OSb-:7g\TrJT.(].WqN.C#hU9=/HiGfFs7^`IhWo`XP-(?nmroVcA&jI$bU`'\EW-37!d66u8tYKB=8r9Qh_<m~>endstream
+/Rotate 0
+/Trans <<
+>>
+/Type /Page
+/Parent 2 0 R
+>>
 endobj
 16 0 obj
 <<
-/Filter [ /ASCII85Decode /FlateDecode ] /Length 2049
+/Length 6940
 >>
 stream
-Gatm<>BcPr&:XAWR)e#(LOp)i4?Ah+a[s(sfR*>a&VFn50qo:+oq)-P4!P'dRl3joP+9H8=jf6tq;q_Zq"Peqs4IV7F9-=;"V<@iX<?FBLW'^-/4Ns_&rs;)')RkAa%r<%%+KT&j3C6[6^0tMi!Lc<ok*:\M'!uthuR.t\):G23eP4,V_`NTc3@#Qc<uf/@BkC@mOrHi*s(:Orlm[Q(DjQ"IPJUKr9ud!5/H6<dAf\C-7n-_G`7a$""4ou<#Bl+J45:qS#NJ;>EQ<6Wh7j&TNp!PP3_KIE$6.8gamg_c4:B>U/40AQ#;<(mY\:cOGg!!gN6Sl%S]le=k]1I5#`Z`OcT3%0CXgZMBl%]NK"!GA6"NSJiKEAi;RarO*D)\KY_779RS-c."ttE`)AH#VR1l#nMKS;;ohER`So=J7Yq@na)5\:3REWTR1T]2eVH#.&<437ha_]XkAoG[<*!tBr@ZO=l'mZidHPF?HGSGM!]"Z[rO5lq<gBCsO76cN!`/&sZp1,[IW9]jL9p]'%+j`23mUdY[,,a];.;QW:9'9p6WNDP'1E-o5UR12T'Bc6;jD.eQT<+=e<)AB@n4*a:A1Ik-Z&7"4!8R*A4^F0SijWe`%!gqP)`?ilPSZ/g+dcTeI2lV8@$IGP2!7r8o"$Fs!mg]WT)S)I^-Bb/_#DL"$+VrmeCuhs5O4*m]OP8Tf(s?aJA`=$9]M4cU#^4]#Cb8_5aTT!'K4+jEM=-WT-Pa"ach/&`:4C%`jt^=e6J0GP5o)d==u6aU(gLFp`i=oTU?XVdu-eP$Nf7%T69@e`8-VpTO.@#K_uRkAlcP[:)[qM1OGp!$#!N?!Bj"raX(XV37+b[TOm\9IBtpZ_`dd_TF5Wq:8B\"&jA6c&I]aPU`'\Hp>LD+S)C,9XhiC&A>RRM[=YJ(HdIcZA[CJr4^)77l8Q+L\KU.#C&HR"[)Ka'TdDJ"Z.Kfo9ep?J7B(r;%PJEU&`Mh&d8kY1N#Eo'TdDJ"Z/%]n$h!OF&>1NQ'9ja-m5pD]n_DqaL?TTr6H>K`!3"^2QGot4)D@0G[_<dZ4Y4^6!=^(1mo1',r5;'Ld"0n5"TSeZP#:=ZHS;II``)rU6'^&%ted:9HqBgs"/KK';;r?DYn=8b#r8XEKeu>/m[4\GaW09`N`S*j^snW2XOAn"Mk4_7m4'&:tDaFX#(LBmPnF2+]I-mQ"uXC`R\^eeo4Gf4h0!Dq?m-)lOoSZB_qM`81M<SF#Z<..9rL;SjBMO<+#seoJFaE#IirMW1cN;Tcl:-UJ75=VSiX[fuLBMBHEI353cW>KNGNLAm%H8fr<2_ei[WEY--#Z`qA]TKBp;;ZGe14C+R>*Ts@SFP00lpQ#3QRaHb.pkFYfmrkj[&\LeYrec^>M6&i^^0g9"'56u(gl;l$L[*f2=4&hr.[&WVioSA5PcjCfIK.a=Uc-B+8-;du\,V&,rU9JE/F<e)3<G$kum`P8k.3:A1,#nm5=SeZR13YqRi*N3^$]hTo0M6B`_olp9oK-YK$n&_WG&D+)_6PSl6)0mZCthQbAHhc`6]m&@JIT:nW]hr@.a>qh>cj$&G$hc]pCDnh;=XaiWsPoZBNhJVQ8V?7Y):"BjM<I]W&OG.:?m#)"J4V#YnSe\g>k8nOC_7bC-<ucRHl-aDR2_VN)ug#egX%jIoLY3L&@<(0!fF_EuL#eS9deTkt6:#OlrRQ<G&0VJbmf\HIMl5\gX%VD=4ER\rlZS!`&!"h[*LsQ^BFI6X`Zfm;(8FLM7Jsll2Tj$u=)*:"g@MhCFEK]l#.Y*:9\_(>Y0aN0rq::0Z\[R>\7FPj@>i6!!1qpsKIK;Cu-PhO<?G0^2P:M.TAbPiVJ&8.6ER!OnKf;6%r/NK%,PW(`Hi8-P1sA[a9g!@9E-RSn`PG0'N$o*u/=?JnOOKq@$;QVnsfSI(p\H5_6$Bbp.Y;5o"PVgoPJC7WrDJHu!e#ZS7e+!aV^M8Ahtkqflq5b?6Z*CH:/L"k8uM%&V2?h=:)F[9rJM7H[qQs30m@o+B`2TNOoH9n/O9R;EF_3m"R%hg6`Pl~>endstream
+1 0 0 1 0 0 cm  BT /F1 12 Tf 14.4 TL ET
+.929412 .960784 .94902 rg
+n 0 730 595 112 re f*
+.090196 .4 .360784 rg
+BT /F2 10 Tf 12 TL ET
+BT 1 0 0 1 42 798 Tm (SERVICEFORCE   /   SYSTEM DESIGN) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F2 26 Tf 31.2 TL ET
+BT 1 0 0 1 42 759 Tm (Data design) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F3 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 703 Tm (Entity relationships   /   arrows point from child to parent) Tj T* ET
+.945098 .964706 .956863 rg
+.52549 .65098 .615686 RG
+n
+46 589 m
+180 589 l
+183.3168 589 186 591.6832 186 595 c
+186 648 l
+186 651.3168 183.3168 654 180 654 c
+46 654 l
+42.6832 654 40 651.3168 40 648 c
+40 595 l
+40 591.6832 42.6832 589 46 589 c
+h
+B*
+.090196 .4 .360784 rg
+BT /F2 11 Tf 13.2 TL ET
+BT 1 0 0 1 50 634 Tm (users) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 50 616 Tm (PK id; role, email, skill,) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 50 603 Tm (capacity) Tj T* ET
+.945098 .964706 .956863 rg
+.52549 .65098 .615686 RG
+n
+230 589 m
+364 589 l
+367.3168 589 370 591.6832 370 595 c
+370 648 l
+370 651.3168 367.3168 654 364 654 c
+230 654 l
+226.6832 654 224 651.3168 224 648 c
+224 595 l
+224 591.6832 226.6832 589 230 589 c
+h
+B*
+.090196 .4 .360784 rg
+BT /F2 11 Tf 13.2 TL ET
+BT 1 0 0 1 234 634 Tm (services) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 234 616 Tm (PK id; category, criticality) Tj T* ET
+.945098 .964706 .956863 rg
+.52549 .65098 .615686 RG
+n
+415 589 m
+549 589 l
+552.3168 589 555 591.6832 555 595 c
+555 648 l
+555 651.3168 552.3168 654 549 654 c
+415 654 l
+411.6832 654 409 651.3168 409 648 c
+409 595 l
+409 591.6832 411.6832 589 415 589 c
+h
+B*
+.090196 .4 .360784 rg
+BT /F2 11 Tf 13.2 TL ET
+BT 1 0 0 1 419 634 Tm (policies) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 419 616 Tm (PK priority; target minutes) Tj T* ET
+.945098 .964706 .956863 rg
+.52549 .65098 .615686 RG
+n
+221 458 m
+374 458 l
+377.3168 458 380 460.6832 380 464 c
+380 527 l
+380 530.3168 377.3168 533 374 533 c
+221 533 l
+217.6832 533 215 530.3168 215 527 c
+215 464 l
+215 460.6832 217.6832 458 221 458 c
+h
+B*
+.090196 .4 .360784 rg
+BT /F2 11 Tf 13.2 TL ET
+BT 1 0 0 1 225 513 Tm (incidents) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 225 495 Tm (PK id; reporter, technician,) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 225 482 Tm (service, status, deadlines) Tj T* ET
+.090196 .4 .360784 RG
+n 298 533 m 115 589 l S
+n 115 589 m 119.8922 583.9933 l S
+n 115 589 m 121.8562 590.4115 l S
+.090196 .4 .360784 RG
+n 298 533 m 298 589 l S
+n 298 589 m 294.644 582.8569 l S
+n 298 589 m 301.356 582.8569 l S
+.090196 .4 .360784 RG
+n 298 533 m 478 589 l S
+n 478 589 m 471.1373 590.3796 l S
+n 478 589 m 473.1312 583.9706 l S
+.945098 .964706 .956863 rg
+.52549 .65098 .615686 RG
+n
+46 332 m
+179 332 l
+182.3168 332 185 334.6832 185 338 c
+185 398 l
+185 401.3168 182.3168 404 179 404 c
+46 404 l
+42.6832 404 40 401.3168 40 398 c
+40 338 l
+40 334.6832 42.6832 332 46 332 c
+h
+B*
+.090196 .4 .360784 rg
+BT /F2 11 Tf 13.2 TL ET
+BT 1 0 0 1 50 384 Tm (audit) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 50 366 Tm (PK id; incident, actor,) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 50 353 Tm (action, state change, time) Tj T* ET
+.090196 .4 .360784 RG
+n 113 404 m 295 458 l S
+n 295 458 m 288.1561 459.47 l S
+n 295 458 m 290.0653 453.0353 l S
+.945098 .964706 .956863 rg
+.52549 .65098 .615686 RG
+n
+230 332 m
+363 332 l
+366.3168 332 369 334.6832 369 338 c
+369 398 l
+369 401.3168 366.3168 404 363 404 c
+230 404 l
+226.6832 404 224 401.3168 224 398 c
+224 338 l
+224 334.6832 226.6832 332 230 332 c
+h
+B*
+.090196 .4 .360784 rg
+BT /F2 11 Tf 13.2 TL ET
+BT 1 0 0 1 234 384 Tm (notifications) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 234 366 Tm (PK id; incident, recipient,) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 234 353 Tm (channel, message, time) Tj T* ET
+.090196 .4 .360784 RG
+n 297 404 m 295 458 l S
+n 295 458 m 291.8737 451.7369 l S
+n 295 458 m 298.581 451.9853 l S
+.945098 .964706 .956863 rg
+.52549 .65098 .615686 RG
+n
+415 332 m
+548 332 l
+551.3168 332 554 334.6832 554 338 c
+554 398 l
+554 401.3168 551.3168 404 548 404 c
+415 404 l
+411.6832 404 409 401.3168 409 398 c
+409 338 l
+409 334.6832 411.6832 332 415 332 c
+h
+B*
+.090196 .4 .360784 rg
+BT /F2 11 Tf 13.2 TL ET
+BT 1 0 0 1 419 384 Tm (sla_events) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 419 366 Tm (Composite key: incident,) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 419 353 Tm (target and kind) Tj T* ET
+.090196 .4 .360784 RG
+n 482 404 m 295 458 l S
+n 295 458 m 299.9709 453.0715 l S
+n 295 458 m 301.833 459.5199 l S
+.090196 .4 .360784 rg
+BT /F2 13 Tf 15.6 TL ET
+BT 1 0 0 1 42 315 Tm (Additional relationships) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 294 Tm (Categories are a shared vocabulary for incidents and services. A related incident points to another) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 278 Tm (incident. The settings table stores the selected assignment strategy. A notification belongs to one user;) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 262 Tm (an incident can generate many messages and audit events.) Tj T* ET
+.090196 .4 .360784 rg
+BT /F2 13 Tf 15.6 TL ET
+BT 1 0 0 1 42 233 Tm (Seed data) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 212 Tm (The local demonstration includes a payment gateway \(criticality 3\), an analytics database \(2\) and) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 196 Tm (workplace devices \(1\). The seeded checkout timeout case shows a high-impact, high-urgency problem) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 180 Tm (awaiting acknowledgement. Seed users include an employee, an administrator and technicians with) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 164 Tm (different skills.) Tj T* ET
+.090196 .4 .360784 rg
+BT /F2 13 Tf 15.6 TL ET
+BT 1 0 0 1 42 135 Tm (Schema and integrity) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 114 Tm (The executable schema in src/main/resources/schema.sql specifies every column, key and index. One) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 98 Tm (transaction covers the incident change, audit entries and notification rows. A composite key prevents) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 82 Tm (duplicate warnings for the same case, target and warning kind.) Tj T* ET
+.090196 .4 .360784 rg
+BT /F1 9 Tf 10.8 TL ET
+BT 1 0 0 1 42 29 Tm (CS F213 / MAC F212     |     Intelligent IT Service Management) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 9 Tf 10.8 TL ET
+BT 1 0 0 1 539 29 Tm (5) Tj T* ET
+ 
+
+endstream
 endobj
 17 0 obj
 <<
-/Filter [ /ASCII85Decode /FlateDecode ] /Length 2155
+/Contents 16 0 R
+/MediaBox [ 0 0 595 842 ]
+/Resources <<
+/Font 6 0 R
+/ProcSet [ /PDF /Text /ImageB /ImageC /ImageI ]
 >>
-stream
-Gatm<D/\/e&H;*)_2hfOWdL0.1%!C55[+YV2kV6mR;oUf;C9N-1@3'MmRUNei4;MG(+jeemtLMknY%3FLVJH?YI9D'?F!XN"V[%NDj\n>B$9r8Ek08]F;g`_cLSWp0P\WSldgsu1ipX(EJ=d%d<Tp,@ZbZNKsM0rA1FOn>-]cKi+-+_g[J1\0XPB$/(emcIee*]ro,_DlkTH1rd;Dlr4mcn]Y8^dnQ30sM_/:4<6:'>V9t<7&j<4N.r!Cr'%o46)&JgN)rJ!-=g;9$=]P10ItemG)lF^UDn4hah#,RsQY;nkl>k^GgUOr&)X=cqfp>3Pf@AW]Hc/Ek2\!T;_]^gtJ":Wd`>Ml^$6_2K-lWq(J\SEbmhX/7(X1qDgFe-o1u#f>B1ghGK<R?l"j_"YA/$l$(-&YKct]'c6"@*5'iYH@`3DWV38#ji%Ydf3:%.agDK)Et#FdE(DNbjU'B?21[u8kqX.^1E2rG6sLQ#SXml'R.pWl*'S>]5fCg=dH@Q3*=AuMbNn5M:NE.&Z=KD@8B5RFb@PNZ9g.cZ4ZbZ_n@%qE"D;J&Z<3Jl0X'S6<j]:bQ-=Y<Cn7KjOo-qaHp4G`&X.AV3g`V"][oA#p4=\=^[2WFk#L(Xr$jmUo@@!,Du.nJ2F$q=nb3E1VHb'UbXhM,=Ro-E:9O`:lQ">Nh9QUb)TbUM=-Pa:=_dYdK:_HfJrjE!_b%[iRX!"fdaCJl8UlpO6$T-7ZKY_1s=&JRS<I"DXWq.W5jSd>jkK/l@gQ<dXAV/rg2rE\0ZSrX0\2T[qUNA/J^K4RA]_MJ-R$C>fJ9r>>H:Vd10Ll'7@$klR<O@pE<R%T7ApBi1u,%>#?Rq#p%*MX)u!Ke?LKbViN0[VZ!F(dmj"X3]jGP03*@C!')JNUVQI0#S(N=:P#k+.Z*]`<0^hK"lqX,ef^G#AL6C_j#fH&@.J;7=kM7(0qbKPaQ(E4&XigM!!F[aDO>Cnl&+@iLtS@N-;DD/_89%8'faH8m:FDupM-@A47b#31R1Sq1acd@n7$FkbDG>rLm+)m/I&o8Nt"MOh])]T]!=W<7Bbcq,?XR3VqMcq`dM?0GE=krdVG7,WF`-rL=B+iSN"dg\+oGfW_S[:p^@I^Sn9U$\H*6!CnQ5oA2*+I'6qDa9ia9j//)7Mklaq*ma,!>02E$k\IbnM!]L6'8f,"VSUG6q"(9+tD;Dq#MZhJrg[E4D-n^Y'f0T:ehUcX6/:56bS5CNNDaG%N_j>+3JnNoT"><+`i`p9]F,Wg6antN%9^4Zn@ro5$EbqODo8oi3e.l$f_pE&BS]c#_GSQEB-BW\R5Z_#sp&'j.qdr3=#H>ob"mW[k-FG)do4lHFRPc*q*gndED)p=<O&(dP5efok7cHe<:Y9lHt3UJU/TO#h4L5$2'sIiC^VOm\pHh7I!`:7-[W9c_s?"0qh#UM0a+r;@cB'Nd<MuJU5ZD;:"*9d_^6<]P!lYl,$a'@^W>-\f\M(p>Yjglm$TGe*Ni[_*TLuaMD:4.3h.a(btD''X:R0$7%#=4%[PAhFTKVOlE$t5U=BA+iSM_Zd*0:K2I?s_)H4P;m1D9B98Y\\r,AYmb/+T#`aC037:aRak0N/jk)>Q_i]mCS<HfR&]mQmra[dIc6RqMRKE]S6&??S!$DipCJmCum0%stLm\8hMdQe1#s]n:#Y?2YEs@/Zb65l;B#lDFoV$(n\/JcF#&Lko2q6+Kg!F,SA)\qa,7@(EbZSUa5qF:PGVTZCNtE:EjU<&A>tCr;;eSuQY=X9JUD#K<bb7n]NcGBOJ4P]a6Ajqgmm$qm1Er"/II/-7Ee'bi!]9"V<Bp//_#tT2V&@G3a?pTsjUQPa/VlNB.n:XAGpY&q[`Rm`c[@!D8=/-BmQ+_/?*c#ma6+JcV`uR:)ij$@jZQqQlF(.#T=_Oe6O1nNaQ1@uQd*=#ZN&XbS$o*4eZS5r&;RjSpl&LEeLc.3l?G2X.!E=0Z1\Ad6f-jomF8&'+-,01"*7HP,qCp&9=MdL_ZQ+J:>`bO_(4$NE8,R/^L;UB?e%;51:Dk<>l9&ilEJs+?P(?\,&[]n5o"OVC:dK<SM$WkC.CS]X>h-*%/G?nc/)&XrtYEMnHPnSiLg/6s/Tc$Rn^T9'ONHFFeAaNNh,QYZZmZ8".^;3;A5O9nNZI<.`D~>endstream
+/Rotate 0
+/Trans <<
+>>
+/Type /Page
+/Parent 2 0 R
+>>
 endobj
 18 0 obj
 <<
-/Filter [ /ASCII85Decode /FlateDecode ] /Length 2194
+/Length 4273
 >>
 stream
-Gatm<=`<(T%"=gU_8iti>YCB1TMK9k('2hcR<dEdI;qB<))j_`[ZbTZrUENYZ96CBfsjI[d\038r-1a66MrM3G>SIT?btJm!ec6W#)!<tXNoa7[0SOU.=<(FEL<O/T.13pFPB6:/!D@aSS8W`d2CTL=Ti.KMC\s2&4C[Jb-H0s,%U)hl,L3L\Y18o=UM2J?Cd^Y*WH+i\+m<-Z!<iIJWD2%e'DB._s/&>hQU(V'p2%h1'f..M@N>%QqTpmGef]lf\"6QcH?FWG&=6lk`>4kq,=#CoS4%Es%qg*&*l".G'WI=C>W''E<AYa$sd0J4ljj+\Z3e*g+FJiAde"F08"a7oI*X!`#Z]SW$FdW1**8IHPC/Z@r)<X6%=IWc\lBY1'JR`:bPcrR&Z6G5pYHS=VW:YN.X*LUh)="_h+gh7k@A6CfgD.0lA(IUh@MELoQODXX[dKRSHL-'9P+LA>QT]B\Y6e[mn,j`GY5F.8W/?$%X$.7kW;g^O/M,`?T&-[8O6_F["k&H#J_9Cl37MR\>39I?X-s>s%t3p%.hge5o"$(oHJ<+LLrB[nSli*N=NC?5+SM&R7_m0h!7N0)1=`U@IImL5ZT[!#i5#=dl;5`I(pj,taq%H5:%E#f;mc3-%kWX^aC]8L2AB`J!e1F\d1H+"r>)6A&CiBK)"L^>(V(L2i('3LK3Y9HcbB$6:<0`NF')`']*4?QsqmIfor.C:ft-YM[T<0X2J^o&^S.$<\@N]GN+rV@G+R4CTU/%^6Ql#?YDhYsO\oMP\=[-O3`sN>=$T`I^NN25*IuO'cXiR&-V]$r`p@^QdLlrI-2-,e;o"F#mq49VE]e*\<j"M[(@KS%]lb[]qr<%jL.&%%DC$q0MV`$J&ff2Pu8PD"A#1_<h'WjY\C7%QG@oAV$V!1]^,4G`!Lt$lkumE%L+Fn!=Y>8>@[jBP"8#ih4M+f`C6&iBi0]X#*4=V+)HS)X$jQMbTSp!RAeErX-AFoVT5Yh-:*`%?2e$9[S$!/-'P9i+.BE3W_Z<s/Z?I^PP8]1:,FrNKh]3$C:VHE]$7Y%&AntcdMkoW&kVIdt(P'YsatV<l]h..=]eXf5[-Cb3Bp+e;(:@.`0M*0Nq(3,*4!8&2K="j8-^;(]`FLaO,>PUmap3J\(^^%NP>;.=seoD&Z6<U;eZ&BL=j&7A4Y;aGA3f@8RZB1f<;sjd.<;.&1Fk7Zr_"lWBo<XM!"CVJ0Ka6?$t`P?GX-rGhhN3&=CES'..bAQ=..]7-+t),RfJV<o87+^EgtQ4%h!'K`D!44DDe:"o.(GM?D(D8)U8E+11&6\c#C%T#GB"^PRYH;qs>G,ULBk"m5A5!(>bkd*a+1+J*I:dH)@h6/%ac7CHd5\18t-S!1ZkO/hXOBV6^Ssd55c>YT&$^6M^<rK]f)q2XCr5RXH=3GB3!9qa%%F:n-[3qHh^2"<RrQOF>1Lb0F2OuE7heID#YH6-K1Ki[ap0ERi)XGk:dEG"]iOPI*._OU,33/V-F#:NaYE,m<,t;i8@uD;TqRc"gZ6(K>D26eLetsP[H9^#LMf$##*fkX@ke>60XdKDA2SgiB2SjgGM'X#69X@FZE+0KN.6gB#V)2hK7[r=HKeqKhRo:;80]b8K2T^f]=jE8EKbMaQkP#rU))M5,4-Z3I.l:!Nhl_]lp?rlo39L-!%n2".l16Ke\XU$[c;`peDe<cHA5;t=XPB.a9F1X8bU%qekF*hW%60BCpO_Q:'d\%m\1<[3UiK+YlF#UX8Mf<P2*JWQnIsB>'rgGn50>c.;q%ifR7!@[qJ]EFqfeT+PL9QA<0Fb>+DTVcOe_ZuIJ[t+OG<Ms"(r!kZDK2C4#(dLrDS%tb1--`icenn8;hSBkeZH=06".&O/GjnJC?f3n*M>8'moi1f)+#>(qEQ3gZkYR]D\o!lfS<Hn_6eNfrSKH%'8iU.\1+m!deU=.98?KaT:.s]Nb,TD"W!'lkQ-[!/p'P.[t8Tmc((]'kP(^$k)'62QOm8p7jgT%Jj8]1QfG9%DX(MakO6Pd3H`;3pbU=0\B_&bm)de[Js)"')Q,4E\PJ8.</AZ%SU3qAp)p8/RP2_^l%5t3cADuG6=;iPIGY9SMrLV[H&!$B6#,)qdGTCCL>edqlk`L&om[^^)VVF;?HgoLOYpSK;kkk99D;A_:#mh-#^$7;EUSZ+clDnUMP$C*U&0q^MB@!o)~>endstream
+1 0 0 1 0 0 cm  BT /F1 12 Tf 14.4 TL ET
+.929412 .960784 .94902 rg
+n 0 730 595 112 re f*
+.090196 .4 .360784 rg
+BT /F2 10 Tf 12 TL ET
+BT 1 0 0 1 42 798 Tm (SERVICEFORCE   /   SYSTEM DESIGN) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F2 26 Tf 31.2 TL ET
+BT 1 0 0 1 42 759 Tm (Decision rules and safeguards) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F3 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 703 Tm (Operational intelligence   /   security and limitations) Tj T* ET
+.090196 .4 .360784 rg
+BT /F2 13 Tf 15.6 TL ET
+BT 1 0 0 1 42 672 Tm (Priority and routing) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 651 Tm (Multiply impact, urgency and service criticality, each scored 1 to 3. Products of 18 or above receive P1,) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 635 Tm (9 to 17 receive P2, 4 to 8 receive P3, and smaller products receive P4. Combining factors keeps) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 619 Tm (isolated low-impact faults below broad failures. Skill-first ranks a category match ahead of workload;) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 603 Tm (load-first ranks by active case count. Technician ID breaks ties.) Tj T* ET
+.090196 .4 .360784 rg
+BT /F2 13 Tf 15.6 TL ET
+BT 1 0 0 1 42 574 Tm (SLA deadlines) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 553 Tm (The default response/resolution targets in minutes are P1 5/30, P2 15/120, P3 60/480 and P4 240/1440.) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 537 Tm (Cases retain their original deadlines when policy settings change. Acknowledgement stops the) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 521 Tm (response clock; resolution stops the resolution clock. The final fifth of an unfinished target is the warning) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 505 Tm (window.) Tj T* ET
+.090196 .4 .360784 rg
+BT /F2 13 Tf 15.6 TL ET
+BT 1 0 0 1 42 476 Tm (Related incidents) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 455 Tm (Within the same service, the system tokenizes titles and excludes common words. If the intersection of) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 439 Tm (terms divided by their union reaches 0.30, it can suggest a related open case. Similar completed cases) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 423 Tm (can supply a previous resolution. This transparent heuristic can miss synonyms and confuse similarly) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 407 Tm (worded independent faults; technicians review its suggestions.) Tj T* ET
+.090196 .4 .360784 rg
+BT /F2 13 Tf 15.6 TL ET
+BT 1 0 0 1 42 378 Tm (Access and storage) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 357 Tm (Passwords are salted and hashed. Random session tokens travel in HttpOnly, SameSite cookies. The) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 341 Tm (server restricts incident reads and writes by role and ownership, checks request origins, bounds request) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 325 Tm (sizes, and uses parameterized database statements. The local server binds to loopback by default.) Tj T* ET
+.090196 .4 .360784 rg
+BT /F2 13 Tf 15.6 TL ET
+BT 1 0 0 1 42 296 Tm (Limits) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 275 Tm (The email channel is simulated. Monitoring requires a running application process. Timestamps reflect) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 259 Tm (elapsed clock time; calendars for holidays and business hours would require a policy extension. The) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 243 Tm (local demo credentials and development HTTP server are intended for evaluation.) Tj T* ET
+.090196 .4 .360784 rg
+BT /F1 9 Tf 10.8 TL ET
+BT 1 0 0 1 42 29 Tm (CS F213 / MAC F212     |     Intelligent IT Service Management) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 9 Tf 10.8 TL ET
+BT 1 0 0 1 539 29 Tm (6) Tj T* ET
+ 
+
+endstream
 endobj
 19 0 obj
 <<
-/Filter [ /ASCII85Decode /FlateDecode ] /Length 2406
+/Contents 18 0 R
+/MediaBox [ 0 0 595 842 ]
+/Resources <<
+/Font 6 0 R
+/ProcSet [ /PDF /Text /ImageB /ImageC /ImageI ]
 >>
-stream
-Gatm=D/\/e&H;*)E?EfL;acb4`:['<AOE_F)]!oP:gdZW`oa!3:Qh1bfT4o18]c#-,Yb#GkpVa>8)A=-LCAeP^R=t'e,\BEi8Q*g/:l&'0G+WDr!Jd[<MU6Rn84uL36MIhKo-Q-[]9U&Aip9s,V\T4)7Y.+MII;VPl`Fk\0$<NSb<1gm'J-+2nik>%?WoQEnJn2c(C?;^4$:e(\i@MmV6h=(4Np/HLp`H04=B1CgK0+7Op#_UehUKA;SW+,q58A/@r`d<6j-WHI,KWhJSfQW96-K2\UY,qNsA;Qd&on,;)]e#MV08cL1Q`2;NEBD%HNp2?R3.D%4J0<[A/+lucs0@IB0h1</Fl+G_R<^Q_F`eG0bLmpYKCUl7Kg5CZus/!5G-("=b"a%iX2iXog;m[=PG9#[M]k=K>X-rqUi,'U^tP0AuSL8IiKBr#B-7S'IY,4UPh-0!B5P#31loMDO"&Bp00aIhC/Z.c=oIgAU>/AFT*>e&l[oVUpr&Qa,d6:ib%S_?;W!F*9iY-#nd9W`0>LAo1neTsMc!C;FrlN/g5Cc!D"%WL@*#]S^9G(KhBAo[>MJceRc%Sdq[3Xqp1P=?&fZJtD9,j>UH8Kpns?,Js[,``6b"ln'.Ebk=E\ZeU9'-f+@(*@C%Q@aiiI?':R%qaR>a#+R%*GhFM-"89i$o+P!5))r^V\i#T:Wqr@'LS%2%%T3Z@N%i^,)mbBR2g::Z$B6JGugspXjrZfC6mN4:m]kOn)q\e0K$gghc@1iMoF&B5/hKufbO[6Hj,/j[Ut'D2M^8Hg=+J(6!H+B1sCW:.'Z)k;3PL('knZ9co!4",fq=,hB_VNUu=:4EXnn-SqXL;&geC;66*4t:`RKKY(7Lr2bIVW$;rQA%4/JQ^Rq'O$!LoS[b7O^-15l5jWWn)#fV(K2Z'p%9Xfbm'Y=P]URS*[Znn$ro88.s^n?HM^ICtlbK;_M`oh'`#SW:J+28^qc6l3f=875\d<cVi.\U\<O\unH:O=?<b%6Gn<#c3j:H]c-kbQ>[fV8*a8d0&G$0hE$"-9]$aRm-__tHJV[l:bZ4c:0'\FZ>*W8mIj*.+oo#*a,Qi_ufg7pmQ!b*8*Gm"Aih*?11:'I,K07dd2e9$1'WN.!fcUL^H`8<$Fj4WQC(iC&[(L#ckbLGERbe;+N4?4c;LM#7SY/jPD@m`VLlP]g/hY42("q\q><%D!D1DF%UIV6:o<(C@Lq2hTU_2d=M?_:Ia!&rpB$U0nPVV(][dh7eU3o/o@P:sDq$a?KVD;&Z@rMi^&Yaf21jOVj*K,KIM>NOYQ-2"FV:@,W&X)CIO%Ou/kI)G2e2N?4'i`PZ\i=4AMT2%?C:8#2=g,eYHe@:nTOkk>_6CkQBK%e^h*Ouk6I8C-_BB4hR`[j3S?/V''nfbcgle>D^-,6412llgm'dE48*h2me2Hrcn94n;/+b]QbXZOfb,bp-2F4<RTu-NQ^pB-?`(h!n,O&1ZcMB(EkaM0J)l]d3.\TCGZ`1"EpIWi9U1WG'T*@iFXTB(1-RhDldeYOl2aj+=AO.1bqGTrn'+Dm?%mR,`B<QnE)&?o.:Uh3;kgS+8'p8R1F%:b(1eQ*6'J+<g=t`#<[A?!3Fdh8pRIET(dn1.o<+e&%O9H`p)tc`h*HlMS*PE@Z85XU]@q+!lEH_nu`Cc@CXuLX-Ss[Y=^"W-!6:laE:Wf=OHmc^YT[p)`4DZ%p'tlKR_,@g1YUDGdmLr/>M`Yh9odB,GHk7AK]HKh^@"EB]$PUbW+aVgGukX3&2,k\/C7npXo?iIe+5Vko*U0gIZMY827Eo`SJXVq!9$Yr.LaQ_;pSENH?mV&crET;0g4\Gg61-/<.XQ,.Sloq3+l,P,uPYZ-FP$;V0iig85deefc@*D2b@m.JcF@uF:#eOOlac0Tl[q"klK\/P:meIg^4cIEH:2qTj1s+6PL8]PO!3I]_+2u?2`"s%n17s"%qM\0X"`'l2"VRU=NKA-Il=cckdN\3UTm-JoiXf_=gldidi_",th7m)X;LsLBE\+'Ug0QjEJjT(InS#3m$9Y!$g9+VnOGC);%4tWh7pJlPs`ijAbgW$fA@BL:3:++7,DXFZ4eE,2HT$gqPS'GRj>rXHkDoR2C]tuJRg._f&P1b#N>['@<*_]7(2uf?+&?:dMCE)KLihG#4\\Mt0*]h6fL&Wjls/D[K,@.pY_MdZ<A[Z9Q6]IuDgb"0)V>3'%hjZ9^XJ\*"r\8ttDL-g#5f4ZM*)nOdALSTc6N(U&^I+YuB,-W5rMb_ko=Z2RrY/7M^Ye!fU-.cm12c#NGE&[!ZotrtYA</2E=F]f&@sl.n<Eu`TU[NPPi&`gqOR3bIS(0/(\%.k%jWJe?iR[OD\-kfA[f%4D`3u8DSq.:=Nu5"5&+s&nOIUW3[A?!@J)i/?<6"~>endstream
+/Rotate 0
+/Trans <<
+>>
+/Type /Page
+/Parent 2 0 R
+>>
 endobj
 20 0 obj
 <<
-/Filter [ /ASCII85Decode /FlateDecode ] /Length 1776
+/Length 4384
 >>
 stream
-Gatm;9lJcU&A@sBbcqTkMP$%8TA7A!%+pOO#q0h!OXk.HjY"_^>'847h`&01iW;kR(URUB*g&O&B&:0<AsD:6$a4\Go[A\p+#:uZ>&>Z<PEJsjFL/PL(AX\X2-J/Oq.5EWEfoM6D_DOeS/3VSMi'8pd7`3+\Ob.;ROr-)"-OkbJnr9g3Funa4[5MICNbA.jtpFMd]0,c52Y.$Ij(O8rg$oWX.+H^J$Zfdq3N1;oc($i"B6a%ffZI\"XQ0U.\=2nBC)Y>P&E=\(;\[N=Y$DOTmkA:OY@5)Z'!d,oSn3O_ZD7mYnc/:QkmNsVbZs&_kYSSN0d_KXYdFJ#4,k`oZBB%,[.UuLPoMmnm[?3J>,YJ0;=iYo75ho=8)!X[t@aoqhf'nmmT==ZJanpcsCkkM,`5dg.uDG3SN]Kao5-\net%u/Murj8;_^`Y-u#[E0Rh2,kTI<AuNBf$^[2jHP1,k.)EDs._IuVP>T.4<<0dApY#JFRs[OKgFg70MFe5Q'jAeP\eEN`"_C$hCqE^P)5[j`@!bCj.D+39lhcdM88%%c(*9I(p@(!&*)9?67r&DMXa;Q:R$8Y<kn71fQ.Bk4Wct%\@J4@8Wc>o,p.s0FO(*p9`%=OY_=i58gTO(8Id@G+p`DKH+A(r\LUD)GZ%MQQX^o+$W`I!`m<_5G"YTHTTo@JEe[u<8Q?Us1+E4HA*48aG'a%e0,TMKsJ1[okPKPC==?UWDP8@mIe4gfqPo2]b;pS^HC0IDHYRs/pZ^a5q8E7(i9EQ(Q9$5>!R[%I\@T*1an7!Gh^I(#Ki*HDPhau@n,Loi"U7F)0LRg9O=fp';:3mZm8+fWEX\@rihA^ggZJ!B$)GeZ5cLG&4im"5&SWZXR[e9WWT&ob6pUN"`#,]5J#siFX`p^D<5e=eIVVDY5((3M[*cM\()-KA.2!WFRRDp;f,'Z,?`A&m<;CGJE#"9AojCK("s/PuLZ34[FPpa\G7*CecZA"t>V,;_7mUL_b_X`ak%h8N;D;1d5d%1G^Fh7s(o&/jh.RUo9AlRh[<)P\h*B!*oa_=k9,1?c1Q3EjX!1,%fM982[5c.u%Q&mYMY@D<aLE9jrK$IhiCXI2_SX01"gW.Qa*ebnLl$2J#$mbYIm,4HIS>jc/L!7+<P(N\f8Ltkl6T>4s.d'VJA'IpkX&3*-):1Z%7\QGD`LTJ(i=ZAZ2A1:F8fgLS(&>3$F!-N9*ftJfauJi[@s(9rO%\\Z>t]Cs#;NO'G#W0*WYk;ZE%Wh+8@oP(M8;B"JgDb;chPPhBH%bReBf\=FH;U:8,DFtpW7+89hVkF;L'=JG0fcA"`./^AX$,2@;J!_PODKl##l9JmYW?gm!t'jL(W9H/VD.d$sIhP\d>6aXS5u@hZrS93'>uLeemr%ffgnZ4N`drR>Dm;^dAP&8(u>TYW(&;0@mdO3%Wlo0Z>SPRDO,>a2"t&!@5*=D/H`toq'&`%e?l,QnP1'hsgfaW$7AMX7Q$.>HEBa-6$Q\j7XOGE[>gGN<8QoC#sZ>Sokn]8LEf/!pYAs4if9W?>^Kg9!p(:BKIj*7RN_:"b(i,K=#f^jccT!-:TMh+Bf\8+g>'en8,>Hda<lKaMdc0GTCe.%f$$2#Mkmo@X3n?MYtAeYE%<rC=hP.Bt^XdHIQ+\mRV43-$4gm82R[?_BSVl[<aeEN?s,\SRGOZ^uV9;6V.''jB4s1!%ptu^Ho39cn4KL%Rs4Xrq[Xbb_^iK$Epr%B2h[9.p=!dg$XP+EHun2[f-G+Ku&*=1jaBm?2P/ASr`1~>endstream
+1 0 0 1 0 0 cm  BT /F1 12 Tf 14.4 TL ET
+.929412 .960784 .94902 rg
+n 0 730 595 112 re f*
+.090196 .4 .360784 rg
+BT /F2 10 Tf 12 TL ET
+BT 1 0 0 1 42 798 Tm (SERVICEFORCE   /   SYSTEM DESIGN) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F2 26 Tf 31.2 TL ET
+BT 1 0 0 1 42 759 Tm (Verification and demonstration) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F3 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 703 Tm (Executable test cases   /   run ./mvnw test) Tj T* ET
+.090196 .4 .360784 rg
+BT /F2 13 Tf 15.6 TL ET
+BT 1 0 0 1 42 672 Tm (Authentication and visibility) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 651 Tm (1. Successful registration yields an employee account. 2. Duplicate registration fails. 3. Invalid email) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 635 Tm (fails. 4. Short password fails. 5. Reopening the database preserves login. 6. Anonymous state request) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 619 Tm (returns 401. 7. Incorrect password fails. 8. Logout invalidates the session token.) Tj T* ET
+.090196 .4 .360784 rg
+BT /F2 13 Tf 15.6 TL ET
+BT 1 0 0 1 42 590 Tm (Authorization and transport) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 569 Tm (9. An employee cannot change routing. 10. A newly registered employee sees no cases owned by) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 553 Tm (others. 11. Another reporter cannot add a note. 12. A cross-origin write is denied. 13. Array-shaped) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 537 Tm (JSON is rejected. 14. An oversized payload is rejected. 15. Encoded parent-directory traversal cannot) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 521 Tm (expose source.) Tj T* ET
+.090196 .4 .360784 rg
+BT /F2 13 Tf 15.6 TL ET
+BT 1 0 0 1 42 492 Tm (Business rules) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 471 Tm (16. Priority boundary examples produce P1-P4. 17. Out-of-range impact rolls back creation. 18. A) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 455 Tm (matching second report links the earlier case. 19. A case cannot move directly from Assigned to Closed.) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 439 Tm (20. The full technician/reporter lifecycle records timestamps, both notification channels, feedback and) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 423 Tm (audit events. 21. Invalid service ID is rejected. 22. Least-load routing picks the least busy eligible) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 407 Tm (technician. 23. Repeated SLA checks record a single breach per target.) Tj T* ET
+.090196 .4 .360784 rg
+BT /F2 13 Tf 15.6 TL ET
+BT 1 0 0 1 42 378 Tm (Three demonstration workflows) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 357 Tm (Report an outage and inspect its priority, assignment and messages. Investigate as the assigned) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 341 Tm (technician, resolve it, then verify and give feedback as the reporter. Report a related outage, switch) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 325 Tm (routing policy and examine SLA warnings, workload and audit history. Detailed steps are in) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 309 Tm (docs/demonstration.md.) Tj T* ET
+.090196 .4 .360784 rg
+BT /F2 13 Tf 15.6 TL ET
+BT 1 0 0 1 42 280 Tm (Evaluation scope) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 259 Tm (The automated suite uses temporary SQLite databases and a real loopback HTTP listener. It exercises) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 243 Tm (application behavior and authorization. A team presentation can supplement these checks with live role) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 11 Tf 13.2 TL ET
+BT 1 0 0 1 42 227 Tm (switching and usability observations.) Tj T* ET
+.090196 .4 .360784 rg
+BT /F1 9 Tf 10.8 TL ET
+BT 1 0 0 1 42 29 Tm (CS F213 / MAC F212     |     Intelligent IT Service Management) Tj T* ET
+.090196 .172549 .207843 rg
+BT /F1 9 Tf 10.8 TL ET
+BT 1 0 0 1 539 29 Tm (7) Tj T* ET
+ 
+
+endstream
 endobj
 21 0 obj
 <<
-/Filter [ /ASCII85Decode /FlateDecode ] /Length 1774
+/Contents 20 0 R
+/MediaBox [ 0 0 595 842 ]
+/Resources <<
+/Font 6 0 R
+/ProcSet [ /PDF /Text /ImageB /ImageC /ImageI ]
+>>
+/Rotate 0
+/Trans <<
+>>
+/Type /Page
+/Parent 2 0 R
+>>
+endobj
+22 0 obj
+<<
+/Contents 23 0 R
+/MediaBox [ 0 0 595.2756 841.8898 ]
+/Resources <<
+/Font 24 0 R
+/ProcSet [ /PDF /Text /ImageB /ImageC /ImageI ]
+>>
+/Rotate 0
+/Trans <<
+>>
+/Type /Page
+/Parent 2 0 R
+>>
+endobj
+23 0 obj
+<<
+/Filter [ /ASCII85Decode /FlateDecode ]
+/Length 1880
 >>
 stream
-Gatm;d;mu"&:F4RggchYBTWuTo2/)Def?,X,>DhA#a(4%(^*q@PcRPB^'fIOm*ob7%.1<9P5oN@\%?iXBoML;Hr^^(b8"<q8L_nt[@q]*9PAQCMq(s.B&s.sPB&^U>u'm9;N<OggG=PSZ[>G8=\stjL=>;(=Y_VMBfRJ%+N`XZX:7tO-ln)@BDo/V2=4gG17FJpZtefk%u]cL7j>O[cgp+:[<P?J(X&l:hYg'I:UGE[:u+W5B3?r<.EQt5r'@8tl9jZInss/W)1qh+NS'&E3M@0B<E%-]XfO>;atk7(a?_djrk4-J4@EH0nZ$YH/NGh/*EC=(gE5$hMNWm0Y7BOJ;rO?BCE=Z9an3]rdodG1cTAVrauqlS?<FHJ;RkaCNgft2W7)q"!Rl^f>ubl[2k:(9[c0KUF;/!2()VidXjfkdM,fi/PY3Dtk]PKLO-;fb[:)DUK^sf!e=K6/@lH"LMENTop--t/8(_P9W+FO$[&NLK'FB3G]&cP_/Kq;s1DCS3Ut0M.boT<=H7Mr]dtHjUX(.nd9@h'\rS;n"^cr8jNJodNF[fN&N04+-cW$a#iRP](E1,(\hWiCKLtMnd)pSLS>+]`2Dn/IEU1$oZ^X>ptnbL*iPZQNR=WT=?`AH_Po[uI6XC=e9W,BZ*(3RFW;8<=[KOptS5otBqEPq+k2Tq4$V0fW8K>Pn+TV<lmkRSR80W7a8#28kPJB2@.J+Vr->n[;[a0@8ga=F$f*?hOm*$'t<a+T/7.Db>g#Gnsclo;:4f(+,`h"`MZraYd'SW@L[-]foJSV5MY4jG99,@N/c9$QX><^B:bE3p)_$k-lM$dVmkNh.,;2j=3^#6g\fQf<4kL2=![9Z;c2qkT1Bqm*Op5u"S,amG2Z-aVZ?@4sQ/T_.YCCH-"PO>q^05[@3o27i3*:,hG$#5(OG#k'i6d[Q@*$4oqTi!i.KBkbhl>>U.]Bjre:@Ql4&,+<;b>da1CBmHO`!0Q.aKt<6J`0l`3nD/DJQ\"/Q>^HK.+;I>65d23&)k+[M[U,7pdjp94ekalfVkN;$:,3[*$4,&,,arh_;kamu?$qp9'H:@!/*TbLcAO%46j'V_4mY09jE=k>VkM!iOl@#J2OrBm!q=,oTkDbU=B>l#Hk2(M?aB=R7=Do`+N`1"a4ebq/_?Lq2[[.`h3(r=olZGs-ET?;`^tCcVOBf5O/'1SndJ4&n%:53MHV[:_2B?.E+67aM\+YZfjBBOeW*gt`%eU[DCB5^ZT+kcFp<rbdC`"`YI>IM%tc>p04G\\7$V.l66-oMl[,NpkOd#)33W!g"6[US(`H@7/->i&2V:iGE)CHM&Ahlc=YH:2+]$O)$?qL3=Y1e$iQcjV7=.7G*s9<\^l9$-,HuMdKmJN<j,sgnNsRcnHOt.Z6'5g-U:tYR@h=VB]r/`k"6g<>prO&Hod(.6n4TLoFr2=J]eIHHLJ\G(0i#*CG4CG8T(>kMA$k:[9!thg`?QiZc-u[d'84[aj5@@r=`feh[_h5ij?^*NIEYnGl^ViZR;M*lREgju%\oCL^9oQm]_5FqkA;.O%r,KEOBT,E6GK^)2m?cP?$QKW_>!B-WIu;#$"oIY>2/hdicDHg419nUHU9h3G't0JS2KgO6+O]15gZsW"*i0CR.'oW1c<X,LL]]LUcPTbAm$sUW$'E.&%Akr^(-<4qkao9gAaa?PfaPXS6S5u17%^cP29`Bg]bB^^[ckdjM/E^cR\+e6mqMm\6@:cDbP);K&1p)Ss=s.^f-nupOHidSk3Sp!0?$6"T~>endstream
+Gatm;hfIO1%"?N0JNYUN`Nhm'QINW*9q4%GZaR-J]04RtD(?ur*_F?Bh>[0MPUn>Qj8N.5QWTp^!r)bCJ-,61-ZFS,$K0_SL0"BY%&OC<+tnQ47i5#tr]9R)Q:6&dAKsE2,Q*KUT7L=?8CU@9k+udX6Cc"99B$Nd.'!M&?Cc=ijp0QFn1lY5PYoV,@M&=[&o6mmC!aF*0hAUG\TM)ll"#29a3DTulI4S.(]]<c48EqQ*T+`qG]Im(gFk7oLZp>#V6_#7.19YT(e^S_ka>uoR:W@a*]>!NHc$Z-ej<OgWc]a?I,_S2Z>V@T*>VuDB;pqhVWe@@J@fU8#&fE/W$%,<"rR9AKZQfDF@q!mhPbSW=fcqpZ(uAT!`poY&W#35$[Q?>#lI&>DPS"Y=Y.\\Rjh$aIOK4;[p8L#MkK6\n*W/%4BOAm=\*mK?a'Yo+&YZ-YQ6/UW&DBP[1=G:kRnrJKY)b15HTVB0'?W"V1_0!1AJfKBJ_b\nmI@LG*u.Y<_ZTkSkFDAHa,AV=%fbJ!?_(=LEHW3?C++KdL-Gb.efbTCLmjRoG4f3eq<;*^9;0Wn44BDP,l-<ZbL4V<A'42K=EiQ]=:U/Q1GVH@YQfKmqB5YpP4[O'R=C+DMV<CG-QtU)cdJi"*l?*KEn3/`V-6Up9NiL$(/Olf3l-q$9Qb3jBE-*NdB[)?MN>:O1jK)Pe2fW=hB,G*!RtaI/F:WVnVU1@C%FUiR6pFVkGf;CFKY%4IW90)'/;=H^itl<!mlAX'/\Jb[,the?bJc0*ga%OEWhC&i7pSPkZq?Bh-2H?AQlanmOmhHZ%UbmJnVq+DWc\HDaATQpu\#-h]Vg.=!4)Bb2"4b/696hp_DFNS,^Cmtpm9DWbMKgd`OqGL?6!.V)thk1H`\457kuP(24cVA852RNu6%PrfVUbV>`LIQFPaJhV&\V]oKi+tpHRhOREoU@:*edqO3!2qSh(p_YBIg57,#lpO8mqG$s2>0m%4p&"i?mn^SA@5pHE)kp<&/>M1g-*VAXN%J#>.`M^^SR.1Z'a@e+6&=6nK-_Kq3ao(APIAlT#L];%m"+:-+*M:GHfVf&0*f'?oO"?)YD!ZmLLLa9gCd#'4<1UJ@D:[@Zl:6dD0H*b]JKs5+Vt=,-k9j)XJc?Hs0rB4c<%djLqbre5j,sFFqJ%MDb[Q=GZ:O]9RB]ujrqs,`Bn5?Z^sm]oS#,fQ_bY,*_`$5&"CG=*:qI4"<C>>T;`'87]-k5dIusn7dGXs\i*+%O!a1o[MHpW9UGm@]6dOp_($^O,'@dIDZ&ifa__ifF5D_$@UQ?(._C>2n]-9'4Q'd(8mDPiR`8QjC26'l$Unjq%4WokItU9Rf.F$HfLWquH^GJJ.rN]pJM?ojnS;>p(ks\@N4Y?u+h4Z%)a9l1P`VXdag-P/mf+hGkO#X'%;RL0-#kltAQY$aEd7l%:Z>Y/BrmL'?Co!I?o:]T_2Ok4Mk*_iFW%M+q]bO:EmcQK%u&Xqr'(RComIO(p3?5D"9pe?a,4_!cjF'S=<%J!@XYB"7uW)O:lU`n&(D!tRWUd2IFYaUc#fUh\YZU.W'@$j_Q5JeLnqkXe+MHuLBOU7>&+@3CE:A5**al>U'itO(shERLT9-DTFf7Dk8je`r<RTf"mK*f2PlcoL%>BIcn6HZbQtBC'q^c9ejf*g>h]>S>R+G(V6Q*0eB9.u/lKZ,OW]HL>]!oEP/cSCGm@6D,jkO?C;dM^[-n2u<Ag'iX:""E$co4m5NXpZ_7k8gHkiF^Vp&3r$^0>[]jHW5(:#IWQFuU+UnIBg[N3_m@piU*/e[>no*Rk?DFI&%-,rCSni>KbcS'4W?8Xr7@a**$'est(W4guQ7,ZK:8nCm4iBMUIH3t7Sr!RdJ=0V~>
+endstream
+endobj
+24 0 obj
+<<
+/F1 25 0 R
+/F2 26 0 R
+/F3 27 0 R
+>>
+endobj
+25 0 obj
+<<
+/BaseFont /Helvetica
+/Encoding /WinAnsiEncoding
+/Name /F1
+/Subtype /Type1
+/Type /Font
+>>
+endobj
+26 0 obj
+<<
+/BaseFont /Helvetica-Bold
+/Encoding /WinAnsiEncoding
+/Name /F2
+/Subtype /Type1
+/Type /Font
+>>
+endobj
+27 0 obj
+<<
+/BaseFont /Courier
+/Encoding /WinAnsiEncoding
+/Name /F3
+/Subtype /Type1
+/Type /Font
+>>
 endobj
 xref
-0 22
+0 28
 0000000000 65535 f 
-0000000061 00000 n 
-0000000112 00000 n 
-0000000219 00000 n 
-0000000331 00000 n 
-0000000446 00000 n 
-0000000641 00000 n 
-0000000836 00000 n 
-0000001031 00000 n 
-0000001226 00000 n 
-0000001421 00000 n 
-0000001617 00000 n 
-0000001813 00000 n 
-0000001883 00000 n 
-0000002193 00000 n 
-0000002291 00000 n 
-0000003949 00000 n 
-0000006090 00000 n 
-0000008337 00000 n 
-0000010623 00000 n 
-0000013121 00000 n 
-0000014989 00000 n 
+0000000015 00000 n 
+0000000213 00000 n 
+0000000321 00000 n 
+0000000370 00000 n 
+0000004350 00000 n 
+0000004539 00000 n 
+0000004590 00000 n 
+0000004697 00000 n 
+0000004809 00000 n 
+0000004924 00000 n 
+0000010587 00000 n 
+0000010778 00000 n 
+0000016932 00000 n 
+0000017123 00000 n 
+0000023551 00000 n 
+0000023742 00000 n 
+0000030735 00000 n 
+0000030926 00000 n 
+0000035252 00000 n 
+0000035443 00000 n 
+0000039880 00000 n 
+0000040071 00000 n 
+0000040273 00000 n 
+0000042246 00000 n 
+0000042301 00000 n 
+0000042409 00000 n 
+0000042522 00000 n 
 trailer
 <<
-/ID 
-[<d48f1621cc4f77a63936418bf4a21326><d48f1621cc4f77a63936418bf4a21326>]
-% ReportLab generated PDF document -- digest (opensource)
-
-/Info 13 0 R
-/Root 12 0 R
-/Size 22
+/Size 28
+/Root 3 0 R
+/Info 1 0 R
 >>
 startxref
-16855
+42628
 %%EOF

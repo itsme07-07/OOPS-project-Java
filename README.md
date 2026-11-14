@@ -2,26 +2,34 @@
 
 ServiceForce is the Java implementation of the Intelligent IT Service Management & Incident Resolution System for CS F213 / MAC F212. Employees report incidents, technicians investigate them, and administrators manage the service catalog, routing, policies and SLA violations.
 
+## Demo sign-in
+
+Open [ServiceForce on this computer](http://127.0.0.1:8000/) after starting the Java server. On the sign-in screen, enter one of these **email addresses** in the **Username or email** field:
+
+| Role | Username or email | Password |
+|---|---|---|
+| Administrator | `admin@relay.test` | `RelayDemo2026!` |
+| Technician | `tech@relay.test` | `RelayDemo2026!` |
+| Employee | `employee@relay.test` | `RelayDemo2026!` |
+
+These are local demo accounts only. To find the generated username for an account, sign in with its email, then select the **profile button beside Sign out** in the sidebar. **My profile** shows **Your generated username**, for example `exampleA1B2C3D4@service.tech`. Each installation generates different codes, so exact usernames cannot be listed in Git. Registered users choose their own passwords; those passwords are stored as hashes in the local database and cannot be read from Git. The generated usernames are identifiers, not working email addresses.
+
 ## Run locally
 
-Install a **JDK version 17 or later**. From the repository root:
+Install a **JDK version 17 or later**. In Terminal, download the repository, build it and start the server:
 
 ```sh
+git clone https://github.com/itsme07-07/OOPS-project-Java.git
+cd OOPS-project-Java
 ./mvnw clean verify
 java -jar target/relay.jar
 ```
 
-On Windows use `mvnw.cmd clean verify`. The first build downloads Maven and the pinned dependencies. The resulting JAR includes the server, database driver and browser interface. Open [ServiceForce on this computer](http://127.0.0.1:8000/). Stop it with Ctrl+C.
+On Windows use `mvnw.cmd clean verify`. The first build downloads Maven and the pinned dependencies. The resulting JAR includes the server, database driver and browser interface. Open [http://127.0.0.1:8000/](http://127.0.0.1:8000/) in the browser. Stop the server with Ctrl+C.
 
 The first local launch creates `data/itsm.sqlite3` and demo accounts. If you already ran the earlier release, start the JAR from the same project directory to reuse the existing database. Sign in again after restarting the server.
 
-ServiceForce generates a unique username for each account, such as `exampleA1B2C3D4@service.tech`. You can sign in with that username or your existing email address. Your username appears in **My profile** after sign-in. These usernames are identifiers, not working email addresses; keep a real contact email in your profile.
-
-| Workspace | Demo email | Password |
-|---|---|---|
-| Employee | employee@relay.test | RelayDemo2026! |
-| Technician | tech@relay.test | RelayDemo2026! |
-| Administrator | admin@relay.test | RelayDemo2026! |
+If you already cloned the repository, stop the running server with Ctrl+C, then run `git pull`, `./mvnw clean verify`, and `java -jar target/relay.jar` from the repository directory. A browser refresh alone cannot load a new Java build into an old server process.
 
 For a separate installation with your own administrator, use a fresh database:
 
@@ -47,6 +55,7 @@ src/
 docs/
   project-report.pdf        Analysis, requirements, design, diagrams and testing
   demonstration.md          Three end-to-end workflows for the team presentation
+  features.md               Implemented feature inventory and account rules
 ```
 
 - The [project report](docs/project-report.pdf) covers stakeholders, business rules, quality requirements, technology choices, system architecture, use cases, class relationships, database design, sample data, and test cases.

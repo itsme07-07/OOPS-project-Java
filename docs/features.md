@@ -1,5 +1,17 @@
 # ServiceForce feature inventory
 
+## Finding demo accounts and usernames
+
+Start the local server and open [http://127.0.0.1:8000/](http://127.0.0.1:8000/). Use the **Username or email** field with one of these demo sign-ins:
+
+| Role | Demo email | Demo password |
+|---|---|---|
+| Administrator | `admin@relay.test` | `RelayDemo2026!` |
+| Technician | `tech@relay.test` | `RelayDemo2026!` |
+| Employee | `employee@relay.test` | `RelayDemo2026!` |
+
+After signing in, click the **profile button beside Sign out** to see **Your generated username** in My profile. Its format is `exampleCODE@service.role`, such as `exampleA1B2C3D4@service.adm`. Codes differ for each account and installation; there is no fixed list of usernames in this repository. Non-demo passwords are chosen by users and are stored as hashes in the local SQLite database.
+
 ## Accounts and access
 
 - Employee registration with an email address and password; registration signs the employee in immediately.
