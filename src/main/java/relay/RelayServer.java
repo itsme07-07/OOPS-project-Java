@@ -32,7 +32,7 @@ final class RelayServer implements AutoCloseable {
     private static final Map<String, String> ASSETS = Map.of(
         "/index.html", "text/html; charset=utf-8", "/app.js", "text/javascript; charset=utf-8",
         "/style.css", "text/css; charset=utf-8", "/mark.svg", "image/svg+xml");
-    private static final Set<String> POST_ENDPOINTS = Set.of("/api/verification-code", "/api/register", "/api/login", "/api/logout", "/api/action");
+    private static final Set<String> POST_ENDPOINTS = Set.of("/api/register", "/api/login", "/api/logout", "/api/action");
     private static final System.Logger LOG = System.getLogger(RelayServer.class.getName());
 
     private final HttpServer server;
@@ -41,17 +41,11 @@ final class RelayServer implements AutoCloseable {
     private final ThreadPoolExecutor workers = new ThreadPoolExecutor(
         4, 16, 60, TimeUnit.SECONDS, new ArrayBlockingQueue<>(64), new ThreadPoolExecutor.CallerRunsPolicy());
     private final ScheduledExecutorService monitor = Executors.newSingleThreadScheduledExecutor();
-    private final EmailCodes codes;
     private final Desk desk;
     private final boolean demo;
     private final boolean secureCookie;
 
     RelayServer(InetSocketAddress address, Desk desk, boolean demo, boolean secureCookie) throws IOException {
-        this(address, desk, demo, secureCookie, EmailCodes::sendMail);
-    }
-
-    RelayServer(InetSocketAddress address, Desk desk, boolean demo, boolean secureCookie, EmailCodes.Sender sender) throws IOException {
-        this.codes = new EmailCodes(sender);
         this.desk = desk;
         this.demo = demo;
         this.secureCookie = secureCookie;
@@ -121,20 +115,10 @@ final class RelayServer implements AutoCloseable {
                 setCookie(ex, "");
                 json(ex, 200, Map.of());
             }
-            case "/api/verification-code" -> {
-                limiter.check(ex.getRemoteAddress().getAddress().getHostAddress());
-                String challenge = codes.issue(EmailCodes.address(data.get("email")));
-                json(ex, 200, Map.of("challenge", challenge));
-            }
             case "/api/login", "/api/register" -> {
                 limiter.check(ex.getRemoteAddress().getAddress().getHostAddress());
                 if (!(data.get("email") instanceof String email) || !(data.get("password") instanceof String password)) {
                     throw new Problem(400, "Enter an email address and password.");
-                }
-                if (path.equals("/api/register")) {
-                    String address = EmailCodes.address(email);
-                    codes.redeem(address, data.get("challenge"), data.get("code"));
-                    data.put("email", address);
                 }
                 Map<String,Object> user = path.equals("/api/login") ? desk.login(email, password) : desk.register(data);
                 sessions.revoke(previous);
