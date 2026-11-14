@@ -1,4 +1,4 @@
-# Relay feature inventory
+# ServiceForce feature inventory
 
 ## Accounts and access
 
@@ -21,7 +21,7 @@
 
 - Administrator management of service catalog, incident categories, routing strategy and response/resolution SLA policies.
 - Response and resolution deadlines, at-risk and breached indicators, and periodic monitoring every 15 seconds while the server runs.
-- **P1 response escalation:** when a critical incident passes its response deadline without acknowledgment, Relay creates one escalation event, alerts administrators in-app, records it in the audit log and marks the incident Escalated in the queue and detail view. The marker records that escalation occurred, even if the incident is acknowledged later. Administrators can inspect and reassign the case.
+- **P1 response escalation:** when a critical incident passes its response deadline without acknowledgment, ServiceForce creates one escalation event, alerts administrators in-app, records it in the audit log and marks the incident Escalated in the queue and detail view. The marker records that escalation occurred, even if the incident is acknowledged later. Administrators can inspect and reassign the case.
 - In-app notifications for incident activity and SLA events. A simulated email notification record is also created; it does not send an email.
 - Incident history and administrator audit log, operational overview, service volume, technician workload and SLA violation reports.
 

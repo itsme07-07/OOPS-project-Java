@@ -8,7 +8,7 @@ import java.util.Arrays;
 
 public final class Main {
     private static final String HELP = """
-        Relay IT service desk
+        ServiceForce IT service desk
           --host HOST       Bind address (default 127.0.0.1)
           --port PORT       Listen port (default 8000)
           --db PATH         SQLite database (default data/itsm.sqlite3)
@@ -56,7 +56,7 @@ public final class Main {
         Runtime.getRuntime().addShutdownHook(new Thread(server::close, "relay-shutdown"));
         server.start();
         String displayHost = host.contains(":") && !host.startsWith("[") ? "[" + host + "]" : host;
-        System.out.printf("Relay is listening at http://%s:%d%n", displayHost, server.port());
+        System.out.printf("ServiceForce is listening at http://%s:%d%n", displayHost, server.port());
     }
 
     private static String argument(String[] args, int index) {

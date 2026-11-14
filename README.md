@@ -1,6 +1,6 @@
-# Relay service desk
+# ServiceForce service desk
 
-Relay is the Java implementation of the Intelligent IT Service Management & Incident Resolution System for CS F213 / MAC F212. Employees report incidents, technicians investigate them, and administrators manage the service catalog, routing, policies and SLA violations.
+ServiceForce is the Java implementation of the Intelligent IT Service Management & Incident Resolution System for CS F213 / MAC F212. Employees report incidents, technicians investigate them, and administrators manage the service catalog, routing, policies and SLA violations.
 
 ## Run locally
 
@@ -11,7 +11,7 @@ Install a **JDK version 17 or later**. From the repository root:
 java -jar target/relay.jar
 ```
 
-On Windows use `mvnw.cmd clean verify`. The first build downloads Maven and the pinned dependencies. The resulting JAR includes the server, database driver and browser interface. Open [Relay on this computer](http://127.0.0.1:8000/). Stop it with Ctrl+C.
+On Windows use `mvnw.cmd clean verify`. The first build downloads Maven and the pinned dependencies. The resulting JAR includes the server, database driver and browser interface. Open [ServiceForce on this computer](http://127.0.0.1:8000/). Stop it with Ctrl+C.
 
 The first local launch creates `data/itsm.sqlite3` and demo accounts. If you already ran the earlier release, start the JAR from the same project directory to reuse the existing database. Sign in again after restarting the server.
 
