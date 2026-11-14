@@ -21,7 +21,7 @@ Allow 15–20 minutes. Each group member should introduce themselves and demonst
 1. Report two open incidents against the same service with overlapping symptoms and titles. Inspect the related incident information and explain the matching rule.
 2. In the administrator workspace, change the assignment strategy. Report another incident and inspect which eligible technician receives it.
 3. Open reporting and compare service volume, active workloads and SLA status. To demonstrate a deadline crossing, configure a one-minute response target before creating a fresh case and leave it unacknowledged.
-4. After the deadline, refresh and show the recorded SLA event. Explain why a repeated monitoring pass should not generate another identical alert.
+4. After the deadline, refresh and show the recorded SLA breach and Escalated marker. Open the administrator notifications and audit log. Explain why repeated monitoring does not generate another identical escalation.
 
 ## Design and evaluation (3–5 minutes)
 

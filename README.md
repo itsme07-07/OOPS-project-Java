@@ -49,6 +49,7 @@ docs/
 
 - The [project report](docs/project-report.pdf) covers stakeholders, business rules, quality requirements, technology choices, system architecture, use cases, class relationships, database design, sample data, and test cases.
 - The [demonstration guide](docs/demonstration.md) walks the team through reporting and routing an outage, investigating and verifying a fix, and correlating incidents while monitoring deadlines. The group records and submits its own presentation.
+- The [feature inventory](docs/features.md) lists the implemented workflows, access rules, reporting, notifications and escalation behavior.
 - Run `./mvnw test` for the automated checks. Tests create isolated databases and HTTP tests start their own loopback server. Maven writes detailed results under `target/surefire-reports/`.
 
 ## Deployment scope

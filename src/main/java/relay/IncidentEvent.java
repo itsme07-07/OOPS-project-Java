@@ -29,7 +29,7 @@ record IncidentEvent(Map<String,Object> incident, String actor, String action, S
             Set<Object> recipients = new HashSet<>();
             recipients.add(e.incident.get("reporter_id"));
             recipients.add(e.incident.get("technician_id"));
-            if (e.action.startsWith("SLA") || e.action.equals("Awaiting assignment")) {
+            if (e.action.startsWith("SLA") || e.action.equals("Awaiting assignment") || e.action.equals("Escalated")) {
                 for (var user : Database.rows(c, "SELECT id FROM users WHERE role='admin'")) {
                     recipients.add(user.get("id"));
                 }

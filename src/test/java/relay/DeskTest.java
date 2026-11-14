@@ -145,6 +145,24 @@ class DeskTest {
         desk.monitor();
         assertEquals(1,list(admin,"audit").stream().filter(a->a.get("incident_id").equals(ticket)
                 && "SLA Breached".equals(a.get("action"))).count());
+        assertEquals(1,list(admin,"audit").stream().filter(a->a.get("incident_id").equals(ticket)
+                && "Escalated".equals(a.get("action"))).count());
+        assertEquals(true, incident(ticket).get("escalated"));
+        assertTrue(list(admin,"notifications").stream().anyMatch(n->n.get("incident_id").equals(ticket)
+                && String.valueOf(n.get("message")).contains("Administrator action required")));
+    }
+
+    @Test void acknowledgedCriticalIncidentDoesNotEscalate() throws Exception {
+        int ticket=report(1,3,3);
+        int tech=((Number)incident(ticket).get("technician_id")).intValue();
+        desk.mutate(tech,"transition",Map.of("id",ticket,"status","Acknowledged"));
+        try(var c=DriverManager.getConnection("jdbc:sqlite:"+db);
+            var ps=c.prepareStatement("UPDATE incidents SET response_due='2000-01-01T00:00:00+00:00' WHERE id=?")) {
+            ps.setInt(1,ticket);
+            ps.executeUpdate();
+        }
+        desk.monitor();
+        assertEquals(false, incident(ticket).get("escalated"));
     }
 
     @Test void editingImpactReprioritizes() throws Exception {

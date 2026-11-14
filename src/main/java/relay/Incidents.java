@@ -260,6 +260,15 @@ final class Incidents {
             String label = condition.target.equals("response") ? "Response" : "Resolution";
             event(c, i, "System", "SLA " + condition.kind, label + " SLA · " + condition.kind.toLowerCase(Locale.ROOT) + ".", null, null, at);
         }
+        if ("P1".equals(i.get("priority")) && i.get("acknowledged_at") == null
+                && !COMPLETE.contains(i.get("status"))
+                && at.isAfter(Instant.parse(i.get("response_due").toString()))
+                && exec(c, "INSERT OR IGNORE INTO sla_events(incident_id,target,kind) VALUES(?,'response','Escalated')",
+                    i.get("id")) != 0) {
+            event(c, i, "System", "Escalated",
+                    "Critical incident was not acknowledged by its response deadline. Administrator action required.",
+                    null, null, at);
+        }
     }
 
     void monitor(Connection c) throws SQLException {
@@ -290,6 +299,8 @@ final class Incidents {
             if (source != null && !visibleIds.contains(source)) i.put("suggested_resolution", "");
             if (!visibleIds.contains(i.get("related_id"))) i.put("related_id", null);
             i.put("sla_status", slaStatus(i, at));
+            i.put("escalated", one(c, "SELECT 1 AS value FROM sla_events WHERE incident_id=? AND target='response' AND kind='Escalated'",
+                    i.get("id")) != null);
         }
         var audit = rows(c, "SELECT * FROM audit ORDER BY julianday(created_at) DESC,id DESC")
                 .stream().filter(row -> visibleIds.contains(row.get("incident_id"))).toList();
