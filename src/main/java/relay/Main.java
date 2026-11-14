@@ -22,12 +22,20 @@ public final class Main {
     private Main() {}
 
     public static void main(String[] args) throws Exception {
-        String host = "127.0.0.1";
-        Path database = Path.of("data", "itsm.sqlite3");
-        int port = 8000;
+        String railwayProject = System.getenv("RAILWAY_PROJECT_ID");
+        boolean railway = railwayProject != null && !railwayProject.isBlank();
+        String railwayPort = System.getenv("PORT");
+        String mount = System.getenv("RAILWAY_VOLUME_MOUNT_PATH");
+        String databasePath = System.getenv("SERVICEFORCE_DB_PATH");
+        if (railway && (mount == null || mount.isBlank()))
+            throw new IllegalStateException("Attach a Railway volume to preserve the SQLite database.");
+        Path database = databasePath != null && !databasePath.isBlank() ? Path.of(databasePath) :
+                railway ? Path.of(mount, "itsm.sqlite3") : Path.of("data", "itsm.sqlite3");
+        int port = railwayPort == null || railwayPort.isBlank() ? 8000 : Integer.parseInt(railwayPort);
         Boolean demoFlag = null;
         boolean createAdmin = false;
-        boolean secureCookie = false;
+        boolean secureCookie = railway;
+        String host = railway ? "0.0.0.0" : "127.0.0.1";
 
         for (int i = 0; i < args.length; i++) {
             switch (args[i]) {
@@ -45,12 +53,22 @@ public final class Main {
                 default -> throw new IllegalArgumentException("Unknown option " + args[i] + ". See --help.");
             }
         }
+        if (port < 0 || port > 65535) throw new IllegalArgumentException("Port must be 0 through 65535.");
         InetAddress address = InetAddress.getByName(host);
         boolean demo = !createAdmin && (demoFlag != null ? demoFlag : address.isLoopbackAddress());
         Desk desk = new Desk(database, demo);
         if (createAdmin) {
             createAdministrator(desk);
             return;
+        }
+        if (railway && !desk.hasAdmin()) {
+            String name = System.getenv("SERVICEFORCE_ADMIN_NAME");
+            String email = System.getenv("SERVICEFORCE_ADMIN_EMAIL");
+            String password = System.getenv("SERVICEFORCE_ADMIN_PASSWORD");
+            if (name == null || name.isBlank() || email == null || email.isBlank() ||
+                    password == null || password.isBlank())
+                throw new IllegalStateException("Set SERVICEFORCE_ADMIN_NAME, SERVICEFORCE_ADMIN_EMAIL and SERVICEFORCE_ADMIN_PASSWORD in Railway variables.");
+            desk.bootstrapAdmin(name, email, password);
         }
         RelayServer server = new RelayServer(new InetSocketAddress(address, port), desk, demo, secureCookie);
         Runtime.getRuntime().addShutdownHook(new Thread(server::close, "relay-shutdown"));

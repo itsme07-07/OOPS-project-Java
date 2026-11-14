@@ -172,6 +172,11 @@ public final class Desk {
         });
     }
 
+    public boolean hasAdmin() {
+        return database.transaction(false, c -> one(c,
+                "SELECT 1 FROM users WHERE role='admin' AND active=1 LIMIT 1") != null);
+    }
+
     static String required(Map<String,Object> data, String key, int limit) {
         if (!(data.get(key) instanceof String text) || text.isBlank() || text.codePointCount(0, text.length()) > limit)
             throw new Problem(400, "Enter a valid " + key.replace('_', ' ') + " (up to " + limit + " characters).");

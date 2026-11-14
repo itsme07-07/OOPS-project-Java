@@ -1,0 +1,11 @@
+.git
+.mvn
+target
+data
+docs
+README.md
+mvnw
+mvnw.cmd
+*.sqlite3*
+*.db*
+.DS_Store

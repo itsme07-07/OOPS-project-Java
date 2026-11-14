@@ -56,6 +56,7 @@ docs/
   project-report.pdf        Analysis, requirements, design, diagrams and testing
   demonstration.md          Three end-to-end workflows for the team presentation
   features.md               Implemented feature inventory and account rules
+  railway.md                Railway deployment instructions
 ```
 
 - The [project report](docs/project-report.pdf) covers stakeholders, business rules, quality requirements, technology choices, system architecture, use cases, class relationships, database design, sample data, and test cases.
@@ -68,3 +69,5 @@ docs/
 The included server is configured for local course demonstrations. Hosting the application requires a JVM and persistent storage for SQLite. For a public deployment, configure TLS, individual credentials and database backups. Email notifications are simulated in the application.
 
 Incident attachments are stored in the SQLite database. Back up the database to preserve uploaded files, incident history and knowledge articles.
+
+To host the Java backend and browser interface together, follow the [Railway deployment guide](docs/railway.md). Railway deployments require an attached volume and first-administrator credentials in Railway service variables. Local demo accounts are disabled on Railway.
