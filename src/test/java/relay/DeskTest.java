@@ -16,15 +16,27 @@ class DeskTest {
     @TempDir Path folder;
     Desk desk;
     Path db;
+    final Map<String,String> sent = new HashMap<>();
+    final List<String> allSent = new ArrayList<>();
     int employee, admin;
     static final String PASSWORD = "RelayDemo2026!";
 
     @BeforeEach void setup() throws Exception {
         db = folder.resolve("desk.sqlite3");
-        desk = new Desk(db, true);
-        employee = id(desk.login("employee@relay.test", PASSWORD));
-        admin = id(desk.login("admin@relay.test", PASSWORD));
+        desk = new Desk(db, true, (to, subject, body) -> { sent.put(to, body); allSent.add(to+" "+body); });
+        employee = id(desk.login(username(db,"employee@relay.test"), PASSWORD));
+        admin = id(desk.login(username(db,"admin@relay.test"), PASSWORD));
     }
+
+    String username(Path path, String email) throws Exception {
+        try (var c=DriverManager.getConnection("jdbc:sqlite:"+path);
+             var p=c.prepareStatement("SELECT username FROM users WHERE email=?")) {
+            p.setString(1,email);
+            try(var r=p.executeQuery()) { return r.next()?r.getString(1):null; }
+        }
+    }
+
+    String code(String email) { return sent.get(email).replaceAll("(?s).*code is ([0-9]{8}).*", "$1"); }
 
     int id(Object row) { return ((Number)((Map<?,?>)row).get("id")).intValue(); }
 
@@ -46,7 +58,8 @@ class DeskTest {
     }
 
     @Test void newEmployeesCannotChooseTheirRoleOrReadOtherCases() throws Exception {
-        var person = desk.register(registration("test@example.org", PASSWORD));
+        desk.register(registration("test@example.org", PASSWORD));
+        var person = desk.verifyEmail("test@example.org", code("test@example.org"));
         assertEquals("employee", person.get("role"));
         assertTrue(list(id(person), "incidents").isEmpty());
     }
@@ -55,6 +68,47 @@ class DeskTest {
         var data = registration("test@example.org", PASSWORD);
         desk.register(data);
         assertThrows(Problem.class, () -> desk.register(data));
+    }
+
+    @Test void registrationRequiresVerifiedEmailAndOnlyUsernameCanSignIn() throws Exception {
+        desk.register(registration("new@example.org", PASSWORD));
+        String username=username(db,"new@example.org");
+        assertEquals(403,assertThrows(Problem.class,()->desk.login(username,PASSWORD)).status);
+        assertEquals(401,assertThrows(Problem.class,()->desk.login("new@example.org",PASSWORD)).status);
+        assertEquals(400,assertThrows(Problem.class,()->desk.verifyEmail("new@example.org","00000000")).status);
+        assertEquals("employee",desk.verifyEmail("new@example.org",code("new@example.org")).get("role"));
+        assertEquals(username,desk.login(username,PASSWORD).get("username"));
+        assertEquals(400,assertThrows(Problem.class,()->desk.verifyEmail("new@example.org",code("new@example.org"))).status);
+    }
+
+    @Test void recoveryRequiresVerifiedEmailAndResetInvalidatesOldPassword() throws Exception {
+        desk.register(registration("new@example.org", PASSWORD));
+        desk.recoverUsername("new@example.org");
+        assertFalse(sent.get("new@example.org").contains("username"));
+        desk.requestReset("new@example.org");
+        assertFalse(sent.get("new@example.org").contains("recovery code"));
+        desk.verifyEmail("new@example.org",code("new@example.org"));
+        desk.recoverUsername("new@example.org");
+        assertTrue(sent.get("new@example.org").contains(username(db,"new@example.org")));
+        desk.requestReset("new@example.org");
+        assertEquals(400,assertThrows(Problem.class,()->desk.resetPassword("new@example.org","00000000","NewPassword2026!")).status);
+        desk.resetPassword("new@example.org",code("new@example.org"),"NewPassword2026!");
+        assertEquals(401,assertThrows(Problem.class,()->desk.login(username(db,"new@example.org"),PASSWORD)).status);
+        assertNotNull(desk.login(username(db,"new@example.org"),"NewPassword2026!"));
+    }
+
+    @Test void verifiedIncidentParticipantsReceiveQueuedEmailUpdates() throws Exception {
+        int ticket=report(1,3,3);
+        try(var c=DriverManager.getConnection("jdbc:sqlite:"+db);
+            var p=c.prepareStatement("SELECT count(*) FROM email_outbox o JOIN notifications n ON n.id=o.notification_id WHERE n.incident_id=?")) {
+            p.setInt(1,ticket);try(var r=p.executeQuery()){assertTrue(r.next());assertTrue(r.getInt(1)>0,"No email queued for new incident");}
+        }
+        for(int i=0;i<10;i++) desk.monitor();
+        assertTrue(allSent.stream().anyMatch(s->s.startsWith("employee@relay.test ") && s.contains("Incident #"+ticket)));
+        try(var c=DriverManager.getConnection("jdbc:sqlite:"+db);
+            var p=c.prepareStatement("SELECT count(*) FROM email_outbox WHERE status='sent'")) {
+            try(var r=p.executeQuery()) { assertTrue(r.next()); assertTrue(r.getInt(1)>0); }
+        }
     }
 
     @Test void invalidEmailIsRejected() {
@@ -66,20 +120,21 @@ class DeskTest {
     }
 
     @Test void accountsSurviveRestart() throws Exception {
-        var person = desk.register(registration("test@example.org", PASSWORD));
-        assertEquals(id(person), id(new Desk(db, false).login("test@example.org", PASSWORD)));
+        desk.register(registration("test@example.org", PASSWORD));
+        var person = desk.verifyEmail("test@example.org", code("test@example.org"));
+        assertEquals(id(person), id(new Desk(db, false).login(username(db,"test@example.org"), PASSWORD)));
     }
 
     @Test void systemGeneratesPrivateRoleBasedUsernames() throws Exception {
         var employeeAccount=(Map<?,?>)((Map<?,?>)desk.snapshot(employee)).get("user");
         var adminAccount=(Map<?,?>)((Map<?,?>)desk.snapshot(admin)).get("user");
-        int technician=id(desk.login("tech@relay.test",PASSWORD));
+        int technician=id(desk.login(username(db,"tech@relay.test"),PASSWORD));
         var technicianAccount=(Map<?,?>)((Map<?,?>)desk.snapshot(technician)).get("user");
         assertTrue(employeeAccount.get("username").toString().matches("jordanlee[A-Z0-9]{4}@service\\.emp"));
         assertTrue(adminAccount.get("username").toString().matches("alexmorgan[A-Z0-9]{4}@service\\.adm"));
         assertTrue(technicianAccount.get("username").toString().matches("samrivera[A-Z0-9]{4}@service\\.tech"));
         assertEquals(employee,id(desk.login(employeeAccount.get("username").toString(),PASSWORD)));
-        assertEquals(employee,id(desk.login("employee@relay.test",PASSWORD)));
+        assertEquals(401,assertThrows(Problem.class,()->desk.login("employee@relay.test",PASSWORD)).status);
         assertTrue(list(admin,"users").stream().noneMatch(u->u.containsKey("username")));
         desk.mutate(admin,"user",Map.of("id",employee,"username","example00000000@service.emp"));
         assertEquals(employeeAccount.get("username"),((Map<?,?>)((Map<?,?>)desk.snapshot(employee)).get("user")).get("username"));
@@ -96,7 +151,7 @@ class DeskTest {
                 """);
         }
         var upgraded=new Desk(old,true);
-        int existing=id(upgraded.login("admin@relay.test",PASSWORD));
+        int existing=id(upgraded.login(username(old,"admin@relay.test"),PASSWORD));
         var current=(Map<?,?>)((Map<?,?>)upgraded.snapshot(existing)).get("user");
         assertTrue(current.get("username").toString().matches("alexmorgan[A-Z0-9]{4}@service\\.adm"));
     }
@@ -115,14 +170,16 @@ class DeskTest {
     }
 
     @Test void everyRoleCanEditOnlyItsOwnProfile() throws Exception {
-        int technician=id(desk.login("tech@relay.test",PASSWORD));
+        int technician=id(desk.login(username(db,"tech@relay.test"),PASSWORD));
         for (int actor : List.of(employee, technician, admin)) {
             String original=((Map<?,?>)((Map<?,?>)desk.snapshot(actor)).get("user")).get("username").toString();
             String code=original.substring(original.indexOf('@')-4,original.indexOf('@'));
             String email="profile-"+actor+"@example.org";
+            desk.requestPasswordCode(actor);
             desk.mutate(actor,"profile",Map.of("name","Updated Person","email",email,
-                    "current_password",PASSWORD,"password","NewPassword2026!"));
-            assertEquals(actor,id(desk.login(email,"NewPassword2026!")));
+                    "current_password",PASSWORD,"password","NewPassword2026!","code",code(((Map<?,?>)((Map<?,?>)desk.snapshot(actor)).get("user")).get("email").toString())));
+            desk.verifyEmail(email,code(email));
+            assertEquals(401,assertThrows(Problem.class,()->desk.login(email,"NewPassword2026!")).status);
             var current=(Map<?,?>)((Map<?,?>)desk.snapshot(actor)).get("user");
             assertEquals("Updated Person",current.get("name"));
             assertEquals("updatedperson"+code+"@service."+original.substring(original.lastIndexOf('.')+1),
@@ -140,11 +197,12 @@ class DeskTest {
                 Map.of("id",incident(ticket).get("technician_id")))).status);
         assertEquals(400,assertThrows(Problem.class,()->desk.mutate(admin,"remove-user",Map.of("id",admin))).status);
         desk.mutate(admin,"remove-user",Map.of("id",employee));
-        assertThrows(Problem.class,()->desk.login("employee@relay.test",PASSWORD));
+        assertThrows(Problem.class,()->desk.login(username(db,"employee@relay.test"),PASSWORD));
         assertEquals(401,assertThrows(Problem.class,()->desk.snapshot(employee)).status);
         assertEquals(ticket,id(incident(ticket)));
         assertFalse(list(admin,"users").stream().anyMatch(u->id(u)==employee));
-        assertEquals("employee",desk.register(registration("employee@relay.test",PASSWORD)).get("role"));
+        desk.register(registration("employee@relay.test",PASSWORD));
+        assertEquals("employee",desk.verifyEmail("employee@relay.test",code("employee@relay.test")).get("role"));
     }
 
     @Test void employeeCannotConfigureRouting() {
@@ -190,18 +248,20 @@ class DeskTest {
         var channels=new HashSet<>();
         list(employee,"notifications").stream().filter(n -> n.get("incident_id").equals(ticket))
                 .forEach(n -> channels.add(n.get("channel")));
-        assertEquals(Set.of("In-app","Simulated email"),channels);
+        assertEquals(Set.of("In-app"),channels);
     }
 
     @Test void ownershipProtectsNotes() throws Exception {
-        int stranger=id(desk.register(registration("stranger@example.org",PASSWORD)));
+        desk.register(registration("stranger@example.org",PASSWORD));
+        int stranger=id(desk.verifyEmail("stranger@example.org",code("stranger@example.org")));
         int ticket=report(1,3,3);
         assertThrows(Problem.class, () -> desk.mutate(stranger,"note",Map.of("id",ticket,"text","Unrelated")));
     }
 
     @Test void attachmentsAreLimitedAndPrivateToIncidentParticipants() throws Exception {
         int ticket=report(1,3,3);
-        int stranger=id(desk.register(registration("stranger@example.org",PASSWORD)));
+        desk.register(registration("stranger@example.org",PASSWORD));
+        int stranger=id(desk.verifyEmail("stranger@example.org",code("stranger@example.org")));
         byte[] content="What happened".getBytes(java.nio.charset.StandardCharsets.UTF_8);
         int fileId=desk.addAttachment(employee,ticket,"error.txt","text/plain",content);
         assertArrayEquals(content,desk.attachment(admin,fileId).content());
@@ -244,7 +304,7 @@ class DeskTest {
     }
 
     @Test void knowledgeArticlesAreReadableAndStaffManaged() throws Exception {
-        int technician=id(desk.login("tech@relay.test",PASSWORD));
+        int technician=id(desk.login(username(db,"tech@relay.test"),PASSWORD));
         var article=Map.<String,Object>of("title","Restore checkout","summary","Check gateway status",
                 "steps","Restart the gateway after approval.","service_id",1);
         assertEquals(403,assertThrows(Problem.class,()->desk.mutate(employee,"article-save",article)).status);

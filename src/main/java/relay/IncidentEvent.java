@@ -4,7 +4,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -40,11 +39,16 @@ record IncidentEvent(Map<String,Object> incident, String actor, String action, S
             }
             recipients.remove(null);
             for (var recipient : recipients) {
-                for (String channel : List.of("In-app", "Simulated email")) {
-                    Database.exec(c, """
-                        INSERT INTO notifications(incident_id,user_id,message,channel,created_at) VALUES(?,?,?,?,?)
-                        """, e.incident.get("id"), recipient, e.message, channel, e.at.toString());
-                }
+                int notificationId = Database.insert(c, """
+                    INSERT INTO notifications(incident_id,user_id,message,channel,created_at) VALUES(?,?,?,?,?)
+                    """, e.incident.get("id"), recipient, e.message, "In-app", e.at.toString());
+                var person = Database.one(c, "SELECT email FROM users WHERE id=? AND active=1 AND email_verified=1", recipient);
+                if (person != null) Database.exec(c, """
+                    INSERT INTO email_outbox(notification_id,recipient,subject,body,next_attempt_at)
+                    VALUES(?,?,?,?,?)
+                    """, notificationId, person.get("email"), "ServiceForce incident update",
+                        "Incident #" + e.incident.get("id") + ": " + e.action + "\n\n" + e.message,
+                        e.at.toString());
             }
         }
     }

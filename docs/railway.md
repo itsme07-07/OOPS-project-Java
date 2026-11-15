@@ -17,9 +17,13 @@ Use a [Railway account](https://railway.com/) and the [Java GitHub repository](h
    | `SERVICEFORCE_ADMIN_NAME` | Your administrator display name |
    | `SERVICEFORCE_ADMIN_EMAIL` | Your administrator contact email |
    | `SERVICEFORCE_ADMIN_PASSWORD` | A private administrator password of at least 8 characters |
+   | `BREVO_API_KEY` | Your private Brevo transactional email API key |
+   | `SERVICEFORCE_EMAIL_FROM` | A sender address verified in Brevo |
 
 4. In service settings, set the healthcheck path to `/healthz`. Generate a public HTTP domain under **Networking**. Railway supplies the `PORT` variable; ServiceForce listens on that port and on `0.0.0.0` automatically.
-5. Deploy the staged changes. Open the generated HTTPS domain and sign in with the administrator email and password from step 3. The system also generates a role-based username for that account, visible under **My profile**.
+5. Deploy the staged changes. Open the generated HTTPS domain and choose **Verify email**, enter the administrator email, request its code, and verify it. The app then shows the assigned username in **My profile**. Future sign-ins require that username and password.
+
+Railway Free blocks outbound SMTP; ServiceForce uses Brevo over HTTPS. Without the two Brevo variables, registration, email verification, recovery and email updates cannot deliver mail. Add the key privately in Railway, never to Git. Existing accounts can still sign in with their assigned username after this update, but must verify their recovery email before using email recovery, password changes or email updates.
 
 The demo accounts from the README are **not** created on Railway. The first deployment creates a fresh database. ServiceForce uses a secure session cookie behind Railway HTTPS.
 

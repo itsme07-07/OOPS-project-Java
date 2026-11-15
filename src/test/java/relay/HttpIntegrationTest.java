@@ -21,9 +21,15 @@ class HttpIntegrationTest {
     private static URI base;
     private static final HttpClient CLIENT = HttpClient.newHttpClient();
     private static final Gson JSON = new Gson();
+    private static final java.util.Map<String,String> SENT = new java.util.concurrent.ConcurrentHashMap<>();
+
+    private String demoUsername(String role) throws Exception {
+        return JsonParser.parseString(get("/api/config").body()).getAsJsonObject()
+                .getAsJsonObject("demoUsers").get(role).getAsString();
+    }
 
     @BeforeAll static void start() throws Exception {
-        Desk desk = new Desk(directory.resolve("desk.sqlite3"), true);
+        Desk desk = new Desk(directory.resolve("desk.sqlite3"), true, (to, subject, body) -> SENT.put(to, body));
         server = new RelayServer(new InetSocketAddress("127.0.0.1", 0), desk, true, false);
         server.start();
         base = URI.create("http://127.0.0.1:" + server.port());
@@ -65,11 +71,11 @@ class HttpIntegrationTest {
     }
 
     @Test void wrongPasswordIsRejected() throws Exception {
-        assertEquals(401, post("/api/login", JSON.toJson(Map.of("email","admin@relay.test","password","wrong"))).statusCode());
+        assertEquals(401, post("/api/login", JSON.toJson(Map.of("identifier",demoUsername("admin"),"password","wrong"))).statusCode());
     }
 
     @Test void sessionPermitsWorkspaceAccessUntilLogout() throws Exception {
-        var res = post("/api/login", JSON.toJson(Map.of("email", "employee@relay.test", "password", "RelayDemo2026!")));
+        var res = post("/api/login", JSON.toJson(Map.of("identifier", demoUsername("employee"), "password", "RelayDemo2026!")));
         assertEquals(200, res.statusCode());
         String cookie = res.headers().firstValue("Set-Cookie").orElseThrow();
         assertTrue(cookie.contains("HttpOnly"));
@@ -83,7 +89,7 @@ class HttpIntegrationTest {
     }
 
     @Test void attachmentDownloadRequiresIncidentAccess() throws Exception {
-        var login=post("/api/login",JSON.toJson(Map.of("email","employee@relay.test","password","RelayDemo2026!")));
+        var login=post("/api/login",JSON.toJson(Map.of("identifier",demoUsername("employee"),"password","RelayDemo2026!")));
         String cookie=login.headers().firstValue("Set-Cookie").orElseThrow().split(";",2)[0];
         var upload=post("/api/attachment",JSON.toJson(Map.of("incident_id",1,"file_name","error.txt",
                 "media_type","text/plain","content","SGVsbG8=")),"Cookie",cookie);
@@ -118,9 +124,14 @@ class HttpIntegrationTest {
         assertEquals(404,post("/api/verification-code",JSON.toJson(Map.of("email",data.get("email")))).statusCode());
         var res = post("/api/register", JSON.toJson(data));
         assertEquals(200, res.statusCode());
-        var user = JsonParser.parseString(res.body()).getAsJsonObject().getAsJsonObject("user");
+        assertTrue(res.headers().firstValue("Set-Cookie").isEmpty());
+        String code=SENT.get("http-user@example.org").replaceAll("(?s).*code is ([0-9]{8}).*", "$1");
+        var verified=post("/api/verify-email", JSON.toJson(Map.of("email","http-user@example.org","code",code)));
+        var user = JsonParser.parseString(verified.body()).getAsJsonObject().getAsJsonObject("user");
         assertEquals("employee", user.get("role").getAsString());
-        String cookie = res.headers().firstValue("Set-Cookie").orElseThrow().split(";", 2)[0];
+        assertTrue(verified.headers().firstValue("Set-Cookie").isEmpty());
+        var signedIn=post("/api/login",JSON.toJson(Map.of("identifier",user.get("username").getAsString(),"password","StrongPass1!")));
+        String cookie = signedIn.headers().firstValue("Set-Cookie").orElseThrow().split(";", 2)[0];
         var denied = post("/api/action", "{\"action\":\"strategy\",\"strategy\":\"load\"}", "Cookie", cookie);
         assertEquals(403, denied.statusCode());
     }

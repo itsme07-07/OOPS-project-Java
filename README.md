@@ -4,15 +4,7 @@ ServiceForce is the Java implementation of the Intelligent IT Service Management
 
 ## Demo sign-in
 
-Open [ServiceForce on this computer](http://127.0.0.1:8000/) after starting the Java server. On the sign-in screen, enter one of these **email addresses** in the **Username or email** field:
-
-| Role | Username or email | Password |
-|---|---|---|
-| Administrator | `admin@relay.test` | `RelayDemo2026!` |
-| Technician | `tech@relay.test` | `RelayDemo2026!` |
-| Employee | `employee@relay.test` | `RelayDemo2026!` |
-
-These are local demo accounts only. To find the generated username for an account, sign in with its email, then select the **profile button beside Sign out** in the sidebar. **My profile** shows **Your generated username**, for example `samriveraA1B2@service.tech`. The username uses the person's name (lowercase, with spaces and punctuation removed) and a unique four-character code of letters or digits. Each installation generates different codes, so exact usernames cannot be listed in Git. Registered users choose their own passwords; those passwords are stored as hashes in the local database and cannot be read from Git. The generated usernames are identifiers, not working email addresses.
+Open [ServiceForce on this computer](http://127.0.0.1:8000/) after starting the Java server. Use the **Explore a demo workspace** buttons for Administrator, Technician or Employee. The demo password is `RelayDemo2026!` for all three. The sign-in form accepts only the assigned username, whose exact four-character code differs per installation. After demo sign-in, **My profile** shows it. Real users receive a verification code by email before their first sign-in; their verified email is used for account recovery and incident updates. Passwords are stored as hashes, never in Git.
 
 ## Run locally
 
@@ -66,7 +58,7 @@ docs/
 
 ## Deployment scope
 
-The included server is configured for local course demonstrations. Hosting the application requires a JVM and persistent storage for SQLite. For a public deployment, configure TLS, individual credentials and database backups. Email notifications are simulated in the application.
+The included server is configured for local course demonstrations. Hosting the application requires a JVM and persistent storage for SQLite. For a public deployment, configure TLS, individual credentials and database backups. Real email delivery uses Brevo’s HTTPS API when `BREVO_API_KEY` and `SERVICEFORCE_EMAIL_FROM` are configured. Registration and recovery require that configuration.
 
 Incident attachments are stored in the SQLite database. Back up the database to preserve uploaded files, incident history and knowledge articles.
 

@@ -34,7 +34,8 @@ final class RelayServer implements AutoCloseable {
     private static final Map<String, String> ASSETS = Map.of(
         "/index.html", "text/html; charset=utf-8", "/app.js", "text/javascript; charset=utf-8",
         "/style.css", "text/css; charset=utf-8", "/mark.svg", "image/svg+xml");
-    private static final Set<String> POST_ENDPOINTS = Set.of("/api/register", "/api/login", "/api/logout", "/api/action", "/api/attachment");
+    private static final Set<String> POST_ENDPOINTS = Set.of("/api/register", "/api/login", "/api/logout", "/api/action", "/api/attachment",
+            "/api/request-verification", "/api/verify-email", "/api/recover-username", "/api/request-reset", "/api/reset-password", "/api/password-code");
     private static final System.Logger LOG = System.getLogger(RelayServer.class.getName());
 
     private final HttpServer server;
@@ -107,7 +108,7 @@ final class RelayServer implements AutoCloseable {
                 return;
             }
             switch (path) {
-                case "/api/config" -> json(ex, 200, Map.of("demo", demo));
+                case "/api/config" -> json(ex, 200, demo ? Map.of("demo", true, "demoUsers", desk.demoUsers()) : Map.of("demo", false));
                 case "/healthz" -> json(ex, 200, Map.of("status", "ok"));
                 case "/api/state" -> json(ex, 200, desk.snapshot(sessions.resolve(token(ex))));
                 default -> asset(ex, path.equals("/") ? "/index.html" : path);
@@ -127,16 +128,50 @@ final class RelayServer implements AutoCloseable {
                 setCookie(ex, "");
                 json(ex, 200, Map.of());
             }
-            case "/api/login", "/api/register" -> {
+            case "/api/login" -> {
                 limiter.check(ex.getRemoteAddress().getAddress().getHostAddress());
-                Object identifier = path.equals("/api/login") ? data.getOrDefault("identifier", data.get("email")) : data.get("email");
-                if (!(identifier instanceof String addressOrUsername) || !(data.get("password") instanceof String password)) {
-                    throw new Problem(400, "Enter your username or email and password.");
-                }
-                Map<String,Object> user = path.equals("/api/login") ? desk.login(addressOrUsername, password) : desk.register(data);
+                String identifier = Desk.required(data, "identifier", 254);
+                String password = Desk.required(data, "password", 256);
+                Map<String,Object> user = desk.login(identifier, password);
                 sessions.revoke(previous);
                 setCookie(ex, sessions.create(((Number)user.get("id")).intValue()));
                 json(ex, 200, Map.of("user", user));
+            }
+            case "/api/register" -> {
+                limiter.check(ex.getRemoteAddress().getAddress().getHostAddress());
+                json(ex, 200, desk.register(data));
+            }
+            case "/api/request-verification" -> {
+                limiter.check(ex.getRemoteAddress().getAddress().getHostAddress());
+                desk.requestVerification(Desk.required(data, "email", 254));
+                json(ex, 200, Map.of("message", "If this address needs verification, a code has been sent."));
+            }
+            case "/api/verify-email" -> {
+                limiter.check(ex.getRemoteAddress().getAddress().getHostAddress());
+                var user = desk.verifyEmail(Desk.required(data, "email", 254), Desk.required(data, "code", 8));
+                json(ex, 200, Map.of("user", user));
+            }
+            case "/api/recover-username" -> {
+                limiter.check(ex.getRemoteAddress().getAddress().getHostAddress());
+                desk.recoverUsername(Desk.required(data, "email", 254));
+                json(ex, 200, Map.of("message", "If this is a verified recovery address, the username has been sent."));
+            }
+            case "/api/request-reset" -> {
+                limiter.check(ex.getRemoteAddress().getAddress().getHostAddress());
+                desk.requestReset(Desk.required(data, "email", 254));
+                json(ex, 200, Map.of("message", "If this is a verified recovery address, a code has been sent."));
+            }
+            case "/api/reset-password" -> {
+                limiter.check(ex.getRemoteAddress().getAddress().getHostAddress());
+                int uid = desk.resetPassword(Desk.required(data, "email", 254), Desk.required(data, "code", 8),
+                        Desk.required(data, "password", 256));
+                sessions.revokeUser(uid);
+                setCookie(ex, "");
+                json(ex, 200, Map.of("message", "Password updated. Sign in with your assigned username."));
+            }
+            case "/api/password-code" -> {
+                desk.requestPasswordCode(sessions.resolve(previous));
+                json(ex, 200, Map.of("message", "A password change code has been sent to your recovery email."));
             }
             case "/api/action" -> {
                 int userId = sessions.resolve(previous);

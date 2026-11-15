@@ -42,6 +42,10 @@ final class SessionStore {
         sessions.remove(digest(token));
     }
 
+    synchronized void revokeUser(int userId) {
+        sessions.values().removeIf(session -> session.userId() == userId);
+    }
+
     private static String digest(String token) {
         try {
             byte[] input = token.getBytes(StandardCharsets.UTF_8);

@@ -4,15 +4,7 @@ Allow 15–20 minutes. Each group member should introduce themselves and demonst
 
 ## Before the demonstration
 
-Start the server with `java -jar target/relay.jar` and open [http://127.0.0.1:8000/](http://127.0.0.1:8000/). Sign in through **Username or email**:
-
-| Role | Demo email | Demo password |
-|---|---|---|
-| Administrator | `admin@relay.test` | `RelayDemo2026!` |
-| Technician | `tech@relay.test` | `RelayDemo2026!` |
-| Employee | `employee@relay.test` | `RelayDemo2026!` |
-
-Each account also has a generated username in the format `nameCODE@service.role`, for example `alexmorganA1B2@service.adm`. The code has four letters or digits. To show the exact username, open **My profile** with the button beside Sign out. Codes are created locally, so they are not listed in Git.
+Start the server with `java -jar target/relay.jar` and open [http://127.0.0.1:8000/](http://127.0.0.1:8000/). Use the three **Explore a demo workspace** buttons to sign in as Administrator, Technician and Employee. The demo password is `RelayDemo2026!`. Each generated username has the form `nameCODE@service.role`; **My profile** shows the exact username after sign-in. Demo addresses ending in `@relay.test` are not delivery addresses.
 
 ## 1. Report and route an outage (4 minutes)
 

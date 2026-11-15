@@ -22,8 +22,14 @@ public final class Desk {
     private static final String DUMMY_HASH = "0".repeat(32) + ":" + "0".repeat(64);
     private final Database database;
     private final Incidents incidents;
+    private final MailDelivery mail;
 
     public Desk(Path path, boolean demo) {
+        this(path, demo, MailDelivery.configured());
+    }
+
+    Desk(Path path, boolean demo, MailDelivery mail) {
+        this.mail = mail;
         database = new Database(path);
         incidents = new Incidents(database);
         String schema;
@@ -44,6 +50,10 @@ public final class Desk {
                 exec(c, "ALTER TABLE users ADD COLUMN active INTEGER NOT NULL DEFAULT 1");
             if (rows(c, "PRAGMA table_info(users)").stream().noneMatch(r -> "username".equals(r.get("name"))))
                 exec(c, "ALTER TABLE users ADD COLUMN username TEXT");
+            if (rows(c, "PRAGMA table_info(users)").stream().noneMatch(r -> "email_verified".equals(r.get("name"))) ) {
+                exec(c, "ALTER TABLE users ADD COLUMN email_verified INTEGER NOT NULL DEFAULT 0");
+                exec(c, "UPDATE users SET email_verified=2");
+            }
             if (rows(c, "PRAGMA table_info(incidents)").stream().noneMatch(r -> "recovery_due".equals(r.get("name"))))
                 exec(c, "ALTER TABLE incidents ADD COLUMN recovery_due TEXT");
             if (rows(c, "PRAGMA table_info(incidents)").stream().noneMatch(r -> "escalation_stage".equals(r.get("name"))))
@@ -84,7 +94,7 @@ public final class Desk {
             {"Noah Chen", "noah", "technician", "Authentication"}
         };
         for (String[] a : accounts) {
-            exec(c, "INSERT INTO users(name,email,role,skill,password) VALUES(?,?,?,?,?)",
+            exec(c, "INSERT INTO users(name,email,role,skill,password,email_verified) VALUES(?,?,?,?,?,1)",
                     a[0], a[1] + "@relay.test", a[2], a[3], hash("RelayDemo2026!"));
         }
         seedIncidents(c);
@@ -120,7 +130,7 @@ public final class Desk {
 
     static Map<String,Object> publicUser(Map<String,Object> row) {
         var safe = new LinkedHashMap<String,Object>();
-        for (String key : List.of("id", "name", "email", "username", "role", "skill", "available", "capacity")) safe.put(key, row.get(key));
+        for (String key : List.of("id", "name", "email", "email_verified", "username", "role", "skill", "available", "capacity")) safe.put(key, row.get(key));
         return safe;
     }
 
@@ -156,12 +166,14 @@ public final class Desk {
         if (identifier == null || password == null || password.codePointCount(0, password.length()) > 256)
             throw new Problem(401, "Invalid username or password.");
         var account = database.transaction(false, c -> one(c,
-                "SELECT * FROM users WHERE active=1 AND (username=? COLLATE NOCASE OR email=?)",
-                identifier.strip(), identifier.strip()));
+                "SELECT * FROM users WHERE active=1 AND username=? COLLATE NOCASE",
+                identifier.strip()));
         String encoded = account == null ? DUMMY_HASH : (String) account.get("password");
         String[] parts = encoded.split(":", 2);
         if (!MessageDigest.isEqual(digest(password, parts[0]), HexFormat.of().parseHex(parts[1])) || account == null)
             throw new Problem(401, "Invalid username or password.");
+        if (((Number) account.get("email_verified")).intValue() == 0)
+            throw new Problem(403, "Verify your recovery email before signing in.");
         return publicUser(account);
     }
 
@@ -169,7 +181,110 @@ public final class Desk {
         var employee = new HashMap<String,Object>();
         for (String key : List.of("name", "email", "password")) employee.put(key, data.get(key));
         employee.put("role", "employee");
-        return database.transaction(true, c -> publicUser(user(c, saveUser(c, employee))));
+        return database.transaction(true, c -> {
+            var person = user(c, saveUser(c, employee));
+            issueCode(c, person, "verify");
+            return Map.of("email", person.get("email"));
+        });
+    }
+
+    private void issueCode(Connection c, Map<String,Object> person, String purpose) throws SQLException {
+        var prior = one(c, "SELECT sent_at FROM email_codes WHERE user_id=? AND purpose=?", person.get("id"), purpose);
+        Instant now = Instant.now();
+        if (prior != null && now.isBefore(Instant.parse(prior.get("sent_at").toString()).plusSeconds(60)))
+            throw new Problem(429, "Please wait one minute before requesting another code.");
+        String code = String.format(Locale.ROOT, "%08d", RANDOM.nextInt(100_000_000));
+        exec(c, """
+            INSERT INTO email_codes(user_id,purpose,code_hash,sent_at,expires_at,attempts)
+            VALUES(?,?,?,?,?,0) ON CONFLICT(user_id,purpose) DO UPDATE SET
+            code_hash=excluded.code_hash,sent_at=excluded.sent_at,expires_at=excluded.expires_at,attempts=0
+            """, person.get("id"), purpose, hash(code), now.toString(), now.plusSeconds(600).toString());
+        String subject = switch (purpose) {
+            case "verify" -> "Verify your ServiceForce recovery email";
+            case "password" -> "ServiceForce password change code";
+            default -> "ServiceForce password recovery code";
+        };
+        mail.send(person.get("email").toString(), subject,
+                "Your ServiceForce code is " + code + ". It expires in 10 minutes. Do not share this code.");
+    }
+
+    private boolean useCode(Connection c, Map<String,Object> person, String purpose, String code) throws SQLException {
+        var row = one(c, "SELECT * FROM email_codes WHERE user_id=? AND purpose=?", person.get("id"), purpose);
+        if (row == null || ((Number)row.get("attempts")).intValue() >= 5 ||
+                Instant.now().isAfter(Instant.parse(row.get("expires_at").toString()))) return false;
+        String[] parts = row.get("code_hash").toString().split(":", 2);
+        boolean valid = code != null && code.matches("[0-9]{8}") &&
+                MessageDigest.isEqual(digest(code, parts[0]), HexFormat.of().parseHex(parts[1]));
+        if (valid) exec(c, "DELETE FROM email_codes WHERE user_id=? AND purpose=?", person.get("id"), purpose);
+        else exec(c, "UPDATE email_codes SET attempts=attempts+1 WHERE user_id=? AND purpose=?", person.get("id"), purpose);
+        return valid;
+    }
+
+    private static Map<String,Object> accountByEmail(Connection c, String email) throws SQLException {
+        return one(c, "SELECT * FROM users WHERE active=1 AND email=? COLLATE NOCASE", email.strip());
+    }
+
+    public void requestVerification(String email) {
+        try { database.transaction(true, c -> {
+            var person = accountByEmail(c, email);
+            if (person != null && ((Number)person.get("email_verified")).intValue() != 1)
+                issueCode(c, person, "verify");
+            return null;
+        }); } catch (Problem e) { if (e.status != 429) throw e; }
+    }
+
+    public Map<String,Object> verifyEmail(String email, String code) {
+        var result = database.transaction(true, c -> {
+            var person = accountByEmail(c, email);
+            if (person == null || !useCode(c, person, "verify", code)) return null;
+            exec(c, "UPDATE users SET email_verified=1 WHERE id=?", person.get("id"));
+            return publicUser(user(c, ((Number)person.get("id")).intValue()));
+        });
+        if (result == null) throw new Problem(400, "The code is invalid or expired.");
+        return result;
+    }
+
+    public void recoverUsername(String email) {
+        database.transaction(false, c -> {
+            var person = accountByEmail(c, email);
+            if (person != null && ((Number)person.get("email_verified")).intValue() == 1)
+                mail.send(person.get("email").toString(), "Your ServiceForce username",
+                        "Your assigned username is " + person.get("username") + ".");
+            return null;
+        });
+    }
+
+    public void requestReset(String email) {
+        try { database.transaction(true, c -> {
+            var person = accountByEmail(c, email);
+            if (person != null && ((Number)person.get("email_verified")).intValue() == 1)
+                issueCode(c, person, "reset");
+            return null;
+        }); } catch (Problem e) { if (e.status != 429) throw e; }
+    }
+
+    public int resetPassword(String email, String code, String password) {
+        String encoded = hash(password);
+        int id = database.transaction(true, c -> {
+            var person = accountByEmail(c, email);
+            if (person == null || ((Number)person.get("email_verified")).intValue() != 1 ||
+                    !useCode(c, person, "reset", code)) return 0;
+            exec(c, "UPDATE users SET password=? WHERE id=?", encoded, person.get("id"));
+            exec(c, "DELETE FROM email_codes WHERE user_id=?", person.get("id"));
+            return ((Number)person.get("id")).intValue();
+        });
+        if (id == 0) throw new Problem(400, "The code is invalid or expired.");
+        return id;
+    }
+
+    public void requestPasswordCode(int uid) {
+        database.transaction(true, c -> {
+            var person = user(c, uid);
+            if (((Number)person.get("email_verified")).intValue() != 1)
+                throw new Problem(409, "Verify your recovery email first.");
+            issueCode(c, person, "password");
+            return null;
+        });
     }
 
     public Map<String,Object> bootstrapAdmin(String name, String email, String password) {
@@ -183,6 +298,15 @@ public final class Desk {
     public boolean hasAdmin() {
         return database.transaction(false, c -> one(c,
                 "SELECT 1 FROM users WHERE role='admin' AND active=1 LIMIT 1") != null);
+    }
+
+    public Map<String,String> demoUsers() {
+        return database.transaction(false, c -> {
+            var result = new HashMap<String,String>();
+            for (var row : rows(c, "SELECT role,username FROM users WHERE email IN ('admin@relay.test','tech@relay.test','employee@relay.test')"))
+                result.put(row.get("role").toString(), row.get("username").toString());
+            return result;
+        });
     }
 
     static String required(Map<String,Object> data, String key, int limit) {
@@ -278,12 +402,16 @@ public final class Desk {
                     """, existing.get("id"), existing.get("id")) != null)
             throw new Problem(400, "Reassign this technician's active incidents before changing their role.");
         Object password = data.get("password");
+        if (editing && password instanceof String value && !value.isBlank())
+            throw new Problem(403, "People must change their own passwords using an email code.");
         Object encoded = editing && (password == null || "".equals(password)) ? existing.get("password") : hash(password);
         String username = editing ? formatUsername(name, role.toString(),
                 usernameCode(existing.get("username").toString())) : newUsername(c, name, role.toString());
         if (editing) {
-            exec(c, "UPDATE users SET name=?,email=?,username=?,role=?,skill=?,available=?,capacity=?,password=? WHERE id=?",
-                    name, email, username, role, skill, availability, capacity, encoded, existing.get("id"));
+            int verified = email.equalsIgnoreCase(existing.get("email").toString()) ?
+                    ((Number)existing.get("email_verified")).intValue() : 0;
+            exec(c, "UPDATE users SET name=?,email=?,email_verified=?,username=?,role=?,skill=?,available=?,capacity=?,password=? WHERE id=?",
+                    name, email, verified, username, role, skill, availability, capacity, encoded, existing.get("id"));
             return ((Number) existing.get("id")).intValue();
         }
         return insert(c, "INSERT INTO users(name,email,username,role,skill,available,capacity,password) VALUES(?,?,?,?,?,?,?,?)",
@@ -300,15 +428,22 @@ public final class Desk {
         String email = required(data, "email", 254).toLowerCase(Locale.ROOT);
         if (!email.matches("[^\\s@]+@[^\\s@]+\\.[^\\s@]+")) throw new Problem(400, "Enter a valid email address.");
         Object password = data.get("password");
+        if (password instanceof String value && !value.isBlank() &&
+                !useCode(c, existing, "password", String.valueOf(data.get("code"))))
+            return Map.of("_otp_error", true);
         String encoded = password == null || "".equals(password) ? existing.get("password").toString() : hash(password);
         String skill = existing.get("skill").toString();
         if ("technician".equals(existing.get("role")) && data.get("skill") instanceof String value) {
             skill = value.equals("general") ? "" : value.strip();
             if (!skill.isEmpty()) category(c, skill);
         }
-        exec(c, "UPDATE users SET name=?,email=?,username=?,password=?,skill=? WHERE id=?",
-                name, email, formatUsername(name, existing.get("role").toString(),
+        boolean changedEmail = !email.equalsIgnoreCase(existing.get("email").toString());
+        exec(c, "UPDATE users SET name=?,email=?,email_verified=?,username=?,password=?,skill=? WHERE id=?",
+                name, email, changedEmail ? 0 : existing.get("email_verified"), formatUsername(name, existing.get("role").toString(),
                         usernameCode(existing.get("username").toString())), encoded, skill, uid);
+        if (changedEmail) {
+            issueCode(c, user(c, uid), "verify");
+        }
         return Map.of("id", uid);
     }
 
@@ -376,10 +511,37 @@ public final class Desk {
 
     public void monitor() {
         database.transaction(true, c -> { incidents.monitor(c); return null; });
+        for (var message : database.transaction(false, c -> rows(c, """
+                SELECT o.id,o.recipient,o.subject,o.body,o.attempts FROM email_outbox o
+                JOIN notifications n ON n.id=o.notification_id
+                JOIN users u ON u.id=n.user_id AND u.email=o.recipient COLLATE NOCASE
+                  AND u.active=1 AND u.email_verified=1
+                JOIN incidents i ON i.id=n.incident_id
+                WHERE o.status='pending' AND julianday(o.next_attempt_at)<=julianday(?)
+                  AND (u.role='admin' OR i.reporter_id=u.id OR i.technician_id=u.id
+                    OR EXISTS(SELECT 1 FROM incident_responders r
+                      WHERE r.incident_id=i.id AND r.user_id=u.id))
+                ORDER BY o.id LIMIT 20
+                """, Instant.now().toString()))) {
+            int id = ((Number)message.get("id")).intValue();
+            try {
+                mail.send(message.get("recipient").toString(), message.get("subject").toString(),
+                        message.get("body").toString());
+                database.transaction(true, c -> { exec(c, "UPDATE email_outbox SET status='sent' WHERE id=?", id); return null; });
+            } catch (Exception ignored) {
+                int attempts = ((Number)message.get("attempts")).intValue() + 1;
+                database.transaction(true, c -> {
+                    exec(c, "UPDATE email_outbox SET attempts=?,status=?,next_attempt_at=? WHERE id=?",
+                            attempts, attempts >= 8 ? "failed" : "pending",
+                            Instant.now().plusSeconds(Math.min(3600, 30L << Math.min(attempts, 6))).toString(), id);
+                    return null;
+                });
+            }
+        }
     }
 
     public Object mutate(int uid, String action, Map<String,Object> data) {
-        return database.transaction(true, c -> {
+        Object result = database.transaction(true, c -> {
             var actor = publicUser(user(c, uid));
             if (action == null || data == null) throw new Problem(400, "Enter a valid command.");
             return switch (action) {
@@ -395,11 +557,19 @@ public final class Desk {
                 }
             };
         });
+        if (result instanceof Map<?,?> map && Boolean.TRUE.equals(map.get("_otp_error")))
+            throw new Problem(400, "The password code is invalid or expired.");
+        return result;
     }
 
     private Object configure(Connection c, String action, Map<String,Object> data) throws SQLException {
         switch (action) {
-            case "user": return Map.of("id", saveUser(c, data));
+            case "user": {
+                int id = saveUser(c, data);
+                var person = user(c, id);
+                if (((Number)person.get("email_verified")).intValue() != 1) issueCode(c, person, "verify");
+                return Map.of("id", id);
+            }
             case "strategy":
                 String strategy = required(data, "strategy", 16);
                 if (!List.of("load", "skill").contains(strategy)) throw new Problem(400, "Unknown assignment strategy.");
