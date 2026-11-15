@@ -81,6 +81,15 @@ class DeskTest {
         assertEquals(400,assertThrows(Problem.class,()->desk.verifyEmail("new@example.org",code("new@example.org"))).status);
     }
 
+    @Test void administratorCreatedAccountNeedsPasswordAfterEmailVerification() throws Exception {
+        int id=id(desk.mutate(admin,"user",Map.of("name","New Technician","email","new-tech@example.org",
+                "role","technician","skill","Network","password",PASSWORD)));
+        String username=username(db,"new-tech@example.org");
+        assertEquals(403,assertThrows(Problem.class,()->desk.login(username,PASSWORD)).status);
+        assertFalse(desk.verifyEmailWithStatus("new-tech@example.org",code("new-tech@example.org")).newAccount());
+        assertEquals(id,id(desk.login(username,PASSWORD)));
+    }
+
     @Test void recoveryRequiresVerifiedEmailAndResetInvalidatesOldPassword() throws Exception {
         desk.register(registration("new@example.org", PASSWORD));
         desk.recoverUsername("new@example.org");

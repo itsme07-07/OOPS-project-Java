@@ -133,6 +133,8 @@ final class RelayServer implements AutoCloseable {
                 String identifier = Desk.required(data, "identifier", 254);
                 String password = Desk.required(data, "password", 256);
                 Map<String,Object> user = desk.login(identifier, password);
+                String role = Desk.required(data, "role", 20);
+                if (!role.equals(user.get("role"))) throw new Problem(401, "Invalid username or password for this role.");
                 sessions.revoke(previous);
                 setCookie(ex, sessions.create(((Number)user.get("id")).intValue()));
                 json(ex, 200, Map.of("user", user));
@@ -148,8 +150,12 @@ final class RelayServer implements AutoCloseable {
             }
             case "/api/verify-email" -> {
                 limiter.check(ex.getRemoteAddress().getAddress().getHostAddress());
-                var user = desk.verifyEmail(Desk.required(data, "email", 254), Desk.required(data, "code", 8));
-                json(ex, 200, Map.of("user", user));
+                var verification = desk.verifyEmailWithStatus(Desk.required(data, "email", 254), Desk.required(data, "code", 8));
+                if (verification.newAccount()) {
+                    sessions.revoke(previous);
+                    setCookie(ex, sessions.create(((Number)verification.user().get("id")).intValue()));
+                }
+                json(ex, 200, Map.of("user", verification.user(), "signedIn", verification.newAccount()));
             }
             case "/api/recover-username" -> {
                 limiter.check(ex.getRemoteAddress().getAddress().getHostAddress());

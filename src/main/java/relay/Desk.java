@@ -172,7 +172,7 @@ public final class Desk {
         String[] parts = encoded.split(":", 2);
         if (!MessageDigest.isEqual(digest(password, parts[0]), HexFormat.of().parseHex(parts[1])) || account == null)
             throw new Problem(401, "Invalid username or password.");
-        if (((Number) account.get("email_verified")).intValue() == 0)
+        if (!Set.of(1, 2).contains(((Number) account.get("email_verified")).intValue()))
             throw new Problem(403, "Verify your recovery email before signing in.");
         return publicUser(account);
     }
@@ -233,15 +233,22 @@ public final class Desk {
         }); } catch (Problem e) { if (e.status != 429) throw e; }
     }
 
-    public Map<String,Object> verifyEmail(String email, String code) {
+    record Verification(Map<String,Object> user, boolean newAccount) {}
+
+    Verification verifyEmailWithStatus(String email, String code) {
         var result = database.transaction(true, c -> {
             var person = accountByEmail(c, email);
             if (person == null || !useCode(c, person, "verify", code)) return null;
+            boolean newAccount = ((Number)person.get("email_verified")).intValue() == 0;
             exec(c, "UPDATE users SET email_verified=1 WHERE id=?", person.get("id"));
-            return publicUser(user(c, ((Number)person.get("id")).intValue()));
+            return new Verification(publicUser(user(c, ((Number)person.get("id")).intValue())), newAccount);
         });
         if (result == null) throw new Problem(400, "The code is invalid or expired.");
         return result;
+    }
+
+    public Map<String,Object> verifyEmail(String email, String code) {
+        return verifyEmailWithStatus(email, code).user();
     }
 
     public void recoverUsername(String email) {
@@ -291,7 +298,9 @@ public final class Desk {
         return database.transaction(true, c -> {
             if (one(c, "SELECT 1 FROM users WHERE role='admin' LIMIT 1") != null)
                 throw new Problem(409, "An administrator already exists.");
-            return publicUser(user(c, saveUser(c, Map.of("name", name, "email", email, "password", password, "role", "admin"))));
+            int id = saveUser(c, Map.of("name", name, "email", email, "password", password, "role", "admin"));
+            exec(c, "UPDATE users SET email_verified=3 WHERE id=?", id);
+            return publicUser(user(c, id));
         });
     }
 
@@ -409,7 +418,7 @@ public final class Desk {
                 usernameCode(existing.get("username").toString())) : newUsername(c, name, role.toString());
         if (editing) {
             int verified = email.equalsIgnoreCase(existing.get("email").toString()) ?
-                    ((Number)existing.get("email_verified")).intValue() : 0;
+                    ((Number)existing.get("email_verified")).intValue() : 3;
             exec(c, "UPDATE users SET name=?,email=?,email_verified=?,username=?,role=?,skill=?,available=?,capacity=?,password=? WHERE id=?",
                     name, email, verified, username, role, skill, availability, capacity, encoded, existing.get("id"));
             return ((Number) existing.get("id")).intValue();
@@ -439,7 +448,7 @@ public final class Desk {
         }
         boolean changedEmail = !email.equalsIgnoreCase(existing.get("email").toString());
         exec(c, "UPDATE users SET name=?,email=?,email_verified=?,username=?,password=?,skill=? WHERE id=?",
-                name, email, changedEmail ? 0 : existing.get("email_verified"), formatUsername(name, existing.get("role").toString(),
+                name, email, changedEmail ? 3 : existing.get("email_verified"), formatUsername(name, existing.get("role").toString(),
                         usernameCode(existing.get("username").toString())), encoded, skill, uid);
         if (changedEmail) {
             issueCode(c, user(c, uid), "verify");
@@ -567,6 +576,10 @@ public final class Desk {
             case "user": {
                 int id = saveUser(c, data);
                 var person = user(c, id);
+                if (!data.containsKey("id")) {
+                    exec(c, "UPDATE users SET email_verified=3 WHERE id=?", id);
+                    person = user(c, id);
+                }
                 if (((Number)person.get("email_verified")).intValue() != 1) issueCode(c, person, "verify");
                 return Map.of("id", id);
             }

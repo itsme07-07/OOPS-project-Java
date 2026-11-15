@@ -4,7 +4,7 @@ ServiceForce is the Java implementation of the Intelligent IT Service Management
 
 ## Demo sign-in
 
-Open [ServiceForce on this computer](http://127.0.0.1:8000/) after starting the Java server. Use the **Explore a demo workspace** buttons for Administrator, Technician or Employee. The demo password is `RelayDemo2026!` for all three. The sign-in form accepts only the assigned username, whose exact four-character code differs per installation. After demo sign-in, **My profile** shows it. Real users receive a verification code by email before their first sign-in; their verified email is used for account recovery and incident updates. Passwords are stored as hashes, never in Git.
+Open [ServiceForce on this computer](http://127.0.0.1:8000/) after starting the Java server. Choose **Employee**, **Technician** or **Administrator**, then use that role's demo button. The demo password is `RelayDemo2026!` for all three. The sign-in form accepts only the assigned username, whose exact four-character code differs per installation. After demo sign-in, **My profile** shows it and reminds users to use it for future sign-ins. New employees receive a verification code by email and enter their workspace immediately after verification. Their verified email is used for account recovery and incident updates. Passwords are stored as hashes, never in Git.
 
 ## Run locally
 
