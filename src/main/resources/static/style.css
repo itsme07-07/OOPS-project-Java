@@ -128,6 +128,17 @@ html[data-theme="light"] .landing{background:#f5f2fb;color:#241d42}html[data-the
 @keyframes feature-enter{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
 @media(max-width:600px){.intro-symbol{width:75px;height:75px}.intro-symbol img{width:64px;height:64px}.intro-lockup{min-height:100px}.intro h1{font-size:clamp(36px,8vw,55px)}@keyframes name-unfold{from{width:0}to{width:calc(100vw - 105px)}}}
 @media(prefers-reduced-motion:reduce){.intro-symbol,.intro h1,.intro-name,.intro-kicker,.intro-line,.intro-progress,.intro-skip,.from-intro .section-intro,.from-intro .feature-card{animation:none!important;opacity:1;transform:none}.intro h1{width:auto}.intro{transition:none}}
+
+/* Keep the single logo-to-wordmark motion centered on every screen. */
+.intro-content{width:max-content;max-width:100%;padding:0 20px}
+.intro-lockup{--intro-logo-size:110px;width:max-content;max-width:calc(100vw - 40px);min-height:110px;transform:translateX(calc(50% - var(--intro-logo-size)/2));animation:lockup-center 1.25s cubic-bezier(.2,.8,.2,1) .6s both}
+.intro-symbol{width:var(--intro-logo-size);height:var(--intro-logo-size)}
+.intro h1{width:auto;max-width:calc(100vw - 40px - var(--intro-logo-size));overflow:hidden;animation:none;clip-path:inset(0 100% 0 0);animation:wordmark-reveal 1.25s cubic-bezier(.2,.8,.2,1) .6s both}
+.intro-name{opacity:1;transform:none;animation:none;padding-left:8px;padding-right:0}
+@keyframes lockup-center{to{transform:translateX(0)}}
+@keyframes wordmark-reveal{to{clip-path:inset(0 0 0 0)}}
+@media(max-width:600px){.intro-lockup{--intro-logo-size:75px;min-height:75px}}
+@media(prefers-reduced-motion:reduce){.intro-lockup,.intro h1{animation:none!important;transform:none;clip-path:none}}
 @keyframes float{0%,100%{transform:translateY(0) rotateY(-9deg) rotateX(5deg) rotateZ(2deg)}50%{transform:translateY(-16px) rotateY(-7deg) rotateX(5deg) rotateZ(1deg)}}@keyframes breathe{50%{box-shadow:0 0 0 9px #d4f19417,0 0 30px #d4f194ee}}@keyframes bar-rise{from{transform:scaleY(.08)}to{transform:scaleY(1)}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.hero-cta,.visual-main,.visual-float,.visual-chart i,.live-dot{animation:none!important;transition:none!important}.feature-card{transition:none}}
 

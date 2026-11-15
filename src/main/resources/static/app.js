@@ -32,7 +32,7 @@ let introTimer;
 function finishIntro(){clearTimeout(introTimer);const overlay=document.querySelector('.intro');if(!overlay)return;landing();document.querySelector('.landing')?.classList.add('from-intro');document.querySelector('#features')?.scrollIntoView({behavior:'instant'});document.body.append(overlay);requestAnimationFrame(()=>overlay.classList.add('intro-exit'));setTimeout(()=>overlay.remove(),850);}
 function intro(){
   document.title="Welcome to ServiceForce";
-  app.innerHTML='<main class="intro" aria-label="Opening ServiceForce"><div class="intro-grid" aria-hidden="true"></div><div class="intro-content"><div class="intro-lockup"><div class="intro-symbol"><span class="intro-ring"></span><img src="/mark.svg" alt=""></div><h1><span class="intro-name">Service<span>Force</span></span></h1></div><p class="intro-kicker">THE FUTURE OF SERVICE STARTS HERE</p><p class="intro-line">Every issue. One connected team.</p><div class="intro-progress" aria-hidden="true"><span></span></div><button class="intro-skip" type="button" data-cmd="skip-intro">Skip intro →</button></div></main>';
+  app.innerHTML='<main class="intro" aria-label="Opening ServiceForce"><div class="intro-content"><div class="intro-lockup"><div class="intro-symbol"><span class="intro-ring"></span><img src="/mark.svg" alt=""></div><h1><span class="intro-name">Service<span>Force</span></span></h1></div></div></main>';
   introTimer=setTimeout(finishIntro,3200);
 }
 function themeButton(){return '<button type="button" class="theme-toggle" data-cmd="theme" aria-label="Switch to '+(document.documentElement.dataset.theme==="dark"?"light":"dark")+' mode"><span class="theme-sun">☀</span><span class="theme-moon">☾</span><span class="theme-knob"></span></button>';}
@@ -156,7 +156,6 @@ function clearSession(){++epoch;state=null;filters={};detailId=null;authMode="lo
 function failure(err,container){if(err.status===401&&state){clearSession();notify("Your session has expired. Please sign in again.");return;}const target=container?.querySelector(".error");if(target)target.textContent=err.message;else notify(err.message);}
 document.addEventListener("click",async e=>{const el=e.target.closest("[data-cmd]");if(!el)return;const cmd=el.dataset.cmd;
  try{
-  if(cmd==="skip-intro"){finishIntro();return;}
   if(cmd==="cancel"){dialog.close();return;}
   if(cmd==="theme"){const next=document.documentElement.dataset.theme==="dark"?"light":"dark";document.documentElement.dataset.theme=next;localStorage.setItem("serviceforce-theme",next);document.querySelectorAll('.theme-toggle').forEach(button=>button.setAttribute('aria-label','Switch to '+(next==="dark"?"light":"dark")+' mode'));return;}
   if(cmd==="show-login"){authMode="choose-role";location.hash="choose-role";auth();window.scrollTo(0,0);return;}
