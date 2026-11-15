@@ -44,6 +44,10 @@ public final class Desk {
                 exec(c, "ALTER TABLE users ADD COLUMN active INTEGER NOT NULL DEFAULT 1");
             if (rows(c, "PRAGMA table_info(users)").stream().noneMatch(r -> "username".equals(r.get("name"))))
                 exec(c, "ALTER TABLE users ADD COLUMN username TEXT");
+            if (rows(c, "PRAGMA table_info(incidents)").stream().noneMatch(r -> "recovery_due".equals(r.get("name"))))
+                exec(c, "ALTER TABLE incidents ADD COLUMN recovery_due TEXT");
+            if (rows(c, "PRAGMA table_info(incidents)").stream().noneMatch(r -> "escalation_stage".equals(r.get("name"))))
+                exec(c, "ALTER TABLE incidents ADD COLUMN escalation_stage INTEGER NOT NULL DEFAULT 0");
             exec(c, "CREATE UNIQUE INDEX IF NOT EXISTS users_username_unique ON users(username)");
             if (one(c, "SELECT 1 FROM settings LIMIT 1") == null) initialize(c, demo);
             for (var row : rows(c, "SELECT id,name,role,username FROM users")) {
@@ -267,7 +271,11 @@ public final class Desk {
                 one(c, "SELECT 1 FROM users WHERE role='admin' AND active=1 AND id<>?", existing.get("id")) == null)
             throw new Problem(400, "Keep at least one administrator.");
         if ("technician".equals(existing.get("role")) && !"technician".equals(role) &&
-                one(c, "SELECT 1 FROM incidents WHERE technician_id=? AND status NOT IN ('Closed','Resolved','Verified')", existing.get("id")) != null)
+                one(c, """
+                    SELECT 1 FROM incidents i WHERE i.status NOT IN ('Closed','Resolved','Verified')
+                    AND (i.technician_id=? OR EXISTS(SELECT 1 FROM incident_responders r
+                        WHERE r.incident_id=i.id AND r.user_id=?))
+                    """, existing.get("id"), existing.get("id")) != null)
             throw new Problem(400, "Reassign this technician's active incidents before changing their role.");
         Object password = data.get("password");
         Object encoded = editing && (password == null || "".equals(password)) ? existing.get("password") : hash(password);
@@ -311,7 +319,11 @@ public final class Desk {
         if ("admin".equals(target.get("role")) &&
                 one(c, "SELECT 1 FROM users WHERE role='admin' AND active=1 AND id<>?", id) == null)
             throw new Problem(400, "Keep at least one administrator.");
-        if (one(c, "SELECT 1 FROM incidents WHERE technician_id=? AND status NOT IN ('Closed','Resolved','Verified')", id) != null)
+        if (one(c, """
+                SELECT 1 FROM incidents i WHERE i.status NOT IN ('Closed','Resolved','Verified')
+                AND (i.technician_id=? OR EXISTS(SELECT 1 FROM incident_responders r
+                    WHERE r.incident_id=i.id AND r.user_id=?))
+                """, id, id) != null)
             throw new Problem(409, "Reassign this person's active incidents before removing them.");
         exec(c, "UPDATE users SET active=0,available=0,email=? WHERE id=?", "removed+" + id + "@serviceforce.invalid", id);
         return Map.of("id", id);
@@ -375,7 +387,7 @@ public final class Desk {
                 case "profile" -> saveProfile(c, uid, data);
                 case "article-save" -> saveArticle(c, actor, data);
                 case "article-delete" -> deleteArticle(c, actor, data);
-                case "assign", "feedback", "transition", "update", "note", "reopen", "review" -> incidents.act(c, actor, action, data);
+                case "assign", "feedback", "transition", "update", "note", "reopen", "review", "responder-add", "responder-remove" -> incidents.act(c, actor, action, data);
                 default -> {
                     if (!"admin".equals(actor.get("role"))) throw new Problem(403, "Administrator access is required.");
                     if ("remove-user".equals(action)) yield removeUser(c, uid, data);

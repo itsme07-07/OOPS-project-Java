@@ -17,6 +17,10 @@ CREATE TABLE IF NOT EXISTS incidents (
  created_at TEXT NOT NULL, response_due TEXT NOT NULL, resolution_due TEXT NOT NULL, acknowledged_at TEXT,
  resolved_at TEXT, closed_at TEXT, resolution TEXT DEFAULT '', feedback TEXT DEFAULT '',
  related_id INTEGER REFERENCES incidents, suggestion_source_id INTEGER REFERENCES incidents, suggested_resolution TEXT DEFAULT '');
+CREATE TABLE IF NOT EXISTS incident_responders(
+ incident_id INTEGER NOT NULL REFERENCES incidents, user_id INTEGER NOT NULL REFERENCES users,
+ joined_at TEXT NOT NULL, PRIMARY KEY(incident_id,user_id));
+CREATE INDEX IF NOT EXISTS responder_user_incidents ON incident_responders(user_id,incident_id);
 CREATE INDEX IF NOT EXISTS assigned_incidents ON incidents(technician_id,status);
 CREATE TABLE IF NOT EXISTS audit (
  id INTEGER PRIMARY KEY, incident_id INTEGER REFERENCES incidents, actor TEXT NOT NULL, action TEXT NOT NULL,

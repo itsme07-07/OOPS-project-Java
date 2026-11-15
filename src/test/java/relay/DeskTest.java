@@ -297,6 +297,95 @@ class DeskTest {
         assertEquals(false, incident(ticket).get("escalated"));
     }
 
+    @Test void resolutionBreachAddsMatchingTeammatesOnceAndThenMarksHighlyCritical() throws Exception {
+        int ticket=report(1,3,3);
+        int lead=((Number) incident(ticket).get("technician_id")).intValue();
+        int helper=id(desk.mutate(admin,"user",Map.of("name","Application Helper",
+                "email","helper@example.org","role","technician","skill","Application",
+                "password",PASSWORD)));
+        desk.mutate(admin,"user",Map.of("name","Network Helper","email","network@example.org",
+                "role","technician","skill","Network","password",PASSWORD));
+        try(var c=DriverManager.getConnection("jdbc:sqlite:"+db);
+            var ps=c.prepareStatement("UPDATE incidents SET resolution_due='2000-01-01T00:00:00Z' WHERE id=?")) {
+            ps.setInt(1,ticket);
+            ps.executeUpdate();
+        }
+        desk.monitor();
+        var first=incident(ticket);
+        assertEquals(1,((Number)first.get("escalation_stage")).intValue());
+        assertEquals(lead,((Number)first.get("technician_id")).intValue());
+        assertEquals(helper, id(((List<Map<String,Object>>)first.get("responders")).get(0)));
+        assertNotNull(first.get("recovery_due"));
+        assertEquals("Breached",first.get("sla_status"));
+        assertEquals(ticket,id(list(helper,"incidents").stream().filter(i->id(i)==ticket).findFirst().orElseThrow()));
+        desk.monitor();
+        assertEquals(1,list(admin,"audit").stream().filter(a->a.get("incident_id").equals(ticket)
+                && "Responder added".equals(a.get("action"))).count());
+        desk.mutate(helper,"transition",Map.of("id",ticket,"status","Acknowledged"));
+        try(var c=DriverManager.getConnection("jdbc:sqlite:"+db);
+            var ps=c.prepareStatement("UPDATE incidents SET recovery_due='2000-01-01T00:00:00Z' WHERE id=?")) {
+            ps.setInt(1,ticket);
+            ps.executeUpdate();
+        }
+        desk.monitor();
+        desk.monitor();
+        assertEquals(2,((Number)incident(ticket).get("escalation_stage")).intValue());
+        assertEquals(1,list(admin,"audit").stream().filter(a->a.get("incident_id").equals(ticket)
+                && "Highly Critical".equals(a.get("action"))).count());
+        assertTrue(list(admin,"notifications").stream().anyMatch(n->n.get("incident_id").equals(ticket)
+                && String.valueOf(n.get("message")).contains("Administrator intervention")));
+    }
+
+    @Test void noMatchingTeammateAlertsAdminWithoutRepeatedAssignment() throws Exception {
+        int ticket=report(1,3,3);
+        try(var c=DriverManager.getConnection("jdbc:sqlite:"+db);
+            var ps=c.prepareStatement("UPDATE incidents SET resolution_due='2000-01-01T00:00:00Z' WHERE id=?")) {
+            ps.setInt(1,ticket);
+            ps.executeUpdate();
+        }
+        desk.monitor();
+        desk.monitor();
+        assertEquals(1,((Number)incident(ticket).get("escalation_stage")).intValue());
+        assertTrue(((List<?>)incident(ticket).get("responders")).isEmpty());
+        assertEquals(1,list(admin,"audit").stream().filter(a->a.get("incident_id").equals(ticket)
+                && "Team escalation".equals(a.get("action"))).count());
+        assertTrue(list(admin,"notifications").stream().anyMatch(n->n.get("incident_id").equals(ticket)
+                && String.valueOf(n.get("message")).contains("No available teammate")));
+    }
+
+    @Test void escalationDoesNotPullTechnicianFromMoreUrgentWork() throws Exception {
+        int ticket=report(1,1,3);
+        int helper=id(desk.mutate(admin,"user",Map.of("name","Application Helper",
+                "email","helper@example.org","role","technician","skill","Application",
+                "password",PASSWORD)));
+        int urgent=report(1,3,3);
+        assertEquals(helper,((Number)incident(urgent).get("technician_id")).intValue());
+        try(var c=DriverManager.getConnection("jdbc:sqlite:"+db);
+            var ps=c.prepareStatement("UPDATE incidents SET resolution_due='2000-01-01T00:00:00Z' WHERE id=?")) {
+            ps.setInt(1,ticket);
+            ps.executeUpdate();
+        }
+        desk.monitor();
+        assertTrue(((List<?>)incident(ticket).get("responders")).isEmpty());
+    }
+
+    @Test void administratorCanAdjustTeamAndResponderAccessFollowsMembership() throws Exception {
+        int ticket=report(1,3,3);
+        int helper=id(desk.mutate(admin,"user",Map.of("name","Application Helper",
+                "email","helper@example.org","role","technician","skill","Application",
+                "password",PASSWORD)));
+        assertEquals(403,assertThrows(Problem.class,()->desk.mutate(employee,"responder-add",
+                Map.of("id",ticket,"user_id",helper))).status);
+        desk.mutate(admin,"responder-add",Map.of("id",ticket,"user_id",helper));
+        assertTrue(list(helper,"incidents").stream().anyMatch(i->id(i)==ticket));
+        assertEquals(409,assertThrows(Problem.class,()->desk.mutate(admin,"remove-user",
+                Map.of("id",helper))).status);
+        desk.mutate(admin,"responder-remove",Map.of("id",ticket,"user_id",helper));
+        assertTrue(list(helper,"incidents").stream().noneMatch(i->id(i)==ticket));
+        assertTrue(list(admin,"audit").stream().anyMatch(a->a.get("incident_id").equals(ticket)
+                && "Responder removed".equals(a.get("action"))));
+    }
+
     @Test void editingImpactReprioritizes() throws Exception {
         int ticket=report(1,1,1);
         desk.mutate(employee,"update",Map.of("id",ticket,"impact",3,"urgency",3));

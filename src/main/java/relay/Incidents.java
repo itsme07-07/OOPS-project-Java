@@ -42,9 +42,15 @@ final class Incidents {
         return sameId(user.get("id"), incident.get("reporter_id"));
     }
 
-    private static boolean visible(Map<String,Object> user, Map<String,Object> i) {
-        return isAdmin(user) || owns(user, i) || ("technician".equals(user.get("role"))
-                && sameId(user.get("id"), i.get("technician_id")));
+    private static boolean isResponder(Connection c, Map<String,Object> user, Map<String,Object> i) throws SQLException {
+        return "technician".equals(user.get("role")) &&
+                (sameId(user.get("id"), i.get("technician_id")) ||
+                 one(c, "SELECT 1 FROM incident_responders WHERE incident_id=? AND user_id=?",
+                         i.get("id"), user.get("id")) != null);
+    }
+
+    private static boolean visible(Connection c, Map<String,Object> user, Map<String,Object> i) throws SQLException {
+        return isAdmin(user) || owns(user, i) || isResponder(c, user, i);
     }
 
     private static Map<String,Object> incident(Connection c, Object id) throws SQLException {
@@ -62,7 +68,9 @@ final class Incidents {
     private static List<Map<String,Object>> eligible(Connection c) throws SQLException {
         return rows(c, """
             SELECT u.id,u.skill,u.name,count(i.id) AS workload FROM users u
-            LEFT JOIN incidents i ON i.technician_id=u.id AND i.status NOT IN ('Closed','Resolved','Verified')
+            LEFT JOIN incidents i ON (i.technician_id=u.id OR EXISTS
+                (SELECT 1 FROM incident_responders r WHERE r.incident_id=i.id AND r.user_id=u.id))
+                AND i.status NOT IN ('Closed','Resolved','Verified')
             WHERE u.role='technician' AND u.available=1 AND u.active=1 GROUP BY u.id HAVING count(i.id)<u.capacity
             """);
     }
@@ -156,7 +164,7 @@ final class Incidents {
             throw new Problem(409, "This transition is unavailable for the current incident state.");
         boolean permitted = switch (target) {
             case "Verified", "Closed" -> owns(user, i);
-            default -> "technician".equals(user.get("role")) && sameId(user.get("id"), i.get("technician_id"));
+            default -> isResponder(c, user, i);
         };
         if (!isAdmin(user) && !permitted) throw new Problem(403, "Your role cannot perform this transition.");
         String resolution = target.equals("Resolved") ? required(data, "resolution", 6000) : (String)i.get("resolution");
@@ -185,7 +193,8 @@ final class Incidents {
             var p = policy(c, priority);
             Instant created = Instant.parse(i.get("created_at").toString());
             if (i.get("acknowledged_at") == null) response = due(created, p, "response_minutes");
-            resolution = due(created, p, "resolution_minutes");
+            if (((Number) i.get("escalation_stage")).intValue() == 0)
+                resolution = due(created, p, "resolution_minutes");
             event(c, i, user.get("name"), "Priority changed", i.get("priority") + " → " + priority + " (score " + score + ").", null, null, at);
         }
         var fields = new LinkedHashMap<String,Object>();
@@ -215,16 +224,47 @@ final class Incidents {
         event(c, incident(c, i.get("id")), user.get("name"), "Assigned", "Assigned to " + tech.get("name"), current, status, at);
     }
 
+    private void addResponder(Connection c, Map<String,Object> user, Map<String,Object> i,
+                              int destination, Instant at) throws SQLException {
+        if (!isAdmin(user)) throw new Problem(403, "Administrator access is required.");
+        if (COMPLETE.contains(i.get("status"))) throw new Problem(409, "Resolved incidents cannot gain responders.");
+        if (sameId(destination, i.get("technician_id")) ||
+                one(c, "SELECT 1 FROM incident_responders WHERE incident_id=? AND user_id=?", i.get("id"), destination) != null)
+            return;
+        if (((Number) one(c, "SELECT count(*) AS total FROM incident_responders WHERE incident_id=?",
+                i.get("id")).get("total")).intValue() >= 3)
+            throw new Problem(409, "A response team can have up to three teammates.");
+        var tech = eligible(c).stream().filter(t -> sameId(t.get("id"), destination)).findFirst()
+                .orElseThrow(() -> new Problem(409, "The requested technician is unavailable or at capacity."));
+        exec(c, "INSERT INTO incident_responders(incident_id,user_id,joined_at) VALUES(?,?,?)",
+                i.get("id"), destination, at.toString());
+        event(c, i, user.get("name"), "Responder added", tech.get("name") + " joined the response team by administrator assignment.",
+                null, null, at);
+    }
+
+    private void removeResponder(Connection c, Map<String,Object> user, Map<String,Object> i,
+                                 int destination, Instant at) throws SQLException {
+        if (!isAdmin(user)) throw new Problem(403, "Administrator access is required.");
+        var tech = one(c, "SELECT u.name FROM incident_responders r JOIN users u ON u.id=r.user_id WHERE r.incident_id=? AND r.user_id=?",
+                i.get("id"), destination);
+        if (tech == null) throw new Problem(404, "Responder not found on this incident.");
+        exec(c, "DELETE FROM incident_responders WHERE incident_id=? AND user_id=?", i.get("id"), destination);
+        event(c, i, user.get("name"), "Responder removed", tech.get("name") + " left the response team by administrator action.",
+                null, null, at);
+    }
+
     Object act(Connection c, Map<String,Object> user, String action, Map<String,Object> data) throws SQLException {
         Instant at = now();
         int id = number(data, "id", 1, Integer.MAX_VALUE);
         var i = incident(c, id);
-        if (!visible(user, i)) throw new Problem(404, "Incident not found.");
+        if (!visible(c, user, i)) throw new Problem(404, "Incident not found.");
         switch (action) {
             case "transition" -> transition(c, user, id, data, at);
             case "reopen" -> reopen(c, user, i, data, at);
             case "update" -> update(c, user, i, data, at);
             case "assign" -> assign(c, user, i, number(data, "technician_id", 1, Integer.MAX_VALUE), at);
+            case "responder-add" -> addResponder(c, user, i, number(data, "user_id", 1, Integer.MAX_VALUE), at);
+            case "responder-remove" -> removeResponder(c, user, i, number(data, "user_id", 1, Integer.MAX_VALUE), at);
             case "note" -> {
                 String visibility = String.valueOf(data.getOrDefault("visibility", "public"));
                 if (!List.of("public", "internal").contains(visibility)) throw new Problem(400, "Choose a valid note visibility.");
@@ -257,9 +297,11 @@ final class Incidents {
         var p = policy(c, i.get("priority").toString());
         exec(c, """
             UPDATE incidents SET status=?,technician_id=?,resolved_at=NULL,closed_at=NULL,
-                resolution='',feedback='',resolution_due=?,acknowledged_at=? WHERE id=?
+                resolution='',feedback='',resolution_due=?,acknowledged_at=?,recovery_due=NULL,
+                escalation_stage=0 WHERE id=?
             """, status, technician == null ? null : technician.get("id"),
             due(at, p, "resolution_minutes"), technician == null ? null : i.get("acknowledged_at"), i.get("id"));
+        exec(c, "DELETE FROM incident_responders WHERE incident_id=?", i.get("id"));
         exec(c, "DELETE FROM sla_events WHERE incident_id=? AND target='resolution'", i.get("id"));
         event(c, incident(c, i.get("id")), user.get("name"), "Reopened", reason,
                 i.get("status").toString(), status, at);
@@ -269,7 +311,7 @@ final class Incidents {
                         Map<String,Object> data, Instant at) throws SQLException {
         if (!"P1".equals(i.get("priority")) || !COMPLETE.contains(i.get("status")))
             throw new Problem(409, "A post-incident review is available after a P1 incident is resolved.");
-        if (!isAdmin(user) && !("technician".equals(user.get("role")) && sameId(user.get("id"), i.get("technician_id"))))
+        if (!isAdmin(user) && !isResponder(c, user, i))
             throw new Problem(403, "Only the assigned technician or an administrator can write this review.");
         String root = required(data, "root_cause", 6000);
         String impact = required(data, "impact", 6000);
@@ -288,7 +330,7 @@ final class Incidents {
     int addAttachment(Connection c, Map<String,Object> user, int incidentId, String fileName,
                       String mediaType, byte[] content) throws SQLException {
         var i = incident(c, incidentId);
-        if (!visible(user, i)) throw new Problem(404, "Incident not found.");
+        if (!visible(c, user, i)) throw new Problem(404, "Incident not found.");
         if (fileName == null || fileName.isBlank() || fileName.length() > 160 ||
                 fileName.matches(".*[/\\\\\\p{Cntrl}].*")) throw new Problem(400, "Choose a valid file name.");
         if (!ATTACHMENT_TYPES.contains(mediaType)) throw new Problem(415, "Use a PNG, JPEG, PDF or text file.");
@@ -307,7 +349,7 @@ final class Incidents {
 
     Attachment attachment(Connection c, Map<String,Object> user, int id) throws SQLException {
         var row = one(c, "SELECT incident_id,file_name,media_type,content FROM attachments WHERE id=?", id);
-        if (row == null || !visible(user, incident(c, row.get("incident_id"))))
+        if (row == null || !visible(c, user, incident(c, row.get("incident_id"))))
             throw new Problem(404, "Attachment not found.");
         return new Attachment(row.get("file_name").toString(), row.get("media_type").toString(), (byte[]) row.get("content"));
     }
@@ -344,6 +386,62 @@ final class Incidents {
                     "Critical incident was not acknowledged by its response deadline. Administrator action required.",
                     null, null, at);
         }
+        if (COMPLETE.contains(i.get("status"))) return;
+        int stage = ((Number) i.get("escalation_stage")).intValue();
+        if (stage == 0 && at.isAfter(Instant.parse(i.get("resolution_due").toString()))) {
+            escalateTeam(c, i, at);
+        } else if (stage == 1 && i.get("recovery_due") != null &&
+                at.isAfter(Instant.parse(i.get("recovery_due").toString()))) {
+            exec(c, "UPDATE incidents SET escalation_stage=2 WHERE id=? AND escalation_stage=1", i.get("id"));
+            event(c, i, "System", "Highly Critical",
+                    "Recovery deadline missed. Administrator intervention required immediately.", null, null, at);
+        }
+    }
+
+    private void escalateTeam(Connection c, Map<String,Object> i, Instant at) throws SQLException {
+        int target = ((Number) policy(c, i.get("priority").toString()).get("resolution_minutes")).intValue();
+        int recoveryMinutes = Math.max(15, Math.min(120, target / 2));
+        Instant recovery = at.plus(recoveryMinutes, ChronoUnit.MINUTES);
+        exec(c, "UPDATE incidents SET escalation_stage=1,recovery_due=? WHERE id=? AND escalation_stage=0",
+                recovery.toString(), i.get("id"));
+        int existing = ((Number) one(c, "SELECT count(*) AS total FROM incident_responders WHERE incident_id=?",
+                i.get("id")).get("total")).intValue();
+        var candidates = rows(c, """
+            SELECT u.id,u.name,u.capacity,
+              (SELECT count(*) FROM incidents x WHERE x.status NOT IN ('Closed','Resolved','Verified')
+                AND (x.technician_id=u.id OR EXISTS(SELECT 1 FROM incident_responders r
+                  WHERE r.incident_id=x.id AND r.user_id=u.id))) AS workload,
+              (SELECT COALESCE(sum(CASE x.priority WHEN 'P1' THEN 8 WHEN 'P2' THEN 4
+                  WHEN 'P3' THEN 2 ELSE 1 END),0) FROM incidents x
+                WHERE x.status NOT IN ('Closed','Resolved','Verified')
+                AND (x.technician_id=u.id OR EXISTS(SELECT 1 FROM incident_responders r
+                  WHERE r.incident_id=x.id AND r.user_id=u.id))) AS pressure,
+              (SELECT count(*) FROM incidents x WHERE x.status NOT IN ('Closed','Resolved','Verified')
+                AND x.priority<=? AND (x.technician_id=u.id OR EXISTS
+                  (SELECT 1 FROM incident_responders r WHERE r.incident_id=x.id AND r.user_id=u.id)))
+                AS competing
+            FROM users u WHERE u.role='technician' AND u.active=1 AND u.available=1
+              AND u.skill=? AND u.id<>COALESCE(?,-1) AND NOT EXISTS(SELECT 1 FROM incident_responders r
+                  WHERE r.incident_id=? AND r.user_id=u.id)
+            ORDER BY pressure,workload,u.id
+            """, i.get("priority"), i.get("category"), i.get("technician_id"), i.get("id"));
+        int added = 0;
+        for (var person : candidates) {
+            if (existing + added >= 3) break;
+            if (((Number) person.get("workload")).intValue() >= ((Number) person.get("capacity")).intValue())
+                continue;
+            if (((Number) person.get("competing")).intValue() > 0) continue;
+            exec(c, "INSERT OR IGNORE INTO incident_responders(incident_id,user_id,joined_at) VALUES(?,?,?)",
+                    i.get("id"), person.get("id"), at.toString());
+            event(c, i, "System", "Responder added",
+                    person.get("name") + " joined the " + i.get("category") + " response team after the resolution deadline was missed.",
+                    null, null, at);
+            if (++added == 2) break;
+        }
+        String message = "Original resolution deadline missed. " + added + " matching teammate" +
+                (added == 1 ? " was" : "s were") + " added. Recovery deadline: " + recovery + ".";
+        if (added == 0) message += " No available teammate had capacity; administrator action required.";
+        event(c, i, "System", "Team escalation", message, null, null, at);
     }
 
     void monitor(Connection c) throws SQLException {
@@ -365,17 +463,25 @@ final class Incidents {
             SELECT i.*,s.name AS service,u.name AS reporter,t.name AS technician FROM incidents i
             JOIN services s ON i.service_id=s.id JOIN users u ON i.reporter_id=u.id
             LEFT JOIN users t ON i.technician_id=t.id
-            WHERE ? OR i.reporter_id=? OR (? AND i.technician_id=?) ORDER BY i.id DESC
-            """, isAdmin(user) ? 1 : 0, user.get("id"), "technician".equals(user.get("role")) ? 1 : 0, user.get("id"));
+            WHERE ? OR i.reporter_id=? OR (? AND (i.technician_id=? OR EXISTS
+                (SELECT 1 FROM incident_responders r WHERE r.incident_id=i.id AND r.user_id=?)))
+            ORDER BY i.id DESC
+            """, isAdmin(user) ? 1 : 0, user.get("id"), "technician".equals(user.get("role")) ? 1 : 0,
+                user.get("id"), user.get("id"));
         Set<Object> visibleIds = new HashSet<>();
         for (var i : visible) visibleIds.add(i.get("id"));
         for (var i : visible) {
             Object source = i.remove("suggestion_source_id");
             if (source != null && !visibleIds.contains(source)) i.put("suggested_resolution", "");
             if (!visibleIds.contains(i.get("related_id"))) i.put("related_id", null);
-            i.put("sla_status", slaStatus(i, at));
+            i.put("sla_status", one(c, "SELECT 1 FROM sla_events WHERE incident_id=? AND kind='Breached'",
+                    i.get("id")) != null ? "Breached" : slaStatus(i, at));
             i.put("escalated", one(c, "SELECT 1 AS value FROM sla_events WHERE incident_id=? AND target='response' AND kind='Escalated'",
                     i.get("id")) != null);
+            i.put("responders", rows(c, """
+                SELECT u.id,u.name,r.joined_at FROM incident_responders r
+                JOIN users u ON u.id=r.user_id WHERE r.incident_id=? AND u.active=1 ORDER BY r.joined_at,u.id
+                """, i.get("id")));
             i.put("attachments", rows(c, """
                 SELECT a.id,a.file_name,a.media_type,a.size,a.created_at,u.name AS uploader
                 FROM attachments a JOIN users u ON u.id=a.uploader_id

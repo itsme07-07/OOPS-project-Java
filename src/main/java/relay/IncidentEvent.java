@@ -29,8 +29,11 @@ record IncidentEvent(Map<String,Object> incident, String actor, String action, S
             Set<Object> recipients = new HashSet<>();
             if (!e.action.equals("Internal note")) recipients.add(e.incident.get("reporter_id"));
             recipients.add(e.incident.get("technician_id"));
+            for (var responder : Database.rows(c, "SELECT r.user_id AS id FROM incident_responders r JOIN users u ON u.id=r.user_id WHERE r.incident_id=? AND u.active=1",
+                    e.incident.get("id"))) recipients.add(responder.get("id"));
             if (e.action.startsWith("SLA") || e.action.equals("Awaiting assignment") ||
-                    e.action.equals("Escalated") || e.action.equals("Internal note")) {
+                    e.action.equals("Escalated") || e.action.equals("Internal note") ||
+                    e.action.equals("Team escalation") || e.action.equals("Highly Critical")) {
                 for (var user : Database.rows(c, "SELECT id FROM users WHERE role='admin' AND active=1")) {
                     recipients.add(user.get("id"));
                 }
