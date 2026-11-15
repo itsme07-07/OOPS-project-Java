@@ -1,10 +1,14 @@
 # ServiceForce service desk
 
+**Live website:** [Open ServiceForce](https://oops-project-java-production.up.railway.app/)
+
+**Administrator sign-in:** Choose **Administrator** and use the existing username `admin7090@service.admin`. The production password is kept private and is not stored in this public repository.
+
 ServiceForce is the Java implementation of the Intelligent IT Service Management & Incident Resolution System for CS F213 / MAC F212. Employees report incidents, technicians investigate them, and administrators manage the service catalog, routing, policies and SLA violations.
 
 ## Demo sign-in
 
-Open [ServiceForce on this computer](http://127.0.0.1:8000/) after starting the Java server. Choose **Employee**, **Technician** or **Administrator**, then use that role's demo button. The demo password is `RelayDemo2026!` for all three. The sign-in form accepts only the assigned username, whose exact four-character code differs per installation. After demo sign-in, **My profile** shows it and reminds users to use it for future sign-ins. New employees receive a verification code by email and enter their workspace immediately after verification. Their verified email is used for account recovery and incident updates. Passwords are stored as hashes, never in Git.
+Open [ServiceForce on this computer](http://127.0.0.1:8000/) after starting the Java server. Choose **Employee**, **Technician** or **Administrator**, then use that role's demo button. The demo password is `RelayDemo2026!` for all three. The sign-in form accepts only the assigned username, whose exact four-digit code differs per installation. After demo sign-in, **My profile** shows it and reminds users to use it for future sign-ins. New employees receive a verification code by email and enter their workspace immediately after verification. Their verified email is used for account recovery and incident updates. Passwords are stored as hashes, never in Git.
 
 ## Run locally
 

@@ -67,7 +67,7 @@ public final class Desk {
                 String code = current == null ? null : usernameCode(current.toString());
                 String updated = code == null || !codeAvailable(c, code, ((Number) row.get("id")).intValue())
                         ? newUsername(c, name, role) :
-                        formatUsername(name, role, code);
+                        current.toString();
                 if (updated != null) exec(c, "UPDATE users SET username=? WHERE id=?", updated, row.get("id"));
             }
             return null;
@@ -360,7 +360,7 @@ public final class Desk {
     }
 
     private static String usernameCode(String username) {
-        var match = java.util.regex.Pattern.compile("([A-Z0-9]{4})@service\\.(adm|tech|emp)$")
+        var match = java.util.regex.Pattern.compile("([0-9]{4})@service\\.(adm|admin|tech|technician|emp|employee)$")
                 .matcher(username);
         return match.find() ? match.group(1) : null;
     }
@@ -371,12 +371,10 @@ public final class Desk {
     }
 
     private static String newUsername(Connection c, String name, String role) throws SQLException {
-        final String alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-        for (int attempt = 0; attempt < 100; attempt++) {
-            StringBuilder code = new StringBuilder(4);
-            for (int i = 0; i < 4; i++) code.append(alphabet.charAt(RANDOM.nextInt(alphabet.length())));
-            if (codeAvailable(c, code.toString(), -1))
-                return formatUsername(name, role, code.toString());
+        for (int attempt = 0; attempt < 1000; attempt++) {
+            String code = String.format(Locale.ROOT, "%04d", RANDOM.nextInt(10000));
+            if (codeAvailable(c, code, -1))
+                return formatUsername(name, role, code);
         }
         throw new Problem(503, "Could not create a unique username. Try again.");
     }
@@ -414,8 +412,10 @@ public final class Desk {
         if (editing && password instanceof String value && !value.isBlank())
             throw new Problem(403, "People must change their own passwords using an email code.");
         Object encoded = editing && (password == null || "".equals(password)) ? existing.get("password") : hash(password);
-        String username = editing ? formatUsername(name, role.toString(),
-                usernameCode(existing.get("username").toString())) : newUsername(c, name, role.toString());
+        String username = editing ? (name.equals(existing.get("name")) && role.equals(existing.get("role"))
+                ? existing.get("username").toString()
+                : formatUsername(name, role.toString(), usernameCode(existing.get("username").toString())))
+                : newUsername(c, name, role.toString());
         if (editing) {
             int verified = email.equalsIgnoreCase(existing.get("email").toString()) ?
                     ((Number)existing.get("email_verified")).intValue() : 3;
@@ -447,9 +447,10 @@ public final class Desk {
             if (!skill.isEmpty()) category(c, skill);
         }
         boolean changedEmail = !email.equalsIgnoreCase(existing.get("email").toString());
+        String username = name.equals(existing.get("name")) ? existing.get("username").toString() :
+                formatUsername(name, existing.get("role").toString(), usernameCode(existing.get("username").toString()));
         exec(c, "UPDATE users SET name=?,email=?,email_verified=?,username=?,password=?,skill=? WHERE id=?",
-                name, email, changedEmail ? 3 : existing.get("email_verified"), formatUsername(name, existing.get("role").toString(),
-                        usernameCode(existing.get("username").toString())), encoded, skill, uid);
+                name, email, changedEmail ? 3 : existing.get("email_verified"), username, encoded, skill, uid);
         if (changedEmail) {
             issueCode(c, user(c, uid), "verify");
         }

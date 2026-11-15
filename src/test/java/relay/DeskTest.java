@@ -139,9 +139,9 @@ class DeskTest {
         var adminAccount=(Map<?,?>)((Map<?,?>)desk.snapshot(admin)).get("user");
         int technician=id(desk.login(username(db,"tech@relay.test"),PASSWORD));
         var technicianAccount=(Map<?,?>)((Map<?,?>)desk.snapshot(technician)).get("user");
-        assertTrue(employeeAccount.get("username").toString().matches("jordanlee[A-Z0-9]{4}@service\\.emp"));
-        assertTrue(adminAccount.get("username").toString().matches("alexmorgan[A-Z0-9]{4}@service\\.adm"));
-        assertTrue(technicianAccount.get("username").toString().matches("samrivera[A-Z0-9]{4}@service\\.tech"));
+        assertTrue(employeeAccount.get("username").toString().matches("jordanlee[0-9]{4}@service\\.emp"));
+        assertTrue(adminAccount.get("username").toString().matches("alexmorgan[0-9]{4}@service\\.adm"));
+        assertTrue(technicianAccount.get("username").toString().matches("samrivera[0-9]{4}@service\\.tech"));
         assertEquals(employee,id(desk.login(employeeAccount.get("username").toString(),PASSWORD)));
         assertEquals(401,assertThrows(Problem.class,()->desk.login("employee@relay.test",PASSWORD)).status);
         assertTrue(list(admin,"users").stream().noneMatch(u->u.containsKey("username")));
@@ -162,10 +162,10 @@ class DeskTest {
         var upgraded=new Desk(old,true);
         int existing=id(upgraded.login(username(old,"admin@relay.test"),PASSWORD));
         var current=(Map<?,?>)((Map<?,?>)upgraded.snapshot(existing)).get("user");
-        assertTrue(current.get("username").toString().matches("alexmorgan[A-Z0-9]{4}@service\\.adm"));
+        assertTrue(current.get("username").toString().matches("alexmorgan[0-9]{4}@service\\.adm"));
     }
 
-    @Test void oldUsernameFormatMigratesWithoutChangingCode() throws Exception {
+    @Test void oldUsernameFormatReceivesNumericCode() throws Exception {
         try(var c=DriverManager.getConnection("jdbc:sqlite:"+db);
             var ps=c.prepareStatement("UPDATE users SET username=? WHERE id=?")) {
             ps.setString(1,"exampleA1B2C3D4@service.emp");
@@ -174,8 +174,24 @@ class DeskTest {
         }
         var upgraded=new Desk(db,false);
         var current=(Map<?,?>)((Map<?,?>)upgraded.snapshot(employee)).get("user");
-        assertEquals("jordanleeC3D4@service.emp",current.get("username"));
-        assertEquals(employee,id(upgraded.login("jordanleeC3D4@service.emp",PASSWORD)));
+        assertTrue(current.get("username").toString().matches("jordanlee[0-9]{4}@service\\.emp"));
+        assertEquals(employee,id(upgraded.login(current.get("username").toString(),PASSWORD)));
+    }
+
+    @Test void existingFourDigitAdminUsernameIsPreserved() throws Exception {
+        try(var c=DriverManager.getConnection("jdbc:sqlite:"+db);
+            var ps=c.prepareStatement("UPDATE users SET username=? WHERE id=?")) {
+            ps.setString(1,"admin7090@service.admin");
+            ps.setInt(2,admin);
+            ps.executeUpdate();
+        }
+        var upgraded=new Desk(db,false);
+        assertEquals("admin7090@service.admin",username(db,"admin@relay.test"));
+        assertEquals(admin,id(upgraded.login("admin7090@service.admin",PASSWORD)));
+        var person=(Map<?,?>)((Map<?,?>)upgraded.snapshot(admin)).get("user");
+        upgraded.mutate(admin,"profile",Map.of("name",person.get("name"),"email",person.get("email"),
+                "current_password",PASSWORD));
+        assertEquals("admin7090@service.admin",username(db,"admin@relay.test"));
     }
 
     @Test void everyRoleCanEditOnlyItsOwnProfile() throws Exception {
