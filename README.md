@@ -12,7 +12,7 @@ Open [ServiceForce on this computer](http://127.0.0.1:8000/) after starting the 
 | Technician | `tech@relay.test` | `RelayDemo2026!` |
 | Employee | `employee@relay.test` | `RelayDemo2026!` |
 
-These are local demo accounts only. To find the generated username for an account, sign in with its email, then select the **profile button beside Sign out** in the sidebar. **My profile** shows **Your generated username**, for example `exampleA1B2C3D4@service.tech`. Each installation generates different codes, so exact usernames cannot be listed in Git. Registered users choose their own passwords; those passwords are stored as hashes in the local database and cannot be read from Git. The generated usernames are identifiers, not working email addresses.
+These are local demo accounts only. To find the generated username for an account, sign in with its email, then select the **profile button beside Sign out** in the sidebar. **My profile** shows **Your generated username**, for example `samriveraA1B2@service.tech`. The username uses the person's name (lowercase, with spaces and punctuation removed) and a unique four-character code of letters or digits. Each installation generates different codes, so exact usernames cannot be listed in Git. Registered users choose their own passwords; those passwords are stored as hashes in the local database and cannot be read from Git. The generated usernames are identifiers, not working email addresses.
 
 ## Run locally
 

@@ -3,6 +3,7 @@ package relay;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.text.Normalizer;
 import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
@@ -45,11 +46,14 @@ public final class Desk {
                 exec(c, "ALTER TABLE users ADD COLUMN username TEXT");
             exec(c, "CREATE UNIQUE INDEX IF NOT EXISTS users_username_unique ON users(username)");
             if (one(c, "SELECT 1 FROM settings LIMIT 1") == null) initialize(c, demo);
-            for (var row : rows(c, "SELECT id,role,username FROM users")) {
+            for (var row : rows(c, "SELECT id,name,role,username FROM users")) {
                 Object current = row.get("username");
-                String updated = current == null ? newUsername(c, row.get("role").toString()) :
-                        current.toString().matches("example@service\\.(adm|tech|emp)[A-F0-9]{8}") ?
-                        formatUsername(row.get("role").toString(), current.toString().substring(current.toString().length() - 8)) : null;
+                String name = row.get("name").toString();
+                String role = row.get("role").toString();
+                String code = current == null ? null : usernameCode(current.toString());
+                String updated = code == null || !codeAvailable(c, code, ((Number) row.get("id")).intValue())
+                        ? newUsername(c, name, role) :
+                        formatUsername(name, role, code);
                 if (updated != null) exec(c, "UPDATE users SET username=? WHERE id=?", updated, row.get("id"));
             }
             return null;
@@ -207,18 +211,35 @@ public final class Desk {
         };
     }
 
-    private static String formatUsername(String role, String code) {
-        return "example" + code + "@service." + roleCode(role);
+    private static String namePart(String name) {
+        String ascii = Normalizer.normalize(name, Normalizer.Form.NFKD)
+                .replaceAll("\\p{M}", "").toLowerCase(Locale.ROOT)
+                .replaceAll("[^a-z0-9]", "");
+        return ascii.isEmpty() ? "user" : ascii.substring(0, Math.min(ascii.length(), 32));
     }
 
-    private static String newUsername(Connection c, String role) throws SQLException {
-        for (int attempt = 0; attempt < 20; attempt++) {
-            byte[] bytes = new byte[4];
-            RANDOM.nextBytes(bytes);
-            String code = HexFormat.of().withUpperCase().formatHex(bytes);
-            if (one(c, "SELECT 1 FROM users WHERE substr(username,8,8)=? OR substr(username,length(username)-7,8)=?",
-                    code, code) == null)
-                return formatUsername(role, code);
+    private static String formatUsername(String name, String role, String code) {
+        return namePart(name) + code + "@service." + roleCode(role);
+    }
+
+    private static String usernameCode(String username) {
+        var match = java.util.regex.Pattern.compile("([A-Z0-9]{4})@service\\.(adm|tech|emp)$")
+                .matcher(username);
+        return match.find() ? match.group(1) : null;
+    }
+
+    private static boolean codeAvailable(Connection c, String code, int excludeId) throws SQLException {
+        return one(c, "SELECT 1 FROM users WHERE id<>? AND username LIKE ?", excludeId,
+                "%" + code + "@service.%") == null;
+    }
+
+    private static String newUsername(Connection c, String name, String role) throws SQLException {
+        final String alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        for (int attempt = 0; attempt < 100; attempt++) {
+            StringBuilder code = new StringBuilder(4);
+            for (int i = 0; i < 4; i++) code.append(alphabet.charAt(RANDOM.nextInt(alphabet.length())));
+            if (codeAvailable(c, code.toString(), -1))
+                return formatUsername(name, role, code.toString());
         }
         throw new Problem(503, "Could not create a unique username. Try again.");
     }
@@ -250,9 +271,8 @@ public final class Desk {
             throw new Problem(400, "Reassign this technician's active incidents before changing their role.");
         Object password = data.get("password");
         Object encoded = editing && (password == null || "".equals(password)) ? existing.get("password") : hash(password);
-        String username = editing ? existing.get("username").toString() : newUsername(c, role.toString());
-        if (editing && !role.equals(existing.get("role")))
-            username = formatUsername(role.toString(), username.substring(7, 15));
+        String username = editing ? formatUsername(name, role.toString(),
+                usernameCode(existing.get("username").toString())) : newUsername(c, name, role.toString());
         if (editing) {
             exec(c, "UPDATE users SET name=?,email=?,username=?,role=?,skill=?,available=?,capacity=?,password=? WHERE id=?",
                     name, email, username, role, skill, availability, capacity, encoded, existing.get("id"));
@@ -278,7 +298,9 @@ public final class Desk {
             skill = value.equals("general") ? "" : value.strip();
             if (!skill.isEmpty()) category(c, skill);
         }
-        exec(c, "UPDATE users SET name=?,email=?,password=?,skill=? WHERE id=?", name, email, encoded, skill, uid);
+        exec(c, "UPDATE users SET name=?,email=?,username=?,password=?,skill=? WHERE id=?",
+                name, email, formatUsername(name, existing.get("role").toString(),
+                        usernameCode(existing.get("username").toString())), encoded, skill, uid);
         return Map.of("id", uid);
     }
 

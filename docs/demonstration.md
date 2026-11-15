@@ -12,7 +12,7 @@ Start the server with `java -jar target/relay.jar` and open [http://127.0.0.1:80
 | Technician | `tech@relay.test` | `RelayDemo2026!` |
 | Employee | `employee@relay.test` | `RelayDemo2026!` |
 
-Each account also has a generated username in the format `exampleCODE@service.role`. To show it, open **My profile** with the button beside Sign out. Exact codes are created locally, so they are not listed in Git.
+Each account also has a generated username in the format `nameCODE@service.role`, for example `alexmorganA1B2@service.adm`. The code has four letters or digits. To show the exact username, open **My profile** with the button beside Sign out. Codes are created locally, so they are not listed in Git.
 
 ## 1. Report and route an outage (4 minutes)
 
