@@ -112,12 +112,36 @@ class DeskTest {
             var p=c.prepareStatement("SELECT count(*) FROM email_outbox o JOIN notifications n ON n.id=o.notification_id WHERE n.incident_id=?")) {
             p.setInt(1,ticket);try(var r=p.executeQuery()){assertTrue(r.next());assertTrue(r.getInt(1)>0,"No email queued for new incident");}
         }
-        for(int i=0;i<10;i++) desk.monitor();
+        try(var c=DriverManager.getConnection("jdbc:sqlite:"+db);
+            var p=c.prepareStatement("UPDATE email_outbox SET next_attempt_at=? WHERE status='pending'")) {
+            p.setString(1,"2000-01-01T00:00:00Z");p.executeUpdate();
+        }
+        desk.monitor();
         assertTrue(allSent.stream().anyMatch(s->s.startsWith("employee@relay.test ") && s.contains("Incident #"+ticket)));
         try(var c=DriverManager.getConnection("jdbc:sqlite:"+db);
             var p=c.prepareStatement("SELECT count(*) FROM email_outbox WHERE status='sent'")) {
             try(var r=p.executeQuery()) { assertTrue(r.next()); assertTrue(r.getInt(1)>0); }
         }
+    }
+
+    @Test void nearbyUpdatesForOneIncidentArriveInOneEmail() throws Exception {
+        int ticket=report(1,3,3);
+        try(var c=DriverManager.getConnection("jdbc:sqlite:"+db);
+            var n=c.prepareStatement("INSERT INTO notifications(incident_id,user_id,message,channel,created_at) VALUES(?,?,?,?,?)");
+            var o=c.prepareStatement("INSERT INTO email_outbox(notification_id,recipient,subject,body,next_attempt_at) VALUES(?,?,?,?,?)")) {
+            n.setInt(1,ticket);n.setInt(2,employee);n.setString(3,"Technician is investigating");
+            n.setString(4,"In-app");n.setString(5,"2026-01-01T00:00:00Z");n.executeUpdate();
+            try(var id=c.createStatement().executeQuery("SELECT last_insert_rowid()")) {
+                o.setInt(1,id.next()?id.getInt(1):0);
+            }
+            o.setString(2,"employee@relay.test");o.setString(3,"ServiceForce incident update");
+            o.setString(4,"Incident #"+ticket+": In progress\n\nTechnician is investigating");
+            o.setString(5,"2000-01-01T00:00:00Z");o.executeUpdate();
+            c.createStatement().executeUpdate("UPDATE email_outbox SET next_attempt_at='2000-01-01T00:00:00Z'");
+        }
+        desk.monitor();
+        assertEquals(1,allSent.stream().filter(s->s.startsWith("employee@relay.test ")&&s.contains("Incident #"+ticket)).count());
+        assertTrue(sent.get("employee@relay.test").contains("Technician is investigating"));
     }
 
     @Test void invalidEmailIsRejected() {

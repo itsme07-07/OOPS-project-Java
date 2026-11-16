@@ -521,8 +521,8 @@ public final class Desk {
 
     public void monitor() {
         database.transaction(true, c -> { incidents.monitor(c); return null; });
-        for (var message : database.transaction(false, c -> rows(c, """
-                SELECT o.id,o.recipient,o.subject,o.body,o.attempts FROM email_outbox o
+        var pending = database.transaction(false, c -> rows(c, """
+                SELECT o.id,o.recipient,o.subject,o.body,o.attempts,n.incident_id FROM email_outbox o
                 JOIN notifications n ON n.id=o.notification_id
                 JOIN users u ON u.id=n.user_id AND u.email=o.recipient COLLATE NOCASE
                   AND u.active=1 AND u.email_verified=1
@@ -531,19 +531,32 @@ public final class Desk {
                   AND (u.role='admin' OR i.reporter_id=u.id OR i.technician_id=u.id
                     OR EXISTS(SELECT 1 FROM incident_responders r
                       WHERE r.incident_id=i.id AND r.user_id=u.id))
-                ORDER BY o.id LIMIT 20
-                """, Instant.now().toString()))) {
-            int id = ((Number)message.get("id")).intValue();
+                ORDER BY o.id LIMIT 100
+                """, Instant.now().toString()));
+        Map<String,List<Map<String,Object>>> batches = new LinkedHashMap<>();
+        for (var message : pending) {
+            String key = message.get("recipient") + ":" + message.get("incident_id");
+            batches.computeIfAbsent(key, ignored -> new ArrayList<>()).add(message);
+        }
+        for (var batch : batches.values()) {
+            var first = batch.get(0);
+            String body = batch.size() == 1 ? first.get("body").toString() :
+                    "ServiceForce has " + batch.size() + " updates for incident #" + first.get("incident_id") + ".\n\n" +
+                    String.join("\n\n---\n\n", batch.stream().map(m -> m.get("body").toString()).toList());
             try {
-                mail.send(message.get("recipient").toString(), message.get("subject").toString(),
-                        message.get("body").toString());
-                database.transaction(true, c -> { exec(c, "UPDATE email_outbox SET status='sent' WHERE id=?", id); return null; });
-            } catch (Exception ignored) {
-                int attempts = ((Number)message.get("attempts")).intValue() + 1;
+                mail.send(first.get("recipient").toString(), first.get("subject").toString(), body);
                 database.transaction(true, c -> {
-                    exec(c, "UPDATE email_outbox SET attempts=?,status=?,next_attempt_at=? WHERE id=?",
-                            attempts, attempts >= 8 ? "failed" : "pending",
-                            Instant.now().plusSeconds(Math.min(3600, 30L << Math.min(attempts, 6))).toString(), id);
+                    for (var message : batch) exec(c, "UPDATE email_outbox SET status='sent' WHERE id=?", message.get("id"));
+                    return null;
+                });
+            } catch (Exception ignored) {
+                database.transaction(true, c -> {
+                    for (var message : batch) {
+                        int attempts = ((Number)message.get("attempts")).intValue() + 1;
+                        exec(c, "UPDATE email_outbox SET attempts=?,status=?,next_attempt_at=? WHERE id=?",
+                                attempts, attempts >= 8 ? "failed" : "pending",
+                                Instant.now().plusSeconds(Math.min(3600, 30L << Math.min(attempts, 6))).toString(), message.get("id"));
+                    }
                     return null;
                 });
             }

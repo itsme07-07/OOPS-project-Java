@@ -48,7 +48,7 @@ record IncidentEvent(Map<String,Object> incident, String actor, String action, S
                     VALUES(?,?,?,?,?)
                     """, notificationId, person.get("email"), "ServiceForce incident update",
                         "Incident #" + e.incident.get("id") + ": " + e.action + "\n\n" + e.message,
-                        e.at.toString());
+                        e.at.plusSeconds(45).toString());
             }
         }
     }

@@ -89,6 +89,26 @@ class HttpIntegrationTest {
         assertEquals(401, get("/api/state","Cookie",token).statusCode());
     }
 
+    @Test void userCanSeeAndSignOutAnotherDevice() throws Exception {
+        String credentials=JSON.toJson(Map.of("identifier",demoUsername("employee"),"password","RelayDemo2026!","role","employee"));
+        String first=post("/api/login",credentials,"User-Agent","Mozilla/5.0 (Mac OS X) Chrome/120").headers()
+                .firstValue("Set-Cookie").orElseThrow().split(";",2)[0];
+        String second=post("/api/login",credentials,"User-Agent","Mozilla/5.0 (iPhone) Safari/605").headers()
+                .firstValue("Set-Cookie").orElseThrow().split(";",2)[0];
+        var listed=get("/api/devices","Cookie",first);
+        assertEquals(200,listed.statusCode());
+        var devices=JsonParser.parseString(listed.body()).getAsJsonArray();
+        assertTrue(devices.size()>=2);
+        String otherId=null;
+        for(var item:devices) if(!item.getAsJsonObject().get("current").getAsBoolean()&&
+                item.getAsJsonObject().get("device").getAsString().contains("iPhone"))
+            otherId=item.getAsJsonObject().get("id").getAsString();
+        assertNotNull(otherId);
+        assertEquals(200,post("/api/revoke-device",JSON.toJson(Map.of("id",otherId)),"Cookie",first).statusCode());
+        assertEquals(401,get("/api/state","Cookie",second).statusCode());
+        assertEquals(200,get("/api/state","Cookie",first).statusCode());
+    }
+
     @Test void attachmentDownloadRequiresIncidentAccess() throws Exception {
         var login=post("/api/login",JSON.toJson(Map.of("identifier",demoUsername("employee"),"password","RelayDemo2026!","role","employee")));
         String cookie=login.headers().firstValue("Set-Cookie").orElseThrow().split(";",2)[0];

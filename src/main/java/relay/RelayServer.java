@@ -35,7 +35,7 @@ final class RelayServer implements AutoCloseable {
         "/index.html", "text/html; charset=utf-8", "/app.js", "text/javascript; charset=utf-8",
         "/style.css", "text/css; charset=utf-8", "/mark.svg", "image/svg+xml");
     private static final Set<String> POST_ENDPOINTS = Set.of("/api/register", "/api/login", "/api/logout", "/api/action", "/api/attachment",
-            "/api/request-verification", "/api/verify-email", "/api/recover-username", "/api/request-reset", "/api/reset-password", "/api/password-code");
+            "/api/request-verification", "/api/verify-email", "/api/recover-username", "/api/request-reset", "/api/reset-password", "/api/password-code", "/api/revoke-device");
     private static final System.Logger LOG = System.getLogger(RelayServer.class.getName());
 
     private final HttpServer server;
@@ -111,6 +111,7 @@ final class RelayServer implements AutoCloseable {
                 case "/api/config" -> json(ex, 200, demo ? Map.of("demo", true, "demoUsers", desk.demoUsers()) : Map.of("demo", false));
                 case "/healthz" -> json(ex, 200, Map.of("status", "ok"));
                 case "/api/state" -> json(ex, 200, desk.snapshot(sessions.resolve(token(ex))));
+                case "/api/devices" -> json(ex, 200, sessions.list(sessions.resolve(token(ex)), token(ex)));
                 default -> asset(ex, path.equals("/") ? "/index.html" : path);
             }
             return;
@@ -136,7 +137,7 @@ final class RelayServer implements AutoCloseable {
                 String role = Desk.required(data, "role", 20);
                 if (!role.equals(user.get("role"))) throw new Problem(401, "Invalid username or password for this role.");
                 sessions.revoke(previous);
-                setCookie(ex, sessions.create(((Number)user.get("id")).intValue()));
+                setCookie(ex, sessions.create(((Number)user.get("id")).intValue(), ex.getRequestHeaders().getFirst("User-Agent")));
                 json(ex, 200, Map.of("user", user));
             }
             case "/api/register" -> {
@@ -153,7 +154,7 @@ final class RelayServer implements AutoCloseable {
                 var verification = desk.verifyEmailWithStatus(Desk.required(data, "email", 254), Desk.required(data, "code", 8));
                 if (verification.newAccount()) {
                     sessions.revoke(previous);
-                    setCookie(ex, sessions.create(((Number)verification.user().get("id")).intValue()));
+                    setCookie(ex, sessions.create(((Number)verification.user().get("id")).intValue(), ex.getRequestHeaders().getFirst("User-Agent")));
                 }
                 json(ex, 200, Map.of("user", verification.user(), "signedIn", verification.newAccount()));
             }
@@ -178,6 +179,11 @@ final class RelayServer implements AutoCloseable {
             case "/api/password-code" -> {
                 desk.requestPasswordCode(sessions.resolve(previous));
                 json(ex, 200, Map.of("message", "A password change code has been sent to your recovery email."));
+            }
+            case "/api/revoke-device" -> {
+                int userId = sessions.resolve(previous);
+                sessions.revokeDevice(userId, previous, Desk.required(data, "id", 100));
+                json(ex, 200, Map.of("message", "Device signed out."));
             }
             case "/api/action" -> {
                 int userId = sessions.resolve(previous);
