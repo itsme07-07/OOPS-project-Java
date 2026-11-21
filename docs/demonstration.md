@@ -17,8 +17,9 @@ Start the server with `java -jar target/relay.jar` and open [http://127.0.0.1:80
 
 1. Sign in as the assigned technician. If demonstrating with the preset technician account, first use the administrator to assign the incident to that technician.
 2. Acknowledge the incident, start investigating and add a note explaining what you checked. Request the exact error from the employee.
-3. Reply from the employee account. Return to the technician queue and record the fix and its verification evidence.
-4. Resolve the incident. Switch to the employee, verify the fix, close the case with the appropriate role, and submit feedback. Review the incident history and the change in active workload.
+3. Open the incident response playbook, record a completed diagnostic step with its result, and skip an irrelevant step with a reason. Add a teammate as the administrator and show that the teammate sees the same recorded checklist. Contrast this incident-specific record with a reusable Knowledge base article.
+4. Reply from the employee account. Return to the technician queue and record the fix and its verification evidence.
+5. Resolve the incident. Switch to the employee, verify the fix, close the case with the appropriate role, and submit feedback. Review the incident history and the change in active workload.
 
 ## 3. Correlate and monitor (4 minutes)
 

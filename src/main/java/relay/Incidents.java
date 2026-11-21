@@ -148,6 +148,7 @@ final class Incidents {
             """, title, description, user.get("id"), category, service.get("id"), impact, urgency, priority, status,
             tech == null ? null : tech.get("id"), at.toString(), due(at, policy, "response_minutes"),
             due(at, policy, "resolution_minutes"), match.related, match.source, match.resolution);
+        Playbooks.copyToIncident(c, id, category);
         var i = incident(c, id);
         event(c, i, user.get("name"), "Reported", title, null, "New", at);
         event(c, i, "System", "Classified", category + " · " + priority + " (score " + score + ")", "New", "Classified", at);
@@ -253,6 +254,24 @@ final class Incidents {
                 null, null, at);
     }
 
+    private void recordPlaybookStep(Connection c, Map<String,Object> user, Map<String,Object> i,
+                                    Map<String,Object> data, Instant at) throws SQLException {
+        if (!isAdmin(user) && !isResponder(c, user, i))
+            throw new Problem(403, "Only assigned IT staff can update the playbook.");
+        if (COMPLETE.contains(i.get("status"))) throw new Problem(409, "Resolved incidents cannot change playbook steps.");
+        int stepId = number(data, "step_id", 1, Integer.MAX_VALUE);
+        var step = one(c, "SELECT title FROM incident_playbook_steps WHERE id=? AND incident_id=?", stepId, i.get("id"));
+        if (step == null) throw new Problem(404, "Playbook step not found on this incident.");
+        String status = required(data, "status", 20);
+        if (!List.of("completed", "skipped", "pending").contains(status))
+            throw new Problem(400, "Choose a valid playbook step status.");
+        String result = required(data, "result", 2000);
+        exec(c, "UPDATE incident_playbook_steps SET status=?,result=?,actor_id=?,updated_at=? WHERE id=?",
+                status, result, user.get("id"), at.toString(), stepId);
+        event(c, i, user.get("name"), "Playbook step",
+                step.get("title") + " - " + status + ": " + result, null, null, at);
+    }
+
     Object act(Connection c, Map<String,Object> user, String action, Map<String,Object> data) throws SQLException {
         Instant at = now();
         int id = number(data, "id", 1, Integer.MAX_VALUE);
@@ -265,6 +284,7 @@ final class Incidents {
             case "assign" -> assign(c, user, i, number(data, "technician_id", 1, Integer.MAX_VALUE), at);
             case "responder-add" -> addResponder(c, user, i, number(data, "user_id", 1, Integer.MAX_VALUE), at);
             case "responder-remove" -> removeResponder(c, user, i, number(data, "user_id", 1, Integer.MAX_VALUE), at);
+            case "playbook-step" -> recordPlaybookStep(c, user, i, data, at);
             case "note" -> {
                 String visibility = String.valueOf(data.getOrDefault("visibility", "public"));
                 if (!List.of("public", "internal").contains(visibility)) throw new Problem(400, "Choose a valid note visibility.");
@@ -482,6 +502,11 @@ final class Incidents {
                 SELECT u.id,u.name,r.joined_at FROM incident_responders r
                 JOIN users u ON u.id=r.user_id WHERE r.incident_id=? AND u.active=1 ORDER BY r.joined_at,u.id
                 """, i.get("id")));
+            i.put("playbook", (isAdmin(user) || isResponder(c, user, i)) ? rows(c, """
+                SELECT p.id,p.title,p.position,p.status,p.result,p.updated_at,u.name AS actor
+                FROM incident_playbook_steps p LEFT JOIN users u ON u.id=p.actor_id
+                WHERE p.incident_id=? ORDER BY p.position,p.id
+                """, i.get("id")) : List.of());
             i.put("attachments", rows(c, """
                 SELECT a.id,a.file_name,a.media_type,a.size,a.created_at,u.name AS uploader
                 FROM attachments a JOIN users u ON u.id=a.uploader_id
@@ -494,21 +519,26 @@ final class Incidents {
         }
         var audit = rows(c, "SELECT * FROM audit ORDER BY julianday(created_at) DESC,id DESC")
                 .stream().filter(row -> visibleIds.contains(row.get("incident_id")) &&
-                        (!"employee".equals(user.get("role")) || !"Internal note".equals(row.get("action")))).toList();
+                        (!"employee".equals(user.get("role")) ||
+                          (!"Internal note".equals(row.get("action")) && !"Playbook step".equals(row.get("action"))))).toList();
         var notices = rows(c, "SELECT * FROM notifications WHERE user_id=? ORDER BY id DESC", user.get("id"))
                 .stream().filter(row -> visibleIds.contains(row.get("incident_id"))).toList();
         var users = rows(c, "SELECT " + PUBLIC_USER + " FROM users WHERE active=1 AND (? OR id=?) ORDER BY name",
                 isAdmin(user) ? 1 : 0, user.get("id"));
-        return Map.of("user", Desk.publicUser(user),
-                "users", users, "incidents", visible, "audit", audit, "notifications", notices,
-                "articles", rows(c, """
+        return Map.ofEntries(Map.entry("user", Desk.publicUser(user)),
+                Map.entry("users", users), Map.entry("incidents", visible), Map.entry("audit", audit),
+                Map.entry("notifications", notices),
+                Map.entry("articles", rows(c, """
                     SELECT a.id,a.title,a.service_id,s.name AS service,a.summary,a.steps,a.author_id,
                     u.name AS author,a.created_at,a.updated_at
                     FROM knowledge_articles a JOIN services s ON s.id=a.service_id
                     JOIN users u ON u.id=a.author_id ORDER BY a.updated_at DESC,a.id DESC
-                    """),
-                "services", rows(c, "SELECT * FROM services ORDER BY id"),
-                "categories", rows(c, "SELECT name FROM categories ORDER BY name").stream().map(r -> r.get("name")).toList(),
-                "policies", rows(c, "SELECT * FROM policies ORDER BY priority"), "strategy", configuredStrategy(c));
+                    """)),
+                Map.entry("playbookTemplates", isAdmin(user) ? rows(c,
+                        "SELECT id,category,title,position FROM playbook_templates ORDER BY category,position,id") : List.of()),
+                Map.entry("services", rows(c, "SELECT * FROM services ORDER BY id")),
+                Map.entry("categories", rows(c, "SELECT name FROM categories ORDER BY name").stream().map(r -> r.get("name")).toList()),
+                Map.entry("policies", rows(c, "SELECT * FROM policies ORDER BY priority")),
+                Map.entry("strategy", configuredStrategy(c)));
     }
 }

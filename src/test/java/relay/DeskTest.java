@@ -124,6 +124,49 @@ class DeskTest {
         }
     }
 
+    @Test void playbookTracksWorkWithoutExposingInternalResultsToReporter() throws Exception {
+        int ticket = report(1, 2, 2);
+        var steps = (List<Map<String,Object>>)incident(ticket).get("playbook");
+        assertFalse(steps.isEmpty());
+        int stepId = id(steps.get(0));
+        assertEquals(403, assertThrows(Problem.class, () -> desk.mutate(employee, "playbook-step",
+                Map.of("id", ticket, "step_id", stepId, "status", "completed", "result", "Private diagnostic"))).status);
+        int technician = id(desk.login(username(db, "tech@relay.test"), PASSWORD));
+        desk.mutate(technician, "playbook-step", Map.of("id", ticket, "step_id", stepId,
+                "status", "completed", "result", "Checked application logs"));
+        var updated = (List<Map<String,Object>>)incident(ticket).get("playbook");
+        assertEquals("completed", updated.get(0).get("status"));
+        assertEquals("Checked application logs", updated.get(0).get("result"));
+        assertTrue(((List<?>)list(employee, "incidents").stream().filter(i -> id(i)==ticket)
+                .findFirst().orElseThrow().get("playbook")).isEmpty());
+        assertTrue(list(employee, "audit").stream().noneMatch(e -> "Playbook step".equals(e.get("action"))));
+        assertTrue(list(employee, "notifications").stream().noneMatch(e ->
+                String.valueOf(e.get("message")).contains("Checked application logs")));
+        int helper = id(desk.mutate(admin, "user", Map.of("name", "Playbook Helper",
+                "email", "playbook-helper@example.org", "role", "technician", "skill", "Application",
+                "password", PASSWORD)));
+        desk.mutate(admin, "responder-add", Map.of("id", ticket, "user_id", helper));
+        assertEquals("Checked application logs", ((List<Map<String,Object>>)list(helper, "incidents").stream()
+                .filter(i -> id(i)==ticket).findFirst().orElseThrow().get("playbook")).get(0).get("result"));
+        desk.mutate(helper, "playbook-step", Map.of("id", ticket, "step_id", stepId,
+                "status", "skipped", "result", "Not relevant to this outage"));
+        assertEquals("skipped", ((List<Map<String,Object>>)incident(ticket).get("playbook")).get(0).get("status"));
+    }
+
+    @Test void playbookTemplateChangesApplyOnlyToNewIncidents() throws Exception {
+        int first = report(1, 2, 2);
+        int before = ((List<?>)incident(first).get("playbook")).size();
+        int template = id(desk.mutate(admin, "playbook-template-add",
+                Map.of("category", "Application", "title", "Inspect deployment history")));
+        int second = report(1, 2, 2);
+        assertEquals(before, ((List<?>)incident(first).get("playbook")).size());
+        assertEquals(before+1, ((List<?>)incident(second).get("playbook")).size());
+        desk.mutate(admin, "playbook-template-remove", Map.of("id", template));
+        assertEquals(before+1, ((List<?>)incident(second).get("playbook")).size());
+        assertEquals(403, assertThrows(Problem.class, () -> desk.mutate(employee, "playbook-template-add",
+                Map.of("category", "Application", "title", "Unauthorized"))).status);
+    }
+
     @Test void nearbyUpdatesForOneIncidentArriveInOneEmail() throws Exception {
         int ticket=report(1,3,3);
         try(var c=DriverManager.getConnection("jdbc:sqlite:"+db);

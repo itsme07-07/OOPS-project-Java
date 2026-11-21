@@ -32,6 +32,7 @@ Start the local server and open [http://127.0.0.1:8000/](http://127.0.0.1:8000/)
 - Attach PNG, JPEG, PDF or text files (up to 1 MiB each) to an incident. Only people who can view that incident can download its files.
 - Reporters or administrators can reopen resolved, verified or closed incidents with a reason. The incident returns to active work and gets a new resolution deadline.
 - IT staff can publish searchable knowledge articles for services; employees can read the articles before reporting an issue.
+- Administrators maintain category-specific response playbook templates. New incidents receive their own copy of the relevant checklist, and existing incident steps stay unchanged when a template is edited or removed. Assigned technicians, added teammates and administrators can mark steps completed, skipped or still to do with a required result or reason. The incident playbook records who updated each step and when. Its diagnostic results are visible to assigned IT staff, not to the reporter. Knowledge articles remain separate reusable reference material.
 - Public notes are visible to incident participants. Internal notes are available only to IT staff and are hidden from employee history and notifications.
 - Assigned technicians and administrators can record root cause, impact and prevention steps in a post-incident review for resolved P1 incidents.
 - Find similar incidents on the same service and suggest a previous resolution when available.

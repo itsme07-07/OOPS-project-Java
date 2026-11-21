@@ -47,6 +47,15 @@ CREATE TABLE IF NOT EXISTS knowledge_articles(
  id INTEGER PRIMARY KEY, title TEXT NOT NULL, service_id INTEGER NOT NULL REFERENCES services,
  summary TEXT NOT NULL, steps TEXT NOT NULL, author_id INTEGER NOT NULL REFERENCES users,
  created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS playbook_templates(
+ id INTEGER PRIMARY KEY, category TEXT NOT NULL REFERENCES categories(name),
+ title TEXT NOT NULL, position INTEGER NOT NULL);
+CREATE INDEX IF NOT EXISTS playbook_template_category ON playbook_templates(category,position,id);
+CREATE TABLE IF NOT EXISTS incident_playbook_steps(
+ id INTEGER PRIMARY KEY, incident_id INTEGER NOT NULL REFERENCES incidents(id),
+ title TEXT NOT NULL, position INTEGER NOT NULL, status TEXT NOT NULL DEFAULT 'pending',
+ result TEXT NOT NULL DEFAULT '', actor_id INTEGER REFERENCES users(id), updated_at TEXT);
+CREATE INDEX IF NOT EXISTS incident_playbook_order ON incident_playbook_steps(incident_id,position,id);
 CREATE TABLE IF NOT EXISTS incident_reviews(
  incident_id INTEGER PRIMARY KEY REFERENCES incidents, root_cause TEXT NOT NULL, impact TEXT NOT NULL,
  prevention TEXT NOT NULL, author_id INTEGER NOT NULL REFERENCES users, updated_at TEXT NOT NULL);

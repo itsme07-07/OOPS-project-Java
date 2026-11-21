@@ -37,6 +37,8 @@ styles = {
                            textColor=ACCENT, spaceAfter=19),
     "heading": ParagraphStyle("Heading", fontName="Helvetica-Bold", fontSize=15, leading=19,
                               textColor=INK, spaceBefore=12, spaceAfter=10, keepWithNext=True),
+    "subheading": ParagraphStyle("Subheading", fontName="Helvetica-Bold", fontSize=11.5, leading=15,
+                                 textColor=ACCENT, spaceBefore=9, spaceAfter=7, keepWithNext=True),
     "body": ParagraphStyle("Body", fontName="Helvetica", fontSize=9.6, leading=14.1,
                            textColor=INK, spaceAfter=10),
     "bullet": ParagraphStyle("Bullet", fontName="Helvetica", fontSize=9.3, leading=13.7,
@@ -95,6 +97,9 @@ def build():
         elif line.startswith("## "):
             flush()
             story.append(Paragraph(inline(line[3:]), styles["heading"]))
+        elif line.startswith("### "):
+            flush()
+            story.append(Paragraph(inline(line[4:]), styles["subheading"]))
         elif line.startswith("- "):
             flush()
             story.append(Paragraph("<font color=\"#6d4ed6\"><b>\u2022</b></font>  " + inline(line[2:]), styles["bullet"]))

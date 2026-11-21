@@ -60,6 +60,7 @@ public final class Desk {
                 exec(c, "ALTER TABLE incidents ADD COLUMN escalation_stage INTEGER NOT NULL DEFAULT 0");
             exec(c, "CREATE UNIQUE INDEX IF NOT EXISTS users_username_unique ON users(username)");
             if (one(c, "SELECT 1 FROM settings LIMIT 1") == null) initialize(c, demo);
+            Playbooks.seed(c);
             for (var row : rows(c, "SELECT id,name,role,username FROM users")) {
                 Object current = row.get("username");
                 String name = row.get("name").toString();
@@ -572,7 +573,7 @@ public final class Desk {
                 case "profile" -> saveProfile(c, uid, data);
                 case "article-save" -> saveArticle(c, actor, data);
                 case "article-delete" -> deleteArticle(c, actor, data);
-                case "assign", "feedback", "transition", "update", "note", "reopen", "review", "responder-add", "responder-remove" -> incidents.act(c, actor, action, data);
+                case "assign", "feedback", "transition", "update", "note", "reopen", "review", "responder-add", "responder-remove", "playbook-step" -> incidents.act(c, actor, action, data);
                 default -> {
                     if (!"admin".equals(actor.get("role"))) throw new Problem(403, "Administrator access is required.");
                     if ("remove-user".equals(action)) yield removeUser(c, uid, data);
@@ -587,6 +588,10 @@ public final class Desk {
 
     private Object configure(Connection c, String action, Map<String,Object> data) throws SQLException {
         switch (action) {
+            case "playbook-template-add":
+                return Playbooks.addTemplate(c, data);
+            case "playbook-template-remove":
+                return Playbooks.removeTemplate(c, data);
             case "user": {
                 int id = saveUser(c, data);
                 var person = user(c, id);
