@@ -149,6 +149,10 @@ html[data-theme="light"] .landing{background:#f5f2fb;color:#241d42}html[data-the
 .device-row{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:17px 0;border-top:1px solid var(--line)}
 .device-row:first-of-type{margin-top:18px}.device-row span{display:grid;gap:4px}.device-row small{color:var(--muted)}
 @media(max-width:480px){.device-row{align-items:flex-start;flex-direction:column;gap:10px}}
+
+.team-summary{display:grid;gap:3px;min-width:130px}.team-summary strong{font-size:13px}.team-summary small{color:var(--muted);font-size:11px}
+.team-details{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:18px}.team-details>div{display:grid;align-content:start;gap:9px;padding:20px;border:1px solid var(--line);border-radius:15px;background:var(--soft)}.team-details small{font-size:10px;font-weight:750;letter-spacing:.12em;color:var(--muted)}.team-details strong{font-size:16px;line-height:1.4}
+@media(max-width:600px){.team-details{grid-template-columns:1fr}}
 @keyframes float{0%,100%{transform:translateY(0) rotateY(-9deg) rotateX(5deg) rotateZ(2deg)}50%{transform:translateY(-16px) rotateY(-7deg) rotateX(5deg) rotateZ(1deg)}}@keyframes breathe{50%{box-shadow:0 0 0 9px #d4f19417,0 0 30px #d4f194ee}}@keyframes bar-rise{from{transform:scaleY(.08)}to{transform:scaleY(1)}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.hero-cta,.visual-main,.visual-float,.visual-chart i,.live-dot{animation:none!important;transition:none!important}.feature-card{transition:none}}
 
