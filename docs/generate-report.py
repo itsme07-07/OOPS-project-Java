@@ -11,7 +11,9 @@ from reportlab.lib.enums import TA_LEFT
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import mm
-from reportlab.platypus import BaseDocTemplate, Frame, PageBreak, PageTemplate, Paragraph, Spacer
+from reportlab.platypus import BaseDocTemplate, Frame, LongTable, PageBreak, PageTemplate, Paragraph, Spacer, TableStyle
+
+from report_diagrams import DIAGRAMS, export_svgs
 
 
 ROOT = Path(__file__).resolve().parent
@@ -43,6 +45,10 @@ styles = {
                            textColor=INK, spaceAfter=10),
     "bullet": ParagraphStyle("Bullet", fontName="Helvetica", fontSize=9.3, leading=13.7,
                             textColor=INK, leftIndent=16, firstLineIndent=-11, spaceAfter=7),
+    "table": ParagraphStyle("Table", fontName="Helvetica", fontSize=7.2, leading=9.5,
+                           textColor=INK),
+    "table_head": ParagraphStyle("TableHead", fontName="Helvetica-Bold", fontSize=7.3, leading=9.5,
+                                textColor=colors.white),
 }
 
 
@@ -68,6 +74,7 @@ def draw_page(canvas, doc):
 
 
 def build():
+    export_svgs(ROOT / "diagrams")
     doc = BaseDocTemplate(str(OUTPUT), pagesize=A4, leftMargin=20 * mm,
                           rightMargin=20 * mm, topMargin=33 * mm, bottomMargin=22 * mm,
                           title="ServiceForce | Project report",
@@ -84,10 +91,44 @@ def build():
             paragraphs.clear()
 
     lines = SOURCE.read_text(encoding="utf-8").splitlines()
+    table_rows = []
+
+    def flush_table():
+        if not table_rows:
+            return
+        rows = [[Paragraph(inline(cell), styles["table_head" if index == 0 else "table"])
+                 for cell in row] for index, row in enumerate(table_rows)]
+        table = LongTable(rows, colWidths=[31, 115, 164, 172], repeatRows=1,
+                          hAlign="LEFT", splitByRow=1)
+        table.setStyle(TableStyle([
+            ("BACKGROUND", (0, 0), (-1, 0), ACCENT),
+            ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#f7f5fc")]),
+            ("GRID", (0, 0), (-1, -1), .35, colors.HexColor("#dcd6eb")),
+            ("VALIGN", (0, 0), (-1, -1), "TOP"),
+            ("LEFTPADDING", (0, 0), (-1, -1), 5),
+            ("RIGHTPADDING", (0, 0), (-1, -1), 5),
+            ("TOPPADDING", (0, 0), (-1, -1), 6),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+        ]))
+        story.append(table)
+        table_rows.clear()
+
     for line in lines:
         line = line.strip()
+        if line.startswith("|") and line.endswith("|"):
+            flush()
+            cells = [cell.strip() for cell in line[1:-1].split("|")]
+            if not all(re.fullmatch(r":?-{3,}:?", cell) for cell in cells):
+                table_rows.append(cells)
+            continue
+        flush_table()
         if not line:
             flush()
+        elif line.startswith("[[") and line.endswith("]]"):
+            flush()
+            name = line[2:-2]
+            story.append(DIAGRAMS[name]())
+            story.append(Spacer(1, 4 * mm))
         elif line == "---":
             flush()
             story.append(PageBreak())
@@ -109,6 +150,7 @@ def build():
         else:
             paragraphs.append(line)
     flush()
+    flush_table()
     story.append(Spacer(1, 2 * mm))
     doc.build(story)
     print(OUTPUT)

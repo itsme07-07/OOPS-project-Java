@@ -100,3 +100,72 @@ SQLite is appropriate for a modest queue but would need reevaluation for a large
 Install Java 17 or later. Clone `https://github.com/itsme07-07/OOPS-project-Java`, run `./mvnw clean verify`, then start `java -jar target/relay.jar`. Open `http://127.0.0.1:8000/`. The local demo provides role-based demo buttons; exact demo usernames vary by installation and are visible in My profile. Production administrator credentials are intentionally not published in this report or repository.
 
 The live application is at `https://oops-project-java-production.up.railway.app/`. The repository's `README.md` is the starting guide; `docs/railway.md` covers deployment; `docs/demonstration.md` contains the presentation walkthrough; and `docs/features.md` is the maintained implementation inventory. Update the feature inventory when a feature is added, removed or materially changed, then regenerate this report from the editable Markdown source using `docs/generate-report.py`.
+
+---
+
+## Appendix A. System architecture diagram
+
+[[ARCHITECTURE]]
+
+The browser calls the Java HTTP server. RelayServer authenticates requests and delegates business actions to Desk and Incidents. Database transactions persist incident changes, audit history, notifications and outbox entries. A scheduled SLA monitor applies deadline rules. The mail worker sends queued messages through Brevo's HTTPS API. The browser, API and scheduler run in one Java deployment; SQLite is stored on a persistent Railway volume in production.
+
+---
+
+## Appendix B. UML use-case diagram
+
+[[USE_CASE]]
+
+The system has three actors: employee, technician and administrator. Employees report, track and verify their own incidents. Technicians investigate assigned work, follow incident playbooks and resolve incidents. Administrators manage people, teams, services, SLA policies, routing, playbook templates and reporting. Authentication and personal profile actions are available to all roles.
+
+---
+
+## Appendix C. UML class diagram
+
+[[CLASS]]
+
+The diagram shows the principal Java classes and interfaces. RelayServer uses Desk; Desk coordinates Incidents and Database. Incidents copies Playbooks into a new case and emits events to IncidentEvent.Observer implementations, AuditLog and NotificationOutbox. AssignmentStrategy is implemented by SkillFirst and LeastLoad. MailDelivery is an interface for the email provider. The implementation uses interfaces where behavior varies; entities are not forced into an artificial inheritance hierarchy.
+
+---
+
+## Appendix D. Entity-relationship diagram
+
+[[ER]]
+
+The central incidents table references reporter and lead technician in users, the affected service and category, and its priority policy. The incident_responders join table gives an incident many additional technicians without duplicating the lead. Each incident can have many audit entries, notifications and copied playbook steps. A notification can have at most one queued email. The diagram shows the main relationships; the schema also contains email_codes, settings, sla_events, attachments, incident_reviews and knowledge_articles. The authoritative definitions, keys and constraints are in `src/main/resources/schema.sql`.
+
+---
+
+## Appendix E. Documented test cases
+
+Each row states a test condition and the observable expected result. The evidence column names a JUnit method in `src/test/java/relay/DeskTest.java` (D) or `src/test/java/relay/HttpIntegrationTest.java` (H). Run `./mvnw clean verify` to reproduce the automated checks. The latest run had 54 tests with no failures, errors or skips.
+
+| ID | Test condition | Expected result | Automated evidence |
+| --- | --- | --- | --- |
+| T01 | Register with an unverified email, then verify it and sign in by username | Registration requires verification; username works for sign-in and email does not | D: registrationRequiresVerifiedEmailAndOnlyUsernameCanSignIn |
+| T02 | Register using an email already in use | Duplicate account is rejected | D: duplicateAccountsAreRejected |
+| T03 | Enter an invalid email address at registration | Input is rejected without creating an account | D: invalidEmailIsRejected |
+| T04 | Enter a password shorter than the minimum | Input is rejected without creating an account | D: shortPasswordIsRejected |
+| T05 | Reset password through a verified recovery email | New password works; previous password stops working | D: recoveryRequiresVerifiedEmailAndResetInvalidatesOldPassword |
+| T06 | Attempt to register with an administrator role | Public registration cannot grant elevated privileges | H: registrationRejectsPrivilegeEscalation |
+| T07 | Sign in with a wrong password | Authentication fails and private workspace stays inaccessible | H: wrongPasswordIsRejected |
+| T08 | Sign in, use the workspace, then sign out | Session works before logout and is invalid afterward | H: sessionPermitsWorkspaceAccessUntilLogout |
+| T09 | Sign out another listed device | Target device session is revoked | H: userCanSeeAndSignOutAnotherDevice |
+| T10 | Employee attempts to edit routing settings | Role check rejects the action | D: employeeCannotConfigureRouting |
+| T11 | Open another reporter's incident or notes | Ownership check blocks access | D: newEmployeesCannotChooseTheirRoleOrReadOtherCases |
+| T12 | Submit an invalid incident report | No partial incident is committed | D: invalidReportRollsBack |
+| T13 | Change impact or urgency and calculate priority | Priority follows impact, urgency and service criticality | D: priorityUsesImpactUrgencyAndCriticality |
+| T14 | Route work with uneven technician load | Least-busy eligible technician is selected | D: loadRoutingChoosesLeastBusyEligibleTechnician |
+| T15 | Resolve, verify and close an incident | Workflow reaches closure only after required verification | D: closureRequiresVerification |
+| T16 | Add an internal note to an incident | Reporter cannot see the internal note | D: internalNotesStayHiddenFromReporter |
+| T17 | Upload evidence and try access from an unrelated account | File size/type rules apply and unrelated account cannot read evidence | D: attachmentsAreLimitedAndPrivateToIncidentParticipants |
+| T18 | Complete incident playbook steps with internal results | Staff can track steps; reporter cannot see internal results | D: playbookTracksWorkWithoutExposingInternalResultsToReporter |
+| T19 | Edit a playbook template after an incident is created | Existing incident retains its copied steps; new incidents get the edit | D: playbookTemplateChangesApplyOnlyToNewIncidents |
+| T20 | Miss resolution then recovery deadlines | Matching teammates join once; later breach marks incident Highly Critical | D: resolutionBreachAddsMatchingTeammatesOnceAndThenMarksHighlyCritical |
+| T21 | Run SLA monitoring repeatedly | No duplicate escalation events or repeated assignments | D: monitoringIsIdempotent |
+| T22 | Miss a deadline with no eligible teammate | Administrator is alerted; repeated monitor runs do not assign twice | D: noMatchingTeammateAlertsAdminWithoutRepeatedAssignment |
+| T23 | Consider a technician already handling more urgent work | Escalation does not pull that technician into the lower-priority incident | D: escalationDoesNotPullTechnicianFromMoreUrgentWork |
+| T24 | Change response-team membership | Access follows the current membership | D: administratorCanAdjustTeamAndResponderAccessFollowsMembership |
+| T25 | Generate closely spaced updates for one incident | Recipient receives one grouped email instead of separate messages | D: nearbyUpdatesForOneIncidentArriveInOneEmail |
+| T26 | Call mutation endpoint from another origin | Cross-origin request is rejected | H: blocksCrossOriginMutation |
+| T27 | Submit oversized request content | HTTP payload limit is enforced | H: enforcesPayloadLimit |
+| T28 | Request attachment without incident permission | Download is denied | H: attachmentDownloadRequiresIncidentAccess |

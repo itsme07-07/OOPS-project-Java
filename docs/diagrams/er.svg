@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE svg
+  PUBLIC '-//W3C//DTD SVG 1.0//EN'
+  'http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd'>
+<svg width="470" height="540" preserveAspectRatio="xMinYMin meet" viewBox="0 0 470 540" xmlns="http://www.w3.org/2000/svg" version="1.0" fill-rule="evenodd" xmlns:xlink="http://www.w3.org/1999/xlink">
+	<title>...</title>
+	<desc>...</desc>
+	<clipPath id="clip">
+		<rect x="0" y="0" width="470" height="540"/>
+	</clipPath>
+	<g id="group" transform="scale(1,-1) translate(0,-540)" style="clip-path: url(#clip)">
+		<g transform="">
+			<rect x="5" y="415" width="135" height="95" rx="9" ry="9" style="stroke: rgb(68%,65%,76%); stroke-linecap: butt; stroke-width: 1; fill: rgb(91%,95%,100%); fill-rule: evenodd;"/>
+			<text x="15" y="491" style="font-family: Helvetica-Bold; font-size: 9px;fill: rgb(12%,11%,24%); stroke:none;" transform="translate(0,982) scale(1,-1)">users</text>
+			<text x="15" y="474" style="font-family: Helvetica; font-size: 7.3px;fill: rgb(38%,36%,47%); stroke:none;" transform="translate(0,948) scale(1,-1)">PK id; username, email, role</text>
+			<text x="15" y="461" style="font-family: Helvetica; font-size: 7.3px;fill: rgb(38%,36%,47%); stroke:none;" transform="translate(0,922) scale(1,-1)">skill, capacity, active</text>
+			<rect x="168" y="415" width="135" height="95" rx="9" ry="9" style="stroke: rgb(68%,65%,76%); stroke-linecap: butt; stroke-width: 1; fill: rgb(91%,95%,100%); fill-rule: evenodd;"/>
+			<text x="178" y="491" style="font-family: Helvetica-Bold; font-size: 9px;fill: rgb(12%,11%,24%); stroke:none;" transform="translate(0,982) scale(1,-1)">categories</text>
+			<text x="178" y="474" style="font-family: Helvetica; font-size: 7.3px;fill: rgb(38%,36%,47%); stroke:none;" transform="translate(0,948) scale(1,-1)">PK name</text>
+			<rect x="330" y="415" width="135" height="95" rx="9" ry="9" style="stroke: rgb(68%,65%,76%); stroke-linecap: butt; stroke-width: 1; fill: rgb(91%,95%,100%); fill-rule: evenodd;"/>
+			<text x="340" y="491" style="font-family: Helvetica-Bold; font-size: 9px;fill: rgb(12%,11%,24%); stroke:none;" transform="translate(0,982) scale(1,-1)">services</text>
+			<text x="340" y="474" style="font-family: Helvetica; font-size: 7.3px;fill: rgb(38%,36%,47%); stroke:none;" transform="translate(0,948) scale(1,-1)">PK id; FK category</text>
+			<text x="340" y="461" style="font-family: Helvetica; font-size: 7.3px;fill: rgb(38%,36%,47%); stroke:none;" transform="translate(0,922) scale(1,-1)">criticality</text>
+			<rect x="5" y="280" width="135" height="90" rx="9" ry="9" style="stroke: rgb(68%,65%,76%); stroke-linecap: butt; stroke-width: 1; fill: rgb(100%,95%,86%); fill-rule: evenodd;"/>
+			<text x="15" y="351" style="font-family: Helvetica-Bold; font-size: 9px;fill: rgb(12%,11%,24%); stroke:none;" transform="translate(0,702) scale(1,-1)">policies</text>
+			<text x="15" y="334" style="font-family: Helvetica; font-size: 7.3px;fill: rgb(38%,36%,47%); stroke:none;" transform="translate(0,668) scale(1,-1)">PK priority</text>
+			<text x="15" y="321" style="font-family: Helvetica; font-size: 7.3px;fill: rgb(38%,36%,47%); stroke:none;" transform="translate(0,642) scale(1,-1)">response/resolution targets</text>
+			<rect x="168" y="280" width="135" height="105" rx="9" ry="9" style="stroke: rgb(68%,65%,76%); stroke-linecap: butt; stroke-width: 1; fill: rgb(95%,93%,99%); fill-rule: evenodd;"/>
+			<text x="178" y="366" style="font-family: Helvetica-Bold; font-size: 9px;fill: rgb(12%,11%,24%); stroke:none;" transform="translate(0,732) scale(1,-1)">incidents</text>
+			<text x="178" y="349" style="font-family: Helvetica; font-size: 7.3px;fill: rgb(38%,36%,47%); stroke:none;" transform="translate(0,698) scale(1,-1)">PK id; FK reporter_id</text>
+			<text x="178" y="336" style="font-family: Helvetica; font-size: 7.3px;fill: rgb(38%,36%,47%); stroke:none;" transform="translate(0,672) scale(1,-1)">FK service_id, category</text>
+			<text x="178" y="323" style="font-family: Helvetica; font-size: 7.3px;fill: rgb(38%,36%,47%); stroke:none;" transform="translate(0,646) scale(1,-1)">FK technician_id, priority</text>
+			<text x="178" y="310" style="font-family: Helvetica; font-size: 7.3px;fill: rgb(38%,36%,47%); stroke:none;" transform="translate(0,620) scale(1,-1)">status, deadlines</text>
+			<rect x="330" y="280" width="135" height="90" rx="9" ry="9" style="stroke: rgb(68%,65%,76%); stroke-linecap: butt; stroke-width: 1; fill: rgb(100%,95%,86%); fill-rule: evenodd;"/>
+			<text x="340" y="351" style="font-family: Helvetica-Bold; font-size: 9px;fill: rgb(12%,11%,24%); stroke:none;" transform="translate(0,702) scale(1,-1)">playbook_templates</text>
+			<text x="340" y="334" style="font-family: Helvetica; font-size: 7.3px;fill: rgb(38%,36%,47%); stroke:none;" transform="translate(0,668) scale(1,-1)">PK id; FK category</text>
+			<text x="340" y="321" style="font-family: Helvetica; font-size: 7.3px;fill: rgb(38%,36%,47%); stroke:none;" transform="translate(0,642) scale(1,-1)">title, position</text>
+			<rect x="5" y="145" width="135" height="95" rx="9" ry="9" style="stroke: rgb(68%,65%,76%); stroke-linecap: butt; stroke-width: 1; fill: rgb(95%,93%,99%); fill-rule: evenodd;"/>
+			<text x="15" y="221" style="font-family: Helvetica-Bold; font-size: 9px;fill: rgb(12%,11%,24%); stroke:none;" transform="translate(0,442) scale(1,-1)">incident_responders</text>
+			<text x="15" y="204" style="font-family: Helvetica; font-size: 7.3px;fill: rgb(38%,36%,47%); stroke:none;" transform="translate(0,408) scale(1,-1)">PK/FK incident_id, user_id</text>
+			<text x="15" y="191" style="font-family: Helvetica; font-size: 7.3px;fill: rgb(38%,36%,47%); stroke:none;" transform="translate(0,382) scale(1,-1)">joined_at</text>
+			<rect x="168" y="145" width="135" height="95" rx="9" ry="9" style="stroke: rgb(68%,65%,76%); stroke-linecap: butt; stroke-width: 1; fill: rgb(95%,93%,99%); fill-rule: evenodd;"/>
+			<text x="178" y="221" style="font-family: Helvetica-Bold; font-size: 9px;fill: rgb(12%,11%,24%); stroke:none;" transform="translate(0,442) scale(1,-1)">incident_playbook_steps</text>
+			<text x="178" y="204" style="font-family: Helvetica; font-size: 7.3px;fill: rgb(38%,36%,47%); stroke:none;" transform="translate(0,408) scale(1,-1)">PK id; FK incident_id</text>
+			<text x="178" y="191" style="font-family: Helvetica; font-size: 7.3px;fill: rgb(38%,36%,47%); stroke:none;" transform="translate(0,382) scale(1,-1)">FK actor_id; status, result</text>
+			<rect x="330" y="145" width="135" height="95" rx="9" ry="9" style="stroke: rgb(68%,65%,76%); stroke-linecap: butt; stroke-width: 1; fill: rgb(95%,93%,99%); fill-rule: evenodd;"/>
+			<text x="340" y="221" style="font-family: Helvetica-Bold; font-size: 9px;fill: rgb(12%,11%,24%); stroke:none;" transform="translate(0,442) scale(1,-1)">audit</text>
+			<text x="340" y="204" style="font-family: Helvetica; font-size: 7.3px;fill: rgb(38%,36%,47%); stroke:none;" transform="translate(0,408) scale(1,-1)">PK id; FK incident_id</text>
+			<text x="340" y="191" style="font-family: Helvetica; font-size: 7.3px;fill: rgb(38%,36%,47%); stroke:none;" transform="translate(0,382) scale(1,-1)">actor, action, timestamp</text>
+			<rect x="5" y="10" width="135" height="95" rx="9" ry="9" style="stroke: rgb(68%,65%,76%); stroke-linecap: butt; stroke-width: 1; fill: rgb(91%,95%,100%); fill-rule: evenodd;"/>
+			<text x="15" y="86" style="font-family: Helvetica-Bold; font-size: 9px;fill: rgb(12%,11%,24%); stroke:none;" transform="translate(0,172) scale(1,-1)">notifications</text>
+			<text x="15" y="69" style="font-family: Helvetica; font-size: 7.3px;fill: rgb(38%,36%,47%); stroke:none;" transform="translate(0,138) scale(1,-1)">PK id; FK incident_id</text>
+			<text x="15" y="56" style="font-family: Helvetica; font-size: 7.3px;fill: rgb(38%,36%,47%); stroke:none;" transform="translate(0,112) scale(1,-1)">FK user_id; message</text>
+			<rect x="168" y="10" width="135" height="95" rx="9" ry="9" style="stroke: rgb(68%,65%,76%); stroke-linecap: butt; stroke-width: 1; fill: rgb(100%,95%,86%); fill-rule: evenodd;"/>
+			<text x="178" y="86" style="font-family: Helvetica-Bold; font-size: 9px;fill: rgb(12%,11%,24%); stroke:none;" transform="translate(0,172) scale(1,-1)">email_outbox</text>
+			<text x="178" y="69" style="font-family: Helvetica; font-size: 7.3px;fill: rgb(38%,36%,47%); stroke:none;" transform="translate(0,138) scale(1,-1)">PK id; FK notification_id</text>
+			<text x="178" y="56" style="font-family: Helvetica; font-size: 7.3px;fill: rgb(38%,36%,47%); stroke:none;" transform="translate(0,112) scale(1,-1)">recipient, status, retry</text>
+			<path d="M 303,465 L 330,465 Z" style="stroke: rgb(42%,30%,83%); stroke-linecap: butt; stroke-width: 1.5;"/>
+			<text x="311.054" y="470.0" style="font-family: Helvetica; font-size: 7px;fill: rgb(38%,36%,47%); stroke:none;" transform="translate(0,940) scale(1,-1)">1:N</text>
+			<path d="M 235,415 L 235,385 Z" style="stroke: rgb(42%,30%,83%); stroke-linecap: butt; stroke-width: 1.5;"/>
+			<text x="229.554" y="405.0" style="font-family: Helvetica; font-size: 7px;fill: rgb(38%,36%,47%); stroke:none;" transform="translate(0,810) scale(1,-1)">1:N</text>
+			<path d="M 140,425 L 168,345 Z" style="stroke: rgb(42%,30%,83%); stroke-linecap: butt; stroke-width: 1.5;"/>
+			<text x="148.554" y="390.0" style="font-family: Helvetica; font-size: 7px;fill: rgb(38%,36%,47%); stroke:none;" transform="translate(0,780) scale(1,-1)">1:N</text>
+			<path d="M 140,325 L 168,325 Z" style="stroke: rgb(42%,30%,83%); stroke-linecap: butt; stroke-width: 1.5;"/>
+			<text x="148.554" y="330.0" style="font-family: Helvetica; font-size: 7px;fill: rgb(38%,36%,47%); stroke:none;" transform="translate(0,660) scale(1,-1)">1:N</text>
+			<path d="M 303,345 L 330,425 Z" style="stroke: rgb(42%,30%,83%); stroke-linecap: butt; stroke-width: 1.5;"/>
+			<text x="311.054" y="390.0" style="font-family: Helvetica; font-size: 7px;fill: rgb(38%,36%,47%); stroke:none;" transform="translate(0,780) scale(1,-1)">1:N</text>
+			<path d="M 303,445 L 315,445 Z" style="stroke: rgb(42%,30%,83%); stroke-linecap: butt; stroke-width: 1.5;"/>
+			<path d="M 315,445 L 315,325 Z" style="stroke: rgb(42%,30%,83%); stroke-linecap: butt; stroke-width: 1.5;"/>
+			<text x="309.554" y="390.0" style="font-family: Helvetica; font-size: 7px;fill: rgb(38%,36%,47%); stroke:none;" transform="translate(0,780) scale(1,-1)">1:N</text>
+			<path d="M 315,325 L 330,325 Z" style="stroke: rgb(42%,30%,83%); stroke-linecap: butt; stroke-width: 1.5;"/>
+			<path d="M 200,280 L 100,240 Z" style="stroke: rgb(42%,30%,83%); stroke-linecap: butt; stroke-width: 1.5;"/>
+			<text x="144.554" y="265.0" style="font-family: Helvetica; font-size: 7px;fill: rgb(38%,36%,47%); stroke:none;" transform="translate(0,530) scale(1,-1)">1:N</text>
+			<path d="M 235,280 L 235,240 Z" style="stroke: rgb(42%,30%,83%); stroke-linecap: butt; stroke-width: 1.5;"/>
+			<text x="229.554" y="265.0" style="font-family: Helvetica; font-size: 7px;fill: rgb(38%,36%,47%); stroke:none;" transform="translate(0,530) scale(1,-1)">1:N</text>
+			<path d="M 270,280 L 365,240 Z" style="stroke: rgb(42%,30%,83%); stroke-linecap: butt; stroke-width: 1.5;"/>
+			<text x="312.054" y="265.0" style="font-family: Helvetica; font-size: 7px;fill: rgb(38%,36%,47%); stroke:none;" transform="translate(0,530) scale(1,-1)">1:N</text>
+			<path d="M 168,300 L 152,300 Z" style="stroke: rgb(42%,30%,83%); stroke-linecap: butt; stroke-width: 1.5;"/>
+			<path d="M 152,300 L 152,58 Z" style="stroke: rgb(42%,30%,83%); stroke-linecap: butt; stroke-width: 1.5;"/>
+			<text x="146.554" y="184.0" style="font-family: Helvetica; font-size: 7px;fill: rgb(38%,36%,47%); stroke:none;" transform="translate(0,368) scale(1,-1)">1:N</text>
+			<path d="M 152,58 L 140,58 Z" style="stroke: rgb(42%,30%,83%); stroke-linecap: butt; stroke-width: 1.5;"/>
+			<path d="M 140,58 L 168,58 Z" style="stroke: rgb(42%,30%,83%); stroke-linecap: butt; stroke-width: 1.5;"/>
+			<text x="145.243" y="63.0" style="font-family: Helvetica; font-size: 7px;fill: rgb(38%,36%,47%); stroke:none;" transform="translate(0,126) scale(1,-1)">1:0..1</text>
+		</g>
+	</g>
+</svg>
