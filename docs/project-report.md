@@ -7,12 +7,12 @@ Intelligent IT Service Management and Incident Resolution
 ## Project members
 
 [[TEAM_CARDS]]
-- Anurag Reddy Goli | 2025A7IS2423H | Frontend and experience | Role screens, incident workspace, filtering, charts and accessibility. UI checks, documentation and demonstration.
-- Angad Ahuja | 2025A7IS2409H | Identity and API | HTTP endpoints, authentication, sessions, recovery and email delivery. Security tests, documentation and demonstration.
-- Jaya Pranav Reddy Avuduri | 2025A7IS2421H | Incident and OOP | Lifecycle, priority, routing, SLA, response teams and playbooks. Domain tests, documentation and demonstration.
-- Raj Mittal | 2025A7IS2414H | Data and operations | SQLite, audit, knowledge, reporting, Docker, Railway and CI. Persistence tests, documentation and demonstration.
+- Anurag Reddy Goli | 2025A7IS2423H | Experience and reporting | Role screens, incident views and reports; UI-facing Java models and encapsulation; interface tests and demo.
+- Angad Ahuja | 2025A7IS2409H | Identity and delivery | Accounts, sessions, recovery and email; identity classes and abstraction; security tests and deployment.
+- Jaya Pranav Reddy Avuduri | 2025A7IS2421H | Incident and routing | Lifecycle, priority, SLA and teams; incident classes and strategy polymorphism; domain tests and demo.
+- Raj Mittal | 2025A7IS2414H | Data and knowledge | SQLite, audit, playbooks and knowledge; persistence classes and observer pattern; data tests and CI.
 
-Each member has a substantial technical workstream and is also responsible for testing, documentation and presentation. All members should understand the complete system.
+This is a balanced responsibility plan for the report and demonstration, not a claim about past individual contributions. Every member owns Java/OOP design, implementation and tests in their area. Documentation and presentation are shared equally; the team should confirm the allocation before submission.
 
 ---
 
