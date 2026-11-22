@@ -6,6 +6,17 @@ ServiceForce is a Java web application for reporting, assigning, investigating a
 
 This report describes the implementation as it exists in the repository. The maintained feature inventory is `docs/features.md`. Ideas discussed but not implemented, such as a Service Outage Hub, are excluded from the implemented feature list.
 
+## Project team and responsibility allocation
+
+- Anurag Reddy Goli — 2025A7IS2423H: frontend UI/UX, role-specific workflows, accessibility and report integration. Demonstration area: employee journey, registration and the browser experience.
+- Angad Ahuja — 2025A7IS2409H: Java HTTP/API layer, authentication, sessions, email verification and notification delivery. Demonstration area: sign-in, account security and email flows.
+- Jaya Pranav Reddy Avuduri — 2025A7IS2421H: object-oriented incident domain, priority and assignment strategies, SLA monitoring, escalation and playbooks. Demonstration area: technician investigation and response-team escalation.
+- Raj Mittal — 2025A7IS2414H: SQLite schema and persistence, automated tests, GitHub Actions and Railway packaging. Demonstration area: administrator settings, reports, database and verification evidence.
+
+These are the team's primary responsibility areas for the report and recorded demonstration. All four members are responsible for understanding the complete system.
+
+---
+
 ## 1. Problem and project objectives
 
 An organization needs a reliable way to receive service reports, determine urgency, route work to suitable technicians and show the progress of each case. A shared incident record reduces ambiguity about ownership, deadlines and previous actions. The project aims to give employees visibility into their own requests, technicians a focused work queue, and administrators a full operational view.
