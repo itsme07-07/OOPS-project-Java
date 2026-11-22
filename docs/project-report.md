@@ -82,7 +82,7 @@ The public Railway deployment packages frontend and backend together and mounts 
 
 ## 5. Accounts, identity and access
 
-People choose an Employee, Technician or Administrator sign-in page. The selected role is checked against the authenticated account. Sign-in accepts the assigned username, not the contact email. Usernames follow a name-based format such as `samrivera5678@service.tech`; the system generates a unique four-digit numeric code. Users and administrators cannot choose or change that code. The real email address remains the verified recovery and notification address.
+People choose an Employee, Technician or Administrator sign-in page. The selected role is checked against the authenticated account. Sign-in accepts the assigned username, not the contact email. Usernames follow the format `name_4-code@service.role`: the name is normalized, the system generates a unique four-digit numeric code, and the role suffix identifies the account type (`emp`, `tech` or `adm`). Users and administrators cannot choose or change the code. The real email address remains the verified recovery and notification address.
 
 New employees verify their email with an eight-digit code and enter the workspace after verification. Verified recovery email supports forgotten-username delivery, password reset and a code for password changes. A profile change requires the current password; a password change also requires an emailed code. Passwords are salted and hashed. Admin-created accounts require their password after verification.
 
