@@ -29,7 +29,7 @@
 			<rect x="326" y="400" width="135" height="112" style="stroke: rgb(68%,65%,76%); stroke-linecap: butt; stroke-width: 1; fill: rgb(95%,93%,99%); fill-rule: evenodd;"/>
 			<path d="M 326,485 L 461,485 Z" style="stroke: rgb(68%,65%,76%); stroke-linecap: butt; stroke-width: 0.7;"/>
 			<path d="M 326,459 L 461,459 Z" style="stroke: rgb(68%,65%,76%); stroke-linecap: butt; stroke-width: 0.7;"/>
-			<text x="367.4855" y="494" style="font-family: Helvetica-Bold; font-size: 9px;fill: rgb(12%,11%,24%); stroke:none;" transform="translate(0,988) scale(1,-1)">RelayServer</text>
+			<text x="351.227" y="494" style="font-family: Helvetica-Bold; font-size: 9px;fill: rgb(12%,11%,24%); stroke:none;" transform="translate(0,988) scale(1,-1)">ServiceForceServer</text>
 			<text x="332" y="473" style="font-family: Helvetica; font-size: 7.2px;fill: rgb(12%,11%,24%); stroke:none;" transform="translate(0,946) scale(1,-1)">- sessions: SessionStore</text>
 			<text x="332" y="460" style="font-family: Helvetica; font-size: 7.2px;fill: rgb(12%,11%,24%); stroke:none;" transform="translate(0,920) scale(1,-1)">- desk: Desk</text>
 			<text x="332" y="447" style="font-family: Helvetica; font-size: 7.2px;fill: rgb(12%,11%,24%); stroke:none;" transform="translate(0,894) scale(1,-1)">+ start()</text>

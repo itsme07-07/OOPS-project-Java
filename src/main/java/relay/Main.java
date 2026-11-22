@@ -70,7 +70,7 @@ public final class Main {
                 throw new IllegalStateException("Set SERVICEFORCE_ADMIN_NAME, SERVICEFORCE_ADMIN_EMAIL and SERVICEFORCE_ADMIN_PASSWORD in Railway variables.");
             desk.bootstrapAdmin(name, email, password);
         }
-        RelayServer server = new RelayServer(new InetSocketAddress(address, port), desk, demo, secureCookie);
+        ServiceForceServer server = new ServiceForceServer(new InetSocketAddress(address, port), desk, demo, secureCookie);
         Runtime.getRuntime().addShutdownHook(new Thread(server::close, "relay-shutdown"));
         server.start();
         String displayHost = host.contains(":") && !host.startsWith("[") ? "[" + host + "]" : host;

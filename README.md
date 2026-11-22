@@ -18,20 +18,20 @@ Install a **JDK version 17 or later**. In Terminal, download the repository, bui
 git clone https://github.com/itsme07-07/OOPS-project-Java.git
 cd OOPS-project-Java
 ./mvnw clean verify
-java -jar target/relay.jar
+java -jar target/serviceforce.jar
 ```
 
 On Windows use `mvnw.cmd clean verify`. The first build downloads Maven and the pinned dependencies. The resulting JAR includes the server, database driver and browser interface. Open [http://127.0.0.1:8000/](http://127.0.0.1:8000/) in the browser. Stop the server with Ctrl+C.
 
 The first local launch creates `data/itsm.sqlite3` and demo accounts. If you already ran the earlier release, start the JAR from the same project directory to reuse the existing database. Sign in again after restarting the server.
 
-If you already cloned the repository, stop the running server with Ctrl+C, then run `git pull`, `./mvnw clean verify`, and `java -jar target/relay.jar` from the repository directory. A browser refresh alone cannot load a new Java build into an old server process.
+If you already cloned the repository, stop the running server with Ctrl+C, then run `git pull`, `./mvnw clean verify`, and `java -jar target/serviceforce.jar` from the repository directory. A browser refresh alone cannot load a new Java build into an old server process.
 
 For a separate installation with your own administrator, use a fresh database:
 
 ```sh
-java -jar target/relay.jar --db data/team.sqlite3 --create-admin
-java -jar target/relay.jar --db data/team.sqlite3 --no-demo
+java -jar target/serviceforce.jar --db data/team.sqlite3 --create-admin
+java -jar target/serviceforce.jar --db data/team.sqlite3 --no-demo
 ```
 
 ## Repository layout and course deliverables

@@ -48,7 +48,7 @@ def edge(d, x1, y1, x2, y2, label=None, dashed=False, arrow=True):
 def architecture():
     d = Drawing(470, 330)
     box(d, 10, 205, 110, 88, "Browser UI", ["Employee / Technician", "Administrator", "HTML, CSS, JavaScript"], BLUE)
-    box(d, 165, 205, 130, 88, "RelayServer", ["Static files + JSON API", "Session cookie / validation", "Role-aware routing"], PALE)
+    box(d, 165, 205, 130, 88, "ServiceForceServer", ["Static files + JSON API", "Session cookie / validation", "Role-aware routing"], PALE)
     box(d, 340, 205, 120, 88, "Domain services", ["Desk + Incidents", "Playbooks + strategies", "Event observers"], PALE)
     box(d, 10, 30, 110, 78, "SLA monitor", ["15-second scheduled check", "Deadlines / escalation"], GOLD)
     box(d, 165, 30, 130, 78, "Brevo mail API", ["HTTPS transactional email", "Outbox + retry"], GOLD)
@@ -120,7 +120,7 @@ def classes():
         ["+ ranking(category)"], BLUE, True)
     uml(d, 168, 400, 135, 112, "Desk", ["- database: Database", "- incidents: Incidents"],
         ["+ snapshot(userId)", "+ mutate(userId, action)", "+ monitor()"], PALE)
-    uml(d, 326, 400, 135, 112, "RelayServer", ["- sessions: SessionStore", "- desk: Desk"],
+    uml(d, 326, 400, 135, 112, "ServiceForceServer", ["- sessions: SessionStore", "- desk: Desk"],
         ["+ start()", "- dispatch(request)"], PALE)
     uml(d, 10, 285, 135, 75, "SkillFirst", [], ["+ ranking(category)"], BLUE)
     uml(d, 10, 190, 135, 75, "LeastLoad", [], ["+ ranking(category)"], BLUE)

@@ -4,7 +4,7 @@ Allow 15–20 minutes. Each group member should introduce themselves and demonst
 
 ## Before the demonstration
 
-Start the server with `java -jar target/relay.jar` and open [http://127.0.0.1:8000/](http://127.0.0.1:8000/). Use the three **Explore a demo workspace** buttons to sign in as Administrator, Technician and Employee. The demo password is `RelayDemo2026!`. Each generated username has the form `nameCODE@service.role`; **My profile** shows the exact username after sign-in. Demo addresses ending in `@relay.test` are not delivery addresses.
+Start the server with `java -jar target/serviceforce.jar` and open [http://127.0.0.1:8000/](http://127.0.0.1:8000/). Use the three **Explore a demo workspace** buttons to sign in as Administrator, Technician and Employee. The demo password is `RelayDemo2026!`. Each generated username has the form `nameCODE@service.role`; **My profile** shows the exact username after sign-in. Demo addresses ending in `@relay.test` are not delivery addresses.
 
 ## 1. Report and route an outage (4 minutes)
 

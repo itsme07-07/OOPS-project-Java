@@ -26,7 +26,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-final class RelayServer implements AutoCloseable {
+final class ServiceForceServer implements AutoCloseable {
     private static final Gson JSON = new GsonBuilder().serializeNulls().create();
     private static final String COOKIE = "relay_session";
     private static final int MAX_BODY = 65536;
@@ -36,7 +36,7 @@ final class RelayServer implements AutoCloseable {
         "/style.css", "text/css; charset=utf-8", "/mark.svg", "image/svg+xml");
     private static final Set<String> POST_ENDPOINTS = Set.of("/api/register", "/api/login", "/api/logout", "/api/action", "/api/attachment",
             "/api/request-verification", "/api/verify-email", "/api/recover-username", "/api/request-reset", "/api/reset-password", "/api/password-code", "/api/revoke-device");
-    private static final System.Logger LOG = System.getLogger(RelayServer.class.getName());
+    private static final System.Logger LOG = System.getLogger(ServiceForceServer.class.getName());
 
     private final HttpServer server;
     private final SessionStore sessions = new SessionStore();
@@ -48,7 +48,7 @@ final class RelayServer implements AutoCloseable {
     private final boolean demo;
     private final boolean secureCookie;
 
-    RelayServer(InetSocketAddress address, Desk desk, boolean demo, boolean secureCookie) throws IOException {
+    ServiceForceServer(InetSocketAddress address, Desk desk, boolean demo, boolean secureCookie) throws IOException {
         this.desk = desk;
         this.demo = demo;
         this.secureCookie = secureCookie;
@@ -281,7 +281,7 @@ final class RelayServer implements AutoCloseable {
     private static void asset(HttpExchange ex, String path) throws IOException {
         String mime = ASSETS.get(path);
         if (mime == null) throw new Problem(404, "Page not found.");
-        try (InputStream in = RelayServer.class.getResourceAsStream("/static" + path)) {
+        try (InputStream in = ServiceForceServer.class.getResourceAsStream("/static" + path)) {
             if (in == null) throw new Problem(404, "Page not found.");
             send(ex, 200, mime, in.readAllBytes());
         }

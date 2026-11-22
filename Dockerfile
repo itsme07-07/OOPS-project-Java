@@ -6,7 +6,7 @@ RUN mvn -q -DskipTests package
 
 FROM eclipse-temurin:17-jre
 WORKDIR /app
-COPY --from=build /build/target/relay.jar /app/relay.jar
+COPY --from=build /build/target/serviceforce.jar /app/serviceforce.jar
 ENV JAVA_TOOL_OPTIONS="-Xmx256m"
 EXPOSE 8080
-CMD ["java", "-jar", "/app/relay.jar", "--no-demo"]
+CMD ["java", "-jar", "/app/serviceforce.jar", "--no-demo"]

@@ -16,7 +16,7 @@
 			<text x="20" y="244" style="font-family: Helvetica; font-size: 8px;fill: rgb(38%,36%,47%); stroke:none;" transform="translate(0,488) scale(1,-1)">Administrator</text>
 			<text x="20" y="231" style="font-family: Helvetica; font-size: 8px;fill: rgb(38%,36%,47%); stroke:none;" transform="translate(0,462) scale(1,-1)">HTML, CSS, JavaScript</text>
 			<rect x="165" y="205" width="130" height="88" rx="9" ry="9" style="stroke: rgb(68%,65%,76%); stroke-linecap: butt; stroke-width: 1; fill: rgb(95%,93%,99%); fill-rule: evenodd;"/>
-			<text x="175" y="274" style="font-family: Helvetica-Bold; font-size: 10px;fill: rgb(12%,11%,24%); stroke:none;" transform="translate(0,548) scale(1,-1)">RelayServer</text>
+			<text x="175" y="274" style="font-family: Helvetica-Bold; font-size: 10px;fill: rgb(12%,11%,24%); stroke:none;" transform="translate(0,548) scale(1,-1)">ServiceForceServer</text>
 			<text x="175" y="257" style="font-family: Helvetica; font-size: 8px;fill: rgb(38%,36%,47%); stroke:none;" transform="translate(0,514) scale(1,-1)">Static files + JSON API</text>
 			<text x="175" y="244" style="font-family: Helvetica; font-size: 8px;fill: rgb(38%,36%,47%); stroke:none;" transform="translate(0,488) scale(1,-1)">Session cookie / validation</text>
 			<text x="175" y="231" style="font-family: Helvetica; font-size: 8px;fill: rgb(38%,36%,47%); stroke:none;" transform="translate(0,462) scale(1,-1)">Role-aware routing</text>

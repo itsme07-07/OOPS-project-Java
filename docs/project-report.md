@@ -24,7 +24,7 @@ The implementation targets one organization and a modest service-desk workload. 
 
 The browser uses HTML, CSS and JavaScript for the landing page, role-specific sign-in screens and workspaces. A Java 17 HTTP server serves these assets and a JSON API. The domain layer contains account rules, incident transitions, assignment, SLA monitoring, event recording and notification delivery. SQLite stores operational data, while Maven builds the runnable JAR and JUnit exercises domain and HTTP behavior.
 
-- `RelayServer` is the HTTP boundary. It validates requests, reads session cookies, dispatches API actions and serves static files.
+- `ServiceForceServer` is the HTTP boundary. It validates requests, reads session cookies, dispatches API actions and serves static files.
 - `Desk` coordinates user accounts, profile changes, authorization, monitoring and email delivery.
 - `Incidents` owns incident creation, lifecycle transitions, assignment, escalation, visibility, response-team membership and incident-specific playbook progress.
 - `Playbooks` seeds category templates and copies their steps into a new incident. Template edits affect future incidents without rewriting existing investigations.
@@ -98,7 +98,7 @@ SQLite is appropriate for a modest queue but would need reevaluation for a large
 
 ## 11. Running the project and maintained records
 
-Install Java 17 or later. Clone `https://github.com/itsme07-07/OOPS-project-Java`, run `./mvnw clean verify`, then start `java -jar target/relay.jar`. Open `http://127.0.0.1:8000/`. The local demo provides role-based demo buttons; exact demo usernames vary by installation and are visible in My profile. Production administrator credentials are intentionally not published in this report or repository.
+Install Java 17 or later. Clone `https://github.com/itsme07-07/OOPS-project-Java`, run `./mvnw clean verify`, then start `java -jar target/serviceforce.jar`. Open `http://127.0.0.1:8000/`. The local demo provides role-based demo buttons; exact demo usernames vary by installation and are visible in My profile. Production administrator credentials are intentionally not published in this report or repository.
 
 The live application is at `https://oops-project-java-production.up.railway.app/`. The repository's `README.md` is the starting guide; `docs/railway.md` covers deployment; `docs/demonstration.md` contains the presentation walkthrough; `docs/features.md` is the maintained implementation inventory; and `docs/change-log.md` records dated changes. Update the feature inventory and change log when a feature is added, removed or materially changed, then regenerate this report from the editable Markdown source using `docs/generate-report.py`.
 
@@ -108,7 +108,7 @@ The live application is at `https://oops-project-java-production.up.railway.app/
 
 [[ARCHITECTURE]]
 
-The browser calls the Java HTTP server. RelayServer authenticates requests and delegates business actions to Desk and Incidents. Database transactions persist incident changes, audit history, notifications and outbox entries. A scheduled SLA monitor applies deadline rules. The mail worker sends queued messages through Brevo's HTTPS API. The browser, API and scheduler run in one Java deployment; SQLite is stored on a persistent Railway volume in production.
+The browser calls the Java HTTP server. ServiceForceServer authenticates requests and delegates business actions to Desk and Incidents. Database transactions persist incident changes, audit history, notifications and outbox entries. A scheduled SLA monitor applies deadline rules. The mail worker sends queued messages through Brevo's HTTPS API. The browser, API and scheduler run in one Java deployment; SQLite is stored on a persistent Railway volume in production.
 
 ---
 
@@ -124,7 +124,7 @@ The system has three actors: employee, technician and administrator. Employees r
 
 [[CLASS]]
 
-The diagram shows the principal Java classes and interfaces. RelayServer uses Desk; Desk coordinates Incidents and Database. Incidents copies Playbooks into a new case and emits events to IncidentEvent.Observer implementations, AuditLog and NotificationOutbox. AssignmentStrategy is implemented by SkillFirst and LeastLoad. MailDelivery is an interface for the email provider. The typed Actor, Service, SlaPolicy, Technician and Incident records in DomainModels represent values passed through the core rules. The implementation uses interfaces where behavior varies; entities are not forced into an artificial inheritance hierarchy.
+The diagram shows the principal Java classes and interfaces. ServiceForceServer uses Desk; Desk coordinates Incidents and Database. Incidents copies Playbooks into a new case and emits events to IncidentEvent.Observer implementations, AuditLog and NotificationOutbox. AssignmentStrategy is implemented by SkillFirst and LeastLoad. MailDelivery is an interface for the email provider. The typed Actor, Service, SlaPolicy, Technician and Incident records in DomainModels represent values passed through the core rules. The implementation uses interfaces where behavior varies; entities are not forced into an artificial inheritance hierarchy.
 
 ---
 
@@ -138,7 +138,7 @@ The central incidents table references reporter and lead technician in users, th
 
 ## Appendix E. Documented test cases
 
-Each row states a test condition and the observable expected result. The evidence column names a JUnit method in `src/test/java/relay/DeskTest.java` (D) or `src/test/java/relay/HttpIntegrationTest.java` (H). Run `./mvnw clean verify` to reproduce the automated checks. The latest local run on 22 November 2026 had 54 tests with no failures, errors or skips.
+Each row states a test condition and the observable expected result. The evidence column names a JUnit method in `DeskTest.java` (D) or `HttpIntegrationTest.java` (H). Run `./mvnw clean verify` to reproduce the automated checks. The latest local run on 22 November 2026 had 54 tests with no failures, errors or skips.
 
 | ID | Test condition | Expected result | Automated evidence |
 | --- | --- | --- | --- |

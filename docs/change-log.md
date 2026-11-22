@@ -4,6 +4,7 @@ This file records implementation and delivery changes. [The feature inventory](f
 
 ## 22 November 2026
 
+- Renamed the Java HTTP server class to `ServiceForceServer` and the runnable artifact to `serviceforce.jar`. Updated the Docker image, tests, startup instructions and report diagrams so the project report consistently uses the ServiceForce name.
 - Added typed Java domain records for actors, services, SLA policies, technician candidates and incident state. Incident routing, priority calculation, deadline calculation, visibility checks and SLA monitoring now use these types after reading database rows. The browser API and database schema did not change.
 - Added a GitHub Actions workflow that runs `./mvnw -B --no-transfer-progress clean verify` on pushes and pull requests. It uploads Surefire test reports when a build fails.
 - Updated the feature inventory, project report and README to describe these technical changes.

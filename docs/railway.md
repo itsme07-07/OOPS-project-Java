@@ -34,4 +34,4 @@ The demo accounts from the README are **not** created on Railway. The first depl
 - Use one service instance with this SQLite database. Additional replicas would require a shared database service and related application changes.
 - Railway's Free plan has limited resources. Watch usage in Railway and stop the service when you no longer need it.
 
-For local development, `./mvnw clean verify` and `java -jar target/relay.jar` still start the app at `http://127.0.0.1:8000/` with local demo accounts.
+For local development, `./mvnw clean verify` and `java -jar target/serviceforce.jar` still start the app at `http://127.0.0.1:8000/` with local demo accounts.

@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class HttpIntegrationTest {
     @TempDir static Path directory;
-    private static RelayServer server;
+    private static ServiceForceServer server;
     private static URI base;
     private static final HttpClient CLIENT = HttpClient.newHttpClient();
     private static final Gson JSON = new Gson();
@@ -30,7 +30,7 @@ class HttpIntegrationTest {
 
     @BeforeAll static void start() throws Exception {
         Desk desk = new Desk(directory.resolve("desk.sqlite3"), true, (to, subject, body) -> SENT.put(to, body));
-        server = new RelayServer(new InetSocketAddress("127.0.0.1", 0), desk, true, false);
+        server = new ServiceForceServer(new InetSocketAddress("127.0.0.1", 0), desk, true, false);
         server.start();
         base = URI.create("http://127.0.0.1:" + server.port());
     }

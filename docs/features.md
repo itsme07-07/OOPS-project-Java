@@ -48,7 +48,7 @@ Start the local server and open [http://127.0.0.1:8000/](http://127.0.0.1:8000/)
 
 ## Technical and delivery
 
-- Java 17 HTTP backend, browser interface and SQLite storage in one runnable JAR.
+- Java 17 HTTP backend, browser interface and SQLite storage in one runnable `serviceforce.jar`.
 - Typed Java domain records for actors, services, SLA policies, technicians and incident state. SQL rows are converted at the domain boundary; JSON request and response formats stay stable.
 - Maven wrapper and automated JUnit tests. GitHub Actions runs a clean compile, test and package build on pushes and pull requests, and uploads test reports if a build fails.
 - Project report, vector diagrams, 28 documented test cases, demonstration guide and a [change log](change-log.md).
