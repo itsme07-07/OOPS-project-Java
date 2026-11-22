@@ -4,6 +4,7 @@ This file records implementation and delivery changes. [The feature inventory](f
 
 ## 22 November 2026
 
+- Expanded Anurag's planned workstream to include incident search, the reporting API and integration tests alongside the interface and accessibility work.
 - Rebalanced the project-member page so each person has a major implementation area plus explicit Java/OOP design and tests. Shared documentation and presentation are stated separately; the allocation is a plan for team confirmation, not an assertion of past individual work.
 - Redesigned the report opening as a dedicated project-members first page with four equal cards. The technical report now begins on page two; member details remain editable in the Markdown source and render into the PDF.
 - Rebalanced the four-member responsibility allocation into frontend, identity/API, incident/OOP, and data/operations workstreams. Each includes implementation, tests, documentation and demonstration so no one person is assigned all testing or delivery work.
