@@ -61,7 +61,7 @@ docs/
   railway.md                Railway deployment instructions
 ```
 
-- The [project report](docs/project-report.pdf) covers stakeholders, business rules, quality requirements, technology choices, system architecture, use cases, class relationships, database design, sample data, four required diagrams, and 28 documented test cases linked to automated tests. Editable vector diagrams are in [docs/diagrams](docs/diagrams/).
+- The [project report](docs/project-report.pdf) covers stakeholders, requirements, the complete language and technology stack, dependency versions, configuration key names, security controls, algorithms, architecture and database design, sample data, four required diagrams, and 28 documented test cases linked to automated tests. It lists no private credential values. Editable vector diagrams are in [docs/diagrams](docs/diagrams/).
 - The [demonstration guide](docs/demonstration.md) walks the team through reporting and routing an outage, investigating and verifying a fix, and correlating incidents while monitoring deadlines. The group records and submits its own presentation.
 - The [feature inventory](docs/features.md) lists the implemented workflows, access rules, reporting, notifications and escalation behavior.
 - The [change log](docs/change-log.md) records dated code and documentation changes. Core incident rules use typed Java domain records for actor, service, SLA policy, technician and incident state.

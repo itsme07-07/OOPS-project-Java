@@ -4,6 +4,7 @@ This file records implementation and delivery changes. [The feature inventory](f
 
 ## 22 November 2026
 
+- Expanded the project report with a source-checked technology inventory, dependency versions, external services, deployment configuration names, security and secret handling, domain algorithms, persistence schema, sample data, API workflows, alternatives and limitations. The report lists configuration key names but contains no private key or password values.
 - Renamed the Java HTTP server class to `ServiceForceServer` and the runnable artifact to `serviceforce.jar`. Updated the Docker image, tests, startup instructions and report diagrams so the project report consistently uses the ServiceForce name.
 - Added typed Java domain records for actors, services, SLA policies, technician candidates and incident state. Incident routing, priority calculation, deadline calculation, visibility checks and SLA monitoring now use these types after reading database rows. The browser API and database schema did not change.
 - Added a GitHub Actions workflow that runs `./mvnw -B --no-transfer-progress clean verify` on pushes and pull requests. It uploads Surefire test reports when a build fails.

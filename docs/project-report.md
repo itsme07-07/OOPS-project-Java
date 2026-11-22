@@ -104,6 +104,113 @@ The live application is at `https://oops-project-java-production.up.railway.app/
 
 ---
 
+## 12. Technology selection and complete implementation stack
+
+### Languages and browser layer
+
+- Java 17 is the application language. It implements the HTTP server, authentication, incident domain rules, scheduled SLA monitoring, email integration, persistence access and command-line entry point. Records represent domain values, interfaces express replaceable behavior, and exceptions distinguish rejected operations from unexpected failures. Java 17 is also the compilation target in `pom.xml` and the runtime family in the Docker image.
+- HTML5 provides semantic page structure. CSS3 implements the responsive layout, dark/light themes, animations and reduced-motion behavior. Plain JavaScript implements navigation, forms, API requests, client-side incident filtering and charts. The frontend uses no React, Angular, Vue, Node runtime or JavaScript package manager. `index.html`, `style.css`, `app.js` and `mark.svg` are packaged as classpath resources in the runnable JAR.
+- SVG supplies the website mark and the report's vector architecture, use-case, class and ER diagrams. The report source is Markdown; `docs/generate-report.py` uses Python and ReportLab only to generate the submitted PDF. Python is not part of the running website or backend.
+
+### Java libraries, build and test tools
+
+- The JDK's `com.sun.net.httpserver.HttpServer` serves static assets and the JSON API. The JDK also supplies `java.net.http.HttpClient` for Brevo calls, JDBC interfaces for SQL, `ScheduledExecutorService` for monitoring, and cryptographic APIs for password hashes and session tokens. This keeps the runtime smaller than a full web framework for the course-scale application.
+- SQLite is the relational database. `org.xerial:sqlite-jdbc:3.49.1.0` provides the Java driver; SQL schema and indexes are in `src/main/resources/schema.sql`. The application opens a connection per transaction, enables foreign keys and applies a 15-second busy timeout. Write transactions begin with `BEGIN IMMEDIATE`, so incident, audit and notification changes commit or roll back together.
+- `com.google.code.gson:gson:2.13.1` serializes JSON responses and the Brevo request body. Incoming JSON is parsed in strict mode and restricted to a flat object of text, integer, boolean or null values.
+- Apache Maven manages dependencies and the build. The project targets Java 17 using `maven-compiler-plugin:3.14.0`; `maven-surefire-plugin:3.5.3` runs JUnit tests; `maven-shade-plugin:3.6.0` packages dependencies and browser assets into `target/serviceforce.jar`. The Maven wrapper lets a reviewer use `./mvnw` without installing Maven separately. `junit-jupiter:5.12.2` is a test-only dependency.
+- Git and GitHub store the source and submitted report. `.github/workflows/ci.yml` uses GitHub Actions with `actions/checkout@v4`, `actions/setup-java@v4` and `actions/upload-artifact@v4`. It runs a clean Maven verification on pushes and pull requests, and retains Surefire reports when a job fails.
+
+### External services and deployment
+
+- Railway hosts the single Java service and provides an HTTPS public domain, a service port, health checking and a persistent volume. The application stores SQLite at the mounted volume path; other container filesystem locations are temporary. The repository's multi-stage Dockerfile builds the JAR with `maven:3.9.9-eclipse-temurin-17` and runs it with `eclipse-temurin:17-jre`. `JAVA_TOOL_OPTIONS=-Xmx256m` limits the JVM heap in that image.
+- Brevo is the transactional email provider. `MailDelivery.Brevo` calls `https://api.brevo.com/v3/smtp/email` over HTTPS for verification, recovery and incident updates. In-app notifications work independently. This release uses no SMTP server, SMS service, OAuth provider, AI model or cloud database.
+
+### Why this architecture and what alternatives mean
+
+The project needs role-based workflows, a durable incident history and demonstrable object-oriented patterns. A Java monolith keeps authentication, incident changes, audit records and notification-outbox writes in one transaction and produces one deployable JAR. SQLite gives relational keys and transactions without requiring a separate database account for the course demonstration. Plain browser technologies keep the frontend directly inspectable and remove a second build system. Brevo over HTTPS supports email delivery in the chosen hosting environment.
+
+Spring Boot could provide a larger web framework, but would add framework configuration without changing the project's core domain rules. A React frontend would add a component toolchain, while the current screens fit in one browser bundle. PostgreSQL would be a stronger option for many concurrent writers or multiple application replicas; the current single-instance SQLite deployment is simpler but has that scaling limit. A microservice split would require distributed identity, data ownership and message delivery, which is unnecessary for the current workload. These are design comparisons, not claims that those alternatives were implemented.
+
+## 13. Configuration keys, command options and secret handling
+
+The following are configuration **names**, not credential values. Secret values belong in Railway's private service variables or a local environment, never in the report, source repository, screenshots or logs.
+
+- `BREVO_API_KEY`: private Brevo transactional email API credential, sent as the `api-key` header to Brevo. Required for real email delivery. The report intentionally does not contain its value.
+- `SERVICEFORCE_EMAIL_FROM`: sender email address verified in Brevo. Both this and `BREVO_API_KEY` must be configured for email verification, recovery and updates to work.
+- `SERVICEFORCE_ADMIN_NAME`, `SERVICEFORCE_ADMIN_EMAIL`, `SERVICEFORCE_ADMIN_PASSWORD`: first-administrator bootstrap values on Railway when the persistent database has no active administrator. They are not used to publish a password in Git. Once an administrator exists, the bootstrap values are no longer needed for normal startup.
+- `SERVICEFORCE_DB_PATH`: optional explicit SQLite database path. It overrides the default path selection and is useful for a separate local database or another host.
+- `RAILWAY_PROJECT_ID`: identifies the Railway environment. When present, the application requires a volume, binds to all interfaces, disables demo defaults and uses secure cookies.
+- `RAILWAY_VOLUME_MOUNT_PATH`: Railway's persistent volume location. With Railway detection and no explicit DB override, the database file is `<mount>/itsm.sqlite3`.
+- `PORT`: port supplied by Railway; the local default is 8000. The Docker image exposes 8080, while the process listens on the actual `PORT` supplied by the host.
+- `JAVA_TOOL_OPTIONS`: Docker image JVM option set to `-Xmx256m`; it is a memory setting, not an application secret.
+
+The command-line entry point also accepts `--host`, `--port`, `--db`, `--demo`, `--no-demo`, `--secure-cookie`, `--create-admin` and `--help`. A normal local run binds `127.0.0.1:8000`, uses `data/itsm.sqlite3` and seeds demo accounts on a new database. Railway defaults to `0.0.0.0`, no demo accounts, a secure cookie and the mounted SQLite file. `--create-admin` takes name, email and password through an interactive terminal. The `/healthz` endpoint returns a small status response for the host health check.
+
+An email address is personal contact data, while an assigned `nameCODE@service.role` value is the login username. The four-digit code is generated by the system and cannot be changed by a user or administrator. The code is an identifier, not an authentication secret; sign-in also requires the password. Password hashes and one-time-code hashes are stored in SQLite. Session tokens are held by the browser as cookies; only their digests are retained in the server's in-memory session store.
+
+## 14. Domain rules, algorithms and object-oriented design
+
+### Priority, routing and lifecycle
+
+Incident priority uses `impact × urgency × service criticality`, with each factor in the range 1-3. Scores of 18 or more are P1; 9-17 are P2; 4-8 are P3; and lower scores are P4. The selected priority maps to a policy row containing response and resolution minutes. Seeded policies are P1: 5/30 minutes; P2: 15/120; P3: 60/480; and P4: 240/1440. Administrators can edit policy targets. An incident stores its calculated deadlines at creation; changing a policy affects future cases rather than retroactively rewriting existing deadlines.
+
+The `AssignmentStrategy` interface has two implementations. Skill-first places available, below-capacity technicians with a matching primary skill before other eligible technicians, then orders by active workload and ID. Least-load orders all eligible technicians by active workload and ID. The administrator changes the strategy through service settings; the incident creation code calls the interface without switching its structure. A technician's active count includes lead and additional response-team assignments. If no candidate is eligible, the case remains Classified and alerts administrators instead of silently assigning an unavailable person.
+
+The lifecycle follows Classified → Assigned → Acknowledged → In progress → Resolved → Verified → Closed. The server checks the next allowed state and the actor's role or relationship to the incident. A technician must supply resolution details when resolving; a reporter can verify and close; an administrator can intervene. A reporter or administrator can reopen completed work with a reason, beginning a new resolution deadline and escalation cycle while retaining the prior audit history. Public notes, internal staff notes, attachments, feedback, post-incident reviews and response-team changes have separate authorization checks.
+
+### SLA risk, escalation, similarity and notifications
+
+The scheduler runs every 15 seconds while the Java process is running. Response and resolution targets are marked At risk during the last fifth of their target interval, then Breached after their deadline. Unique `(incident_id,target,kind)` SLA-event keys make repeated monitoring idempotent. An unacknowledged P1 response breach creates a one-time escalation event and administrator notification.
+
+When the original resolution deadline passes, a first escalation stage starts. The recovery interval is `resolution target ÷ 2`, bounded to 15-120 minutes. Up to two matching-skill technicians may join the response team, with a maximum of three additional responders overall. Candidates must be active, available, below capacity, not already on the case, and not occupied with an equal- or higher-priority incident. Selection orders candidates by weighted active workload, where P1/P2/P3/P4 contribute 8/4/2/1, then by incident count and user ID. If no one qualifies, the administrator receives an alert. A second missed deadline marks the case Highly Critical once. The original resolution deadline remains available for reporting and audit.
+
+For possible related cases, the system compares title words on the same service after removing common words. It suggests a related open incident or a prior nonempty resolution when the word-set overlap reaches the implemented 0.3 threshold. This is a deterministic suggestion; it neither merges incident histories nor claims to use machine learning. Playbook templates are copied into incident-specific steps so later template edits do not rewrite work already done.
+
+`IncidentEvent.Observer` implements the Observer pattern: `AuditLog` and `NotificationOutbox` record the same event within the incident transaction. The outbox stores notification email work durably. After a 45-second delay, pending messages for one recipient and incident are grouped into one email, while each original event remains in the in-app history. Failed sends retry with increasing delay and become failed after eight attempts. Direct verification and recovery messages use `MailDelivery`, whose Brevo implementation is an adapter around the HTTPS API. These patterns separate routing choice, event recording and external delivery from the core incident transitions.
+
+## 15. Security, validation and error handling
+
+Passwords use PBKDF2 with HMAC-SHA-256, a random 16-byte salt, 300,000 iterations and a 256-bit derived value. A new password must be 8-256 characters. Wrong-user login uses a dummy hash computation to reduce obvious timing differences. One-time email codes have eight digits, expire after 10 minutes, permit five attempts, and cannot be reissued for one minute. A password reset revokes that user's sessions.
+
+Session tokens contain 32 random bytes and are replaced on sign-in. The browser receives an HttpOnly, SameSite=Strict cookie with an eight-hour maximum age; the `Secure` attribute is set for Railway HTTPS or with `--secure-cookie`. The server stores SHA-256 digests of the tokens, not raw tokens, and lets a user revoke individual signed-in devices. Sessions are process-local and disappear on restart. The HTTP layer limits sign-in and recovery requests per client address to 30 in one minute, with a bounded in-memory record of addresses. It is a basic abuse control, not a distributed rate limiter.
+
+Every private API action resolves the session and performs role, ownership or assignment checks on the server. New public registrations are always employees. Administrators cannot obtain another person's password or alter the generated username code. Employees cannot read other reporters' cases; technicians see their own lead and teammate assignments. Internal notes and playbook diagnostic results are omitted from employee views. Attachment downloads repeat the incident-access check. Deleted accounts become inactive; history remains.
+
+The server accepts only declared GET/HEAD/POST routes, checks the Origin of mutations against the Host, requires `application/json`, parses strict flat JSON and validates Unicode. Normal JSON bodies are limited to 65,536 bytes; the encoded attachment endpoint permits up to 1,500,000 bytes, with decoded files limited to 1 MiB and four allowed media types. Static paths are allow-listed. Responses include no-store caching, MIME sniffing and framing protections, a same-origin referrer policy and a restrictive Content Security Policy. Railway terminates public TLS; the application does not implement TLS itself.
+
+`Problem` carries expected HTTP error status and a client-safe message for invalid input, unauthenticated use, forbidden actions, missing data, conflicting state, rate limits or temporary service failures. Unknown exceptions are logged server-side and return a generic 500 response. SQL statements use parameters; foreign keys and unique constraints reject inconsistent references or duplicates. A write transaction rolls back on SQL or runtime failures, so an incident mutation cannot commit without its audit and notification records. Network or Brevo failures keep incident emails pending for retry; direct verification and recovery email requests surface a delivery error rather than claiming success.
+
+## 16. Relational data model and persistence details
+
+The authoritative schema is `src/main/resources/schema.sql`, with startup migration checks in `Desk` for fields added after earlier releases. SQLite uses integer IDs, case-insensitive unique email and service-name constraints, foreign keys, a composite responder key, and indexes for assignment, responder lookup, attachment lookup and playbook ordering. The current deployed schema additionally has `recovery_due` and `escalation_stage` on incidents; startup migration adds these if an older database lacks them.
+
+- `users`: account ID, display name, unique recovery email and username, password hash, role, technician skill, availability, capacity, active flag and email-verification status.
+- `email_codes`: per-user and per-purpose code hash, issue and expiry times, and attempt count; the composite key allows separate email verification, password-change and password-reset flows.
+- `categories`, `services`, `policies`, `settings`: configurable issue categories, affected services and criticality, P1-P4 SLA targets, and the active routing strategy.
+- `incidents`: reporter and lead-technician references, category/service/priority references, title and description, impact and urgency, state, original deadlines, timestamps, resolution and feedback, related-case suggestion references, and recovery-escalation fields.
+- `incident_responders`: many-to-many membership between incidents and additional technicians, with joined time. The lead is stored separately in `incidents.technician_id`.
+- `audit` and `sla_events`: append-style history of actions and unique SLA milestones. Audit rows include actor, action, description, old/new state and time.
+- `notifications` and `email_outbox`: per-user in-app events and one optional queued email per notification, including delivery status, attempts and next retry time.
+- `attachments`: incident/uploader references, validated name and MIME type, BLOB content, size and creation time. A backup of the database must also protect these files.
+- `knowledge_articles`: service-linked reusable reference articles with author and timestamps. `playbook_templates` defines category checklists; `incident_playbook_steps` stores the copied per-case steps, actor, result, status and update time.
+- `incident_reviews`: one optional post-incident review per case with root cause, impact, prevention and author.
+
+A new local demo database seeds nine categories, six services, four priority policies, five demo accounts and six sample incidents. These records let a reviewer exercise employee, technician and administrator workflows. Exact generated usernames vary because the four-digit code is random; the demo password is documented in the README for local demonstrations only. Railway production starts without demo accounts and bootstraps the first administrator from private variables when necessary. SQLite resides in the persistent Railway volume, so a redeploy can keep the incident history. Multiple running replicas are outside the current design because each would need coordinated persistent data and sessions.
+
+Representative local seed records include Alex Morgan as administrator, Sam Rivera as an Application technician, Jordan Lee as employee, Priya Shah as a Network technician and Noah Chen as an Authentication technician. The six seeded services are Payment gateway, Corporate network, Identity platform, Analytics database, Cloud storage and Workplace devices. Sample incident titles include Checkout requests timing out, VPN drops during video calls and Shared drive sync stalled. These are demonstration records, not production incidents or real customer data.
+
+## 17. API boundaries, workflows, validation evidence and limits
+
+The frontend is served by the Java process. Public routes include the static assets, `/healthz`, `/api/config`, registration, role-aware sign-in, verification, username recovery and password reset. Authenticated routes include `/api/state` for role-filtered workspace data, `/api/devices`, device revocation, `/api/action` for controlled domain commands, and authorized attachment upload/download. The frontend uses `fetch` with JSON and displays server error messages; it does not bypass server authorization by hiding buttons.
+
+Workflow 1: an employee reports an incident. The server validates service, category, impact and urgency; calculates priority and deadlines; selects an eligible lead or leaves the case awaiting assignment; commits the case, playbook copy, audit and notifications; and returns its ID. Workflow 2: a technician acknowledges, investigates with notes and playbook steps, resolves with details, and the reporter verifies and closes. SLA monitoring and notifications continue between those actions. Workflow 3: an unresolved case breaches its original deadline, gains suitable teammates once or alerts an administrator, receives a recovery deadline, and becomes Highly Critical if that deadline is also missed. The tests exercise normal and adverse paths for each workflow.
+
+The 28 documented cases in Appendix E cover normal operations, boundary inputs, invalid data, role and ownership failures, conflict states, concurrency, escalation idempotency, private attachments and transport defenses. `DeskTest` and `HttpIntegrationTest` contain 54 executed JUnit tests in the latest local build, with no failures, errors or skips. GitHub Actions applies the same `clean verify` gate after each push; its latest completed run for this report should be checked in the repository's Actions tab before submission.
+
+Known limits are deliberate: this is one organization and one Java instance; SQLite serializes writes; session records are not durable; the SLA clock uses elapsed time rather than business calendars; email requires Brevo configuration and a verified sender; and the current similar-case suggestion is lexical rather than semantic. Backups of the Railway volume are operationally necessary but are not automated by this repository. These limits define when a future version would need durable shared sessions, a multi-writer database, scheduled backup/restore checks or more advanced search. None of those future options is claimed as implemented.
+
+---
+
 ## Appendix A. System architecture diagram
 
 [[ARCHITECTURE]]
