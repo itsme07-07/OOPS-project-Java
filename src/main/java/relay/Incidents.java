@@ -10,6 +10,11 @@ import java.util.*;
 import static relay.Database.*;
 import static relay.Desk.number;
 import static relay.Desk.required;
+import relay.DomainModels.Incident;
+import relay.DomainModels.Actor;
+import relay.DomainModels.Service;
+import relay.DomainModels.SlaPolicy;
+import relay.DomainModels.Technician;
 
 /** Incident lifecycle, assignment, visibility and SLA rules, executed within the caller's transaction. */
 final class Incidents {
@@ -31,7 +36,7 @@ final class Incidents {
     }
 
     private static boolean isAdmin(Map<String,Object> u) {
-        return "admin".equals(u.get("role"));
+        return Actor.from(u).isAdministrator();
     }
 
     private static boolean sameId(Object a, Object b) {
@@ -39,12 +44,13 @@ final class Incidents {
     }
 
     private static boolean owns(Map<String,Object> user, Map<String,Object> incident) {
-        return sameId(user.get("id"), incident.get("reporter_id"));
+        return Incident.from(incident).belongsTo(Actor.from(user).id());
     }
 
     private static boolean isResponder(Connection c, Map<String,Object> user, Map<String,Object> i) throws SQLException {
-        return "technician".equals(user.get("role")) &&
-                (sameId(user.get("id"), i.get("technician_id")) ||
+        Actor actor = Actor.from(user);
+        return actor.isTechnician() &&
+                (Incident.from(i).ledBy(actor.id()) ||
                  one(c, "SELECT 1 FROM incident_responders WHERE incident_id=? AND user_id=?",
                          i.get("id"), user.get("id")) != null);
     }
@@ -65,14 +71,14 @@ final class Incidents {
         for (var observer : observers) observer.record(c, change);
     }
 
-    private static List<Map<String,Object>> eligible(Connection c) throws SQLException {
+    private static List<Technician> eligible(Connection c) throws SQLException {
         return rows(c, """
             SELECT u.id,u.skill,u.name,count(i.id) AS workload FROM users u
             LEFT JOIN incidents i ON (i.technician_id=u.id OR EXISTS
                 (SELECT 1 FROM incident_responders r WHERE r.incident_id=i.id AND r.user_id=u.id))
                 AND i.status NOT IN ('Closed','Resolved','Verified')
             WHERE u.role='technician' AND u.available=1 AND u.active=1 GROUP BY u.id HAVING count(i.id)<u.capacity
-            """);
+            """).stream().map(Technician::from).toList();
     }
 
     private static String configuredStrategy(Connection c) throws SQLException {
@@ -89,14 +95,10 @@ final class Incidents {
         return "P4";
     }
 
-    private static Map<String,Object> policy(Connection c, String priority) throws SQLException {
+    private static SlaPolicy policy(Connection c, String priority) throws SQLException {
         var p = one(c, "SELECT * FROM policies WHERE priority=?", priority);
         if (p == null) throw new Problem(409, "SLA configuration is missing.");
-        return p;
-    }
-
-    private static String due(Instant created, Map<String,Object> policy, String field) {
-        return created.plus(((Number) policy.get(field)).longValue(), ChronoUnit.MINUTES).toString();
+        return SlaPolicy.from(p);
     }
 
     private static Set<String> terms(Object title) {
@@ -128,32 +130,33 @@ final class Incidents {
 
     int create(Connection c, Map<String,Object> user, Map<String,Object> data, Instant at) throws SQLException {
         String title = required(data, "title", 160), description = required(data, "description", 6000);
-        var service = one(c, "SELECT * FROM services WHERE id=?", number(data, "service_id", 1, Integer.MAX_VALUE));
-        if (service == null) throw new Problem(404, "Service not found.");
+        var serviceRow = one(c, "SELECT * FROM services WHERE id=?", number(data, "service_id", 1, Integer.MAX_VALUE));
+        if (serviceRow == null) throw new Problem(404, "Service not found.");
+        Service service = Service.from(serviceRow);
         Object supplied = data.get("category");
-        if (supplied == null || "".equals(supplied)) supplied = service.get("category");
+        if (supplied == null || "".equals(supplied)) supplied = service.category();
         if (!(supplied instanceof String category) || one(c, "SELECT name FROM categories WHERE name=?", category) == null)
             throw new Problem(400, "Choose an existing category.");
         int impact = number(data, "impact", 1, 3), urgency = number(data, "urgency", 1, 3);
-        int score = impact * urgency * ((Number) service.get("criticality")).intValue();
+        int score = service.priorityScore(impact, urgency);
         String priority = priority(score);
         var policy = policy(c, priority);
         var tech = STRATEGIES.get(configuredStrategy(c)).choose(eligible(c), category);
         String status = tech == null ? "Classified" : "Assigned";
-        var match = correlate(c, service.get("id"), title);
+        var match = correlate(c, service.id(), title);
         int id = insert(c, """
             INSERT INTO incidents(title,description,reporter_id,category,service_id,impact,urgency,priority,status,
                 technician_id,created_at,response_due,resolution_due,related_id,suggestion_source_id,suggested_resolution)
             VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-            """, title, description, user.get("id"), category, service.get("id"), impact, urgency, priority, status,
-            tech == null ? null : tech.get("id"), at.toString(), due(at, policy, "response_minutes"),
-            due(at, policy, "resolution_minutes"), match.related, match.source, match.resolution);
+            """, title, description, user.get("id"), category, service.id(), impact, urgency, priority, status,
+            tech == null ? null : tech.id(), at.toString(), policy.responseDue(at).toString(),
+            policy.resolutionDue(at).toString(), match.related, match.source, match.resolution);
         Playbooks.copyToIncident(c, id, category);
         var i = incident(c, id);
         event(c, i, user.get("name"), "Reported", title, null, "New", at);
         event(c, i, "System", "Classified", category + " · " + priority + " (score " + score + ")", "New", "Classified", at);
         if (tech == null) event(c, i, "System", "Awaiting assignment", "No technician has available capacity.", null, null, at);
-        else event(c, i, "System", "Assigned", "Assigned to " + tech.get("name"), "Classified", status, at);
+        else event(c, i, "System", "Assigned", "Assigned to " + tech.name(), "Classified", status, at);
         if (match.related != null) event(c, i, "System", "Related incident", "Similar wording detected on the same service.", null, null, at);
         return id;
     }
@@ -193,9 +196,9 @@ final class Incidents {
             monitorIncident(c, i, at);
             var p = policy(c, priority);
             Instant created = Instant.parse(i.get("created_at").toString());
-            if (i.get("acknowledged_at") == null) response = due(created, p, "response_minutes");
+            if (i.get("acknowledged_at") == null) response = p.responseDue(created).toString();
             if (((Number) i.get("escalation_stage")).intValue() == 0)
-                resolution = due(created, p, "resolution_minutes");
+                resolution = p.resolutionDue(created).toString();
             event(c, i, user.get("name"), "Priority changed", i.get("priority") + " → " + priority + " (score " + score + ").", null, null, at);
         }
         var fields = new LinkedHashMap<String,Object>();
@@ -217,12 +220,12 @@ final class Incidents {
         if (!isAdmin(user)) throw new Problem(403, "Administrator access is required.");
         if (COMPLETE.contains(i.get("status"))) throw new Problem(409, "Resolved incidents cannot be reassigned.");
         if (sameId(destination, i.get("technician_id"))) return;
-        var tech = eligible(c).stream().filter(t -> sameId(t.get("id"), destination)).findFirst()
+        var tech = eligible(c).stream().filter(t -> t.id() == destination).findFirst()
                 .orElseThrow(() -> new Problem(409, "The requested technician is unavailable or at capacity."));
         String current = i.get("status").toString();
         String status = current.equals("Classified") ? "Assigned" : current;
         exec(c, "UPDATE incidents SET technician_id=?,status=? WHERE id=?", destination, status, i.get("id"));
-        event(c, incident(c, i.get("id")), user.get("name"), "Assigned", "Assigned to " + tech.get("name"), current, status, at);
+        event(c, incident(c, i.get("id")), user.get("name"), "Assigned", "Assigned to " + tech.name(), current, status, at);
     }
 
     private void addResponder(Connection c, Map<String,Object> user, Map<String,Object> i,
@@ -235,11 +238,11 @@ final class Incidents {
         if (((Number) one(c, "SELECT count(*) AS total FROM incident_responders WHERE incident_id=?",
                 i.get("id")).get("total")).intValue() >= 3)
             throw new Problem(409, "A response team can have up to three teammates.");
-        var tech = eligible(c).stream().filter(t -> sameId(t.get("id"), destination)).findFirst()
+        var tech = eligible(c).stream().filter(t -> t.id() == destination).findFirst()
                 .orElseThrow(() -> new Problem(409, "The requested technician is unavailable or at capacity."));
         exec(c, "INSERT INTO incident_responders(incident_id,user_id,joined_at) VALUES(?,?,?)",
                 i.get("id"), destination, at.toString());
-        event(c, i, user.get("name"), "Responder added", tech.get("name") + " joined the response team by administrator assignment.",
+        event(c, i, user.get("name"), "Responder added", tech.name() + " joined the response team by administrator assignment.",
                 null, null, at);
     }
 
@@ -320,7 +323,7 @@ final class Incidents {
                 resolution='',feedback='',resolution_due=?,acknowledged_at=?,recovery_due=NULL,
                 escalation_stage=0 WHERE id=?
             """, status, technician == null ? null : technician.get("id"),
-            due(at, p, "resolution_minutes"), technician == null ? null : i.get("acknowledged_at"), i.get("id"));
+            p.resolutionDue(at).toString(), technician == null ? null : i.get("acknowledged_at"), i.get("id"));
         exec(c, "DELETE FROM incident_responders WHERE incident_id=?", i.get("id"));
         exec(c, "DELETE FROM sla_events WHERE incident_id=? AND target='resolution'", i.get("id"));
         event(c, incident(c, i.get("id")), user.get("name"), "Reopened", reason,
@@ -376,42 +379,42 @@ final class Incidents {
 
     private record SlaEvent(String target, String kind) {}
 
-    private static List<SlaEvent> sla(Map<String,Object> i, Instant at) {
+    private static List<SlaEvent> sla(Incident incident, Instant at) {
         List<SlaEvent> events = new ArrayList<>();
-        Instant created = Instant.parse(i.get("created_at").toString());
         for (String target : List.of("response", "resolution")) {
-            Instant deadline = Instant.parse(i.get(target + "_due").toString());
-            Object finish = i.get(target.equals("response") ? "acknowledged_at" : "resolved_at");
-            Instant measured = finish == null ? at : Instant.parse(finish.toString());
+            Instant deadline = target.equals("response") ? incident.responseDue() : incident.resolutionDue();
+            Instant finish = target.equals("response") ? incident.acknowledgedAt() : incident.resolvedAt();
+            Instant measured = finish == null ? at : finish;
             if (measured.isAfter(deadline)) events.add(new SlaEvent(target, "Breached"));
-            else if (finish == null && !at.isBefore(deadline.minus(Duration.between(created, deadline).dividedBy(5))))
+            else if (finish == null && !at.isBefore(deadline.minus(Duration.between(incident.createdAt(), deadline).dividedBy(5))))
                 events.add(new SlaEvent(target, "At risk"));
         }
         return events;
     }
 
     private void monitorIncident(Connection c, Map<String,Object> i, Instant at) throws SQLException {
-        for (var condition : sla(i, at)) {
+        Incident incident = Incident.from(i);
+        for (var condition : sla(incident, at)) {
             if (exec(c, "INSERT OR IGNORE INTO sla_events(incident_id,target,kind) VALUES(?,?,?)",
                     i.get("id"), condition.target, condition.kind) == 0) continue;
             String label = condition.target.equals("response") ? "Response" : "Resolution";
             event(c, i, "System", "SLA " + condition.kind, label + " SLA · " + condition.kind.toLowerCase(Locale.ROOT) + ".", null, null, at);
         }
-        if ("P1".equals(i.get("priority")) && i.get("acknowledged_at") == null
-                && !COMPLETE.contains(i.get("status"))
-                && at.isAfter(Instant.parse(i.get("response_due").toString()))
+        if (incident.priority().equals("P1") && incident.acknowledgedAt() == null
+                && !incident.isComplete()
+                && at.isAfter(incident.responseDue())
                 && exec(c, "INSERT OR IGNORE INTO sla_events(incident_id,target,kind) VALUES(?,'response','Escalated')",
                     i.get("id")) != 0) {
             event(c, i, "System", "Escalated",
                     "Critical incident was not acknowledged by its response deadline. Administrator action required.",
                     null, null, at);
         }
-        if (COMPLETE.contains(i.get("status"))) return;
-        int stage = ((Number) i.get("escalation_stage")).intValue();
-        if (stage == 0 && at.isAfter(Instant.parse(i.get("resolution_due").toString()))) {
+        if (incident.isComplete()) return;
+        int stage = incident.escalationStage();
+        if (stage == 0 && at.isAfter(incident.resolutionDue())) {
             escalateTeam(c, i, at);
-        } else if (stage == 1 && i.get("recovery_due") != null &&
-                at.isAfter(Instant.parse(i.get("recovery_due").toString()))) {
+        } else if (stage == 1 && incident.recoveryDue() != null &&
+                at.isAfter(incident.recoveryDue())) {
             exec(c, "UPDATE incidents SET escalation_stage=2 WHERE id=? AND escalation_stage=1", i.get("id"));
             event(c, i, "System", "Highly Critical",
                     "Recovery deadline missed. Administrator intervention required immediately.", null, null, at);
@@ -419,7 +422,7 @@ final class Incidents {
     }
 
     private void escalateTeam(Connection c, Map<String,Object> i, Instant at) throws SQLException {
-        int target = ((Number) policy(c, i.get("priority").toString()).get("resolution_minutes")).intValue();
+        int target = policy(c, i.get("priority").toString()).resolutionMinutes();
         int recoveryMinutes = Math.max(15, Math.min(120, target / 2));
         Instant recovery = at.plus(recoveryMinutes, ChronoUnit.MINUTES);
         exec(c, "UPDATE incidents SET escalation_stage=1,recovery_due=? WHERE id=? AND escalation_stage=0",
@@ -470,10 +473,11 @@ final class Incidents {
     }
 
     private static String slaStatus(Map<String,Object> i, Instant at) {
-        var events = sla(i, at);
+        Incident incident = Incident.from(i);
+        var events = sla(incident, at);
         if (events.stream().anyMatch(e -> e.kind.equals("Breached"))) return "Breached";
         if (!events.isEmpty()) return "At risk";
-        return i.get("resolved_at") != null ? "Met" : "On track";
+        return incident.resolvedAt() != null ? "Met" : "On track";
     }
 
     Object snapshot(Connection c, Map<String,Object> user) throws SQLException {

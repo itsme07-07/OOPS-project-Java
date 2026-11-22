@@ -44,6 +44,12 @@
 			<path d="M 10,238 L 145,238 Z" style="stroke: rgb(68%,65%,76%); stroke-linecap: butt; stroke-width: 0.7;"/>
 			<text x="54.9955" y="247" style="font-family: Helvetica-Bold; font-size: 9px;fill: rgb(12%,11%,24%); stroke:none;" transform="translate(0,494) scale(1,-1)">LeastLoad</text>
 			<text x="16" y="226" style="font-family: Helvetica; font-size: 7.2px;fill: rgb(12%,11%,24%); stroke:none;" transform="translate(0,452) scale(1,-1)">+ ranking(category)</text>
+			<rect x="10" y="95" width="135" height="75" style="stroke: rgb(68%,65%,76%); stroke-linecap: butt; stroke-width: 1; fill: rgb(100%,95%,86%); fill-rule: evenodd;"/>
+			<path d="M 10,143 L 145,143 Z" style="stroke: rgb(68%,65%,76%); stroke-linecap: butt; stroke-width: 0.7;"/>
+			<path d="M 10,130 L 145,130 Z" style="stroke: rgb(68%,65%,76%); stroke-linecap: butt; stroke-width: 0.7;"/>
+			<text x="45.496" y="152" style="font-family: Helvetica-Bold; font-size: 9px;fill: rgb(12%,11%,24%); stroke:none;" transform="translate(0,304) scale(1,-1)">DomainModels</text>
+			<text x="16" y="131" style="font-family: Helvetica; font-size: 7.2px;fill: rgb(12%,11%,24%); stroke:none;" transform="translate(0,262) scale(1,-1)">+ Actor, Service, SlaPolicy</text>
+			<text x="16" y="118" style="font-family: Helvetica; font-size: 7.2px;fill: rgb(12%,11%,24%); stroke:none;" transform="translate(0,236) scale(1,-1)">+ Technician, Incident</text>
 			<rect x="168" y="255" width="135" height="115" style="stroke: rgb(68%,65%,76%); stroke-linecap: butt; stroke-width: 1; fill: rgb(95%,93%,99%); fill-rule: evenodd;"/>
 			<path d="M 168,343 L 303,343 Z" style="stroke: rgb(68%,65%,76%); stroke-linecap: butt; stroke-width: 0.7;"/>
 			<path d="M 168,330 L 303,330 Z" style="stroke: rgb(68%,65%,76%); stroke-linecap: butt; stroke-width: 0.7;"/>
@@ -100,6 +106,9 @@
 			<path d="M 235,400 L 235,370 Z" style="stroke: rgb(42%,30%,83%); stroke-linecap: butt; stroke-width: 1.5;"/>
 			<polygon points="235 370, 237.7259 376.4474, 232.2741 376.4474" style="stroke: rgb(42%,30%,83%); stroke-linecap: butt; stroke-width: 1; fill: rgb(42%,30%,83%); fill-rule: evenodd;"/>
 			<text x="226.831" y="390.0" style="font-family: Helvetica; font-size: 7px;fill: rgb(38%,36%,47%); stroke:none;" transform="translate(0,780) scale(1,-1)">owns</text>
+			<path d="M 168,285 L 145,135 Z" style="stroke: rgb(42%,30%,83%); stroke-linecap: butt; stroke-width: 1.5;"/>
+			<polygon points="145 135, 148.6716 140.9598, 143.2827 141.7861" style="stroke: rgb(42%,30%,83%); stroke-linecap: butt; stroke-width: 1; fill: rgb(42%,30%,83%); fill-rule: evenodd;"/>
+			<text x="149.108" y="215.0" style="font-family: Helvetica; font-size: 7px;fill: rgb(38%,36%,47%); stroke:none;" transform="translate(0,430) scale(1,-1)">uses</text>
 			<path d="M 303,425 L 326,331 Z" style="stroke: rgb(42%,30%,83%); stroke-linecap: butt; stroke-width: 1.5;"/>
 			<polygon points="326 331, 327.1155 337.9106, 321.8198 336.6148" style="stroke: rgb(42%,30%,83%); stroke-linecap: butt; stroke-width: 1; fill: rgb(42%,30%,83%); fill-rule: evenodd;"/>
 			<text x="307.108" y="383.0" style="font-family: Helvetica; font-size: 7px;fill: rgb(38%,36%,47%); stroke:none;" transform="translate(0,766) scale(1,-1)">uses</text>

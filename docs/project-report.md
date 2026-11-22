@@ -1,6 +1,6 @@
 # ServiceForce: Intelligent IT Service Management and Incident Resolution
 
-CS F213 / MAC F212 | Project report | Updated 21 November 2026
+CS F213 / MAC F212 | Project report | Updated 22 November 2026
 
 ServiceForce is a Java web application for reporting, assigning, investigating and resolving IT incidents. Employees, technicians and administrators use role-specific browser workspaces backed by the same authorization and incident rules. The application is available as one deployable service; a local demonstration can run from the repository with Java 17 or later.
 
@@ -29,6 +29,7 @@ The browser uses HTML, CSS and JavaScript for the landing page, role-specific si
 - `Incidents` owns incident creation, lifecycle transitions, assignment, escalation, visibility, response-team membership and incident-specific playbook progress.
 - `Playbooks` seeds category templates and copies their steps into a new incident. Template edits affect future incidents without rewriting existing investigations.
 - `AssignmentStrategy` provides interchangeable skill-first and least-workload routing policies.
+- `DomainModels` defines typed records for actors, services, SLA policies, technician candidates and incident state. Database rows are converted to these records before routing, priority calculation, deadline checks and core access decisions. Maps remain at the JSON and database boundaries.
 - `IncidentEvent.Observer` separates audit and notification recording from the incident change. The change and observer records share a database transaction.
 - `SessionStore` holds hashed session-token identifiers in memory and records a coarse browser/device label for each active session.
 
@@ -87,7 +88,7 @@ Technicians and administrators can write knowledge articles linked to services. 
 
 ## 9. Verification
 
-The JUnit suite covers registration, email verification, username-only sign-in, recovery and password reset; role and ownership authorization; incident transitions, routing and SLA behavior; attachments, notes, knowledge and reviews; response-team escalation; playbook permissions and template copying; device revocation; and email grouping. HTTP integration tests start a loopback server with a temporary SQLite database. Run `./mvnw clean verify` from the repository root. The latest full test run for this report passed on 21 November 2026.
+The JUnit suite covers registration, email verification, username-only sign-in, recovery and password reset; role and ownership authorization; incident transitions, routing and SLA behavior; attachments, notes, knowledge and reviews; response-team escalation; playbook permissions and template copying; device revocation; and email grouping. HTTP integration tests start a loopback server with a temporary SQLite database. Run `./mvnw clean verify` from the repository root. The latest full local test run for this report passed on 22 November 2026: 54 tests, zero failures, errors or skips. GitHub Actions now runs the same build on each push and pull request and retains test reports for failed builds.
 
 For a demonstration, sign in with separate browser profiles for the three roles. Report an incident as an employee, inspect priority and routing as an administrator, investigate and resolve it as the assigned technician, then verify and give feedback as the employee. Show a response team and its history, and explain the two deadline stages. The step-by-step script is in `docs/demonstration.md`.
 
@@ -99,7 +100,7 @@ SQLite is appropriate for a modest queue but would need reevaluation for a large
 
 Install Java 17 or later. Clone `https://github.com/itsme07-07/OOPS-project-Java`, run `./mvnw clean verify`, then start `java -jar target/relay.jar`. Open `http://127.0.0.1:8000/`. The local demo provides role-based demo buttons; exact demo usernames vary by installation and are visible in My profile. Production administrator credentials are intentionally not published in this report or repository.
 
-The live application is at `https://oops-project-java-production.up.railway.app/`. The repository's `README.md` is the starting guide; `docs/railway.md` covers deployment; `docs/demonstration.md` contains the presentation walkthrough; and `docs/features.md` is the maintained implementation inventory. Update the feature inventory when a feature is added, removed or materially changed, then regenerate this report from the editable Markdown source using `docs/generate-report.py`.
+The live application is at `https://oops-project-java-production.up.railway.app/`. The repository's `README.md` is the starting guide; `docs/railway.md` covers deployment; `docs/demonstration.md` contains the presentation walkthrough; `docs/features.md` is the maintained implementation inventory; and `docs/change-log.md` records dated changes. Update the feature inventory and change log when a feature is added, removed or materially changed, then regenerate this report from the editable Markdown source using `docs/generate-report.py`.
 
 ---
 
@@ -123,7 +124,7 @@ The system has three actors: employee, technician and administrator. Employees r
 
 [[CLASS]]
 
-The diagram shows the principal Java classes and interfaces. RelayServer uses Desk; Desk coordinates Incidents and Database. Incidents copies Playbooks into a new case and emits events to IncidentEvent.Observer implementations, AuditLog and NotificationOutbox. AssignmentStrategy is implemented by SkillFirst and LeastLoad. MailDelivery is an interface for the email provider. The implementation uses interfaces where behavior varies; entities are not forced into an artificial inheritance hierarchy.
+The diagram shows the principal Java classes and interfaces. RelayServer uses Desk; Desk coordinates Incidents and Database. Incidents copies Playbooks into a new case and emits events to IncidentEvent.Observer implementations, AuditLog and NotificationOutbox. AssignmentStrategy is implemented by SkillFirst and LeastLoad. MailDelivery is an interface for the email provider. The typed Actor, Service, SlaPolicy, Technician and Incident records in DomainModels represent values passed through the core rules. The implementation uses interfaces where behavior varies; entities are not forced into an artificial inheritance hierarchy.
 
 ---
 
@@ -137,7 +138,7 @@ The central incidents table references reporter and lead technician in users, th
 
 ## Appendix E. Documented test cases
 
-Each row states a test condition and the observable expected result. The evidence column names a JUnit method in `src/test/java/relay/DeskTest.java` (D) or `src/test/java/relay/HttpIntegrationTest.java` (H). Run `./mvnw clean verify` to reproduce the automated checks. The latest run had 54 tests with no failures, errors or skips.
+Each row states a test condition and the observable expected result. The evidence column names a JUnit method in `src/test/java/relay/DeskTest.java` (D) or `src/test/java/relay/HttpIntegrationTest.java` (H). Run `./mvnw clean verify` to reproduce the automated checks. The latest local run on 22 November 2026 had 54 tests with no failures, errors or skips.
 
 | ID | Test condition | Expected result | Automated evidence |
 | --- | --- | --- | --- |

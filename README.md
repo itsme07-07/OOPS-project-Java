@@ -48,6 +48,7 @@ src/
       schema.sql            Relational schema, keys and indexes
       static/               HTML, CSS and JavaScript for all three workspaces
   test/java/relay/          JUnit tests for domain rules and HTTP behavior
+.github/workflows/ci.yml     Build, test and package on pushes and pull requests
 docs/
   project-report.pdf        Analysis, requirements, design, diagrams and testing
   project-report.md         Editable source for the project report
@@ -56,12 +57,15 @@ docs/
   diagrams/                 Architecture, use-case, class and ER diagrams (SVG)
   demonstration.md          Three end-to-end workflows for the team presentation
   features.md               Implemented feature inventory and account rules
+  change-log.md             Dated record of project changes
   railway.md                Railway deployment instructions
 ```
 
 - The [project report](docs/project-report.pdf) covers stakeholders, business rules, quality requirements, technology choices, system architecture, use cases, class relationships, database design, sample data, four required diagrams, and 28 documented test cases linked to automated tests. Editable vector diagrams are in [docs/diagrams](docs/diagrams/).
 - The [demonstration guide](docs/demonstration.md) walks the team through reporting and routing an outage, investigating and verifying a fix, and correlating incidents while monitoring deadlines. The group records and submits its own presentation.
 - The [feature inventory](docs/features.md) lists the implemented workflows, access rules, reporting, notifications and escalation behavior.
+- The [change log](docs/change-log.md) records dated code and documentation changes. Core incident rules use typed Java domain records for actor, service, SLA policy, technician and incident state.
+- [GitHub Actions](.github/workflows/ci.yml) compiles, tests and packages the project on each push and pull request; a failed build uploads its test reports.
 - When a feature changes, update `docs/features.md` and `docs/project-report.md`, then regenerate the PDF with the bundled Python runtime or another Python environment containing ReportLab: `python3 docs/generate-report.py`.
 - Run `./mvnw test` for the automated checks. Tests create isolated databases and HTTP tests start their own loopback server. Maven writes detailed results under `target/surefire-reports/`.
 

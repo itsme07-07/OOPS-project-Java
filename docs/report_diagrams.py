@@ -124,6 +124,8 @@ def classes():
         ["+ start()", "- dispatch(request)"], PALE)
     uml(d, 10, 285, 135, 75, "SkillFirst", [], ["+ ranking(category)"], BLUE)
     uml(d, 10, 190, 135, 75, "LeastLoad", [], ["+ ranking(category)"], BLUE)
+    uml(d, 10, 95, 135, 75, "DomainModels", ["+ Actor, Service, SlaPolicy"],
+        ["+ Technician, Incident"], GOLD)
     uml(d, 168, 255, 135, 115, "Incidents", ["- observers: List<Observer>"],
         ["+ create(...) / act(...) ", "+ snapshot(...) / monitor(...)"], PALE)
     uml(d, 326, 255, 135, 95, "Database", ["- url: String"],
@@ -140,6 +142,7 @@ def classes():
     edge(d, 155, 455, 145, 455, dashed=True)
     edge(d, 326, 457, 303, 457, "uses")
     edge(d, 235, 400, 235, 370, "owns")
+    edge(d, 168, 285, 145, 135, "uses")
     edge(d, 303, 425, 326, 331, "uses")
     edge(d, 235, 255, 235, 215, "copies")
     edge(d, 303, 405, 315, 405, arrow=False)
