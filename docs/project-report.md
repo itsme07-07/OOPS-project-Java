@@ -8,12 +8,12 @@ This report describes the implementation as it exists in the repository. The mai
 
 ## Project team and responsibility allocation
 
-- Anurag Reddy Goli — 2025A7IS2423H: frontend UI/UX, role-specific workflows, accessibility and report integration. Demonstration area: employee journey, registration and the browser experience.
-- Angad Ahuja — 2025A7IS2409H: Java HTTP/API layer, authentication, sessions, email verification and notification delivery. Demonstration area: sign-in, account security and email flows.
-- Jaya Pranav Reddy Avuduri — 2025A7IS2421H: object-oriented incident domain, priority and assignment strategies, SLA monitoring, escalation and playbooks. Demonstration area: technician investigation and response-team escalation.
-- Raj Mittal — 2025A7IS2414H: SQLite schema and persistence, automated tests, GitHub Actions and Railway packaging. Demonstration area: administrator settings, reports, database and verification evidence.
+- Anurag Reddy Goli — 2025A7IS2423H: frontend workstream: landing and role screens, incident workspace, filtering and charts, responsive UI and accessibility. Also owns UI checks and the frontend section of the report/demo.
+- Angad Ahuja — 2025A7IS2409H: identity workstream: HTTP endpoints, authentication, sessions and devices, email verification/recovery and notification delivery. Also owns security/API tests and the account-flow section of the report/demo.
+- Jaya Pranav Reddy Avuduri — 2025A7IS2421H: incident workstream: lifecycle and permissions, priority, routing strategies, SLA monitoring, response-team escalation and playbook rules. Also owns domain tests and the OOP/incident section of the report/demo.
+- Raj Mittal — 2025A7IS2414H: data and operations workstream: SQLite schema/migrations, audit and knowledge records, reporting data, Docker/Railway and GitHub Actions. Also owns persistence/integration tests and the database/deployment section of the report/demo.
 
-These are the team's primary responsibility areas for the report and recorded demonstration. All four members are responsible for understanding the complete system.
+Each workstream includes implementation, testing, documentation and presentation so that workload and technical difficulty are shared across the four members. All members are responsible for understanding the complete system.
 
 ---
 
