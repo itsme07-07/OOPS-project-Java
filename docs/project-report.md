@@ -12,13 +12,9 @@ Intelligent IT Service Management and Incident Resolution
 - Jaya Pranav Reddy Avuduri | 2025A7IS2421H | Incident and routing | Lifecycle, priority, SLA and teams; incident classes and strategy polymorphism; domain tests and demo.
 - Raj Mittal | 2025A7IS2414H | Data and knowledge | SQLite, audit, playbooks and knowledge; persistence classes and observer pattern; data tests and CI.
 
-This is a balanced responsibility plan for the report and demonstration, not a claim about past individual contributions. Every member owns Java/OOP design, implementation and tests in their area. Documentation and presentation are shared equally; the team should confirm the allocation before submission.
-
 ---
 
 ServiceForce is a Java web application for reporting, assigning, investigating and resolving IT incidents. Employees, technicians and administrators use role-specific browser workspaces backed by the same authorization and incident rules. The application is available as one deployable service; a local demonstration can run from the repository with Java 17 or later.
-
-This report describes the implementation as it exists in the repository. The maintained feature inventory is `docs/features.md`. Ideas discussed but not implemented, such as a Service Outage Hub, are excluded from the implemented feature list.
 
 ## 1. Problem and project objectives
 
@@ -30,7 +26,7 @@ Existing challenges addressed by the prototype are fragmented reporting through 
 - Technician: view assigned work, acknowledge and investigate a case, add notes, consult knowledge articles and record a resolution.
 - Administrator: manage people, teams, services, routing and SLA policies; reassign work; inspect reports, audit records and escalations.
 
-Assumptions: one organization owns the service catalog and its users; each technician has one primary skill category; administrators manage policies and staffing; calendar time rather than business hours determines SLA deadlines; one Java process owns the SQLite database; Brevo and a verified sender are available when real email is required. A local demo database is separate from the production database. These assumptions bound the prototype rather than representing guarantees for a large enterprise deployment.
+Assumptions: one organization owns the service catalog and its users; each technician has one primary skill category; administrators manage policies and staffing; calendar time rather than business hours determines SLA deadlines; one Java process owns the SQLite database; Brevo and a verified sender are available when real email is required. A local demo database is separate from the production database.
 
 ## 2. Scope and quality goals
 
@@ -133,13 +129,13 @@ For a demonstration, sign in with separate browser profiles for the three roles.
 
 ## 10. Limitations and future work
 
-SQLite is appropriate for a modest queue but would need reevaluation for a large number of concurrent writers. Session listings are cleared when the server restarts. SLA monitoring needs a running application process; it does not model business-hour calendars or holidays. Email delivery depends on an external provider. A proposed Service Outage Hub could group confirmed related reports under one shared outage, but it has not been implemented and is not counted among the delivered features.
+SQLite is appropriate for a modest queue but would need reevaluation for a large number of concurrent writers. Session listings are cleared when the server restarts. SLA monitoring needs a running application process; it does not model business-hour calendars or holidays. Email delivery depends on an external provider.
 
 ## 11. Running the project and maintained records
 
 Install Java 17 or later. Clone `https://github.com/itsme07-07/OOPS-project-Java`, run `./mvnw clean verify`, then start `java -jar target/serviceforce.jar`. Open `http://127.0.0.1:8000/`. The local demo provides role-based demo buttons; exact demo usernames vary by installation and are visible in My profile. Production administrator credentials are intentionally not published in this report or repository.
 
-The live application is at `https://oops-project-java-production.up.railway.app/`. The repository's `README.md` is the starting guide; `docs/railway.md` covers deployment; `docs/demonstration.md` contains the presentation walkthrough; `docs/features.md` is the maintained implementation inventory; and `docs/change-log.md` records dated changes. Update the feature inventory and change log when a feature is added, removed or materially changed, then regenerate this report from the editable Markdown source using `docs/generate-report.py`.
+The live application is at `https://oops-project-java-production.up.railway.app/`. Supporting documents in the repository are `README.md` for setup, `docs/railway.md` for deployment, `docs/demonstration.md` for the presentation walkthrough, and `docs/features.md` for the feature inventory.
 
 ---
 
@@ -168,13 +164,13 @@ The live application is at `https://oops-project-java-production.up.railway.app/
 
 The project needs role-based workflows, a durable incident history and demonstrable object-oriented patterns. A Java monolith keeps authentication, incident changes, audit records and notification-outbox writes in one transaction and produces one deployable JAR. SQLite gives relational keys and transactions without requiring a separate database account for the course demonstration. Plain browser technologies keep the frontend directly inspectable and remove a second build system. Brevo over HTTPS supports email delivery in the chosen hosting environment.
 
-Spring Boot could provide a larger web framework, but would add framework configuration without changing the project's core domain rules. A React frontend would add a component toolchain, while the current screens fit in one browser bundle. PostgreSQL would be a stronger option for many concurrent writers or multiple application replicas; the current single-instance SQLite deployment is simpler but has that scaling limit. A microservice split would require distributed identity, data ownership and message delivery, which is unnecessary for the current workload. These are design comparisons, not claims that those alternatives were implemented.
+Spring Boot could provide a larger web framework, but would add framework configuration without changing the project's core domain rules. A React frontend would add a component toolchain, while the current screens fit in one browser bundle. PostgreSQL would be a stronger option for many concurrent writers or multiple application replicas; the current single-instance SQLite deployment is simpler but has that scaling limit. A microservice split would require distributed identity, data ownership and message delivery, which is unnecessary for the current workload.
 
 ## 13. Configuration keys, command options and secret handling
 
-The following are configuration **names**, not credential values. Secret values belong in Railway's private service variables or a local environment, never in the report, source repository, screenshots or logs.
+Application settings are supplied through environment variables. Credentials are stored in Railway's private service variables or a local environment.
 
-- `BREVO_API_KEY`: private Brevo transactional email API credential, sent as the `api-key` header to Brevo. Required for real email delivery. The report intentionally does not contain its value.
+- `BREVO_API_KEY`: Brevo transactional email API credential, sent as the `api-key` header to Brevo. Required for real email delivery.
 - `SERVICEFORCE_EMAIL_FROM`: sender email address verified in Brevo. Both this and `BREVO_API_KEY` must be configured for email verification, recovery and updates to work.
 - `SERVICEFORCE_ADMIN_NAME`, `SERVICEFORCE_ADMIN_EMAIL`, `SERVICEFORCE_ADMIN_PASSWORD`: first-administrator bootstrap values on Railway when the persistent database has no active administrator. They are not used to publish a password in Git. Once an administrator exists, the bootstrap values are no longer needed for normal startup.
 - `SERVICEFORCE_DB_PATH`: optional explicit SQLite database path. It overrides the default path selection and is useful for a separate local database or another host.
@@ -203,7 +199,7 @@ The scheduler runs every 15 seconds while the Java process is running. Response 
 
 When the original resolution deadline passes, a first escalation stage starts. The recovery interval is `resolution target ÷ 2`, bounded to 15-120 minutes. Up to two matching-skill technicians may join the response team, with a maximum of three additional responders overall. Candidates must be active, available, below capacity, not already on the case, and not occupied with an equal- or higher-priority incident. Selection orders candidates by weighted active workload, where P1/P2/P3/P4 contribute 8/4/2/1, then by incident count and user ID. If no one qualifies, the administrator receives an alert. A second missed deadline marks the case Highly Critical once. The original resolution deadline remains available for reporting and audit.
 
-For possible related cases, the system compares title words on the same service after removing common words. It suggests a related open incident or a prior nonempty resolution when the word-set overlap reaches the implemented 0.3 threshold. This is a deterministic suggestion; it neither merges incident histories nor claims to use machine learning. Playbook templates are copied into incident-specific steps so later template edits do not rewrite work already done.
+For possible related cases, the system compares title words on the same service after removing common words. It suggests a related open incident or a prior nonempty resolution when the word-set overlap reaches the implemented 0.3 threshold. The matching uses deterministic rules and keeps incident histories separate. Playbook templates are copied into incident-specific steps so later template edits do not rewrite work already done.
 
 `IncidentEvent.Observer` implements the Observer pattern: `AuditLog` and `NotificationOutbox` record the same event within the incident transaction. The outbox stores notification email work durably. After a 45-second delay, pending messages for one recipient and incident are grouped into one email, while each original event remains in the in-app history. Failed sends retry with increasing delay and become failed after eight attempts. Direct verification and recovery messages use `MailDelivery`, whose Brevo implementation is an adapter around the HTTPS API. These patterns separate routing choice, event recording and external delivery from the core incident transitions.
 
@@ -244,9 +240,9 @@ The frontend is served by the Java process. Public routes include the static ass
 
 Workflow 1: an employee reports an incident. The server validates service, category, impact and urgency; calculates priority and deadlines; selects an eligible lead or leaves the case awaiting assignment; commits the case, playbook copy, audit and notifications; and returns its ID. Workflow 2: a technician acknowledges, investigates with notes and playbook steps, resolves with details, and the reporter verifies and closes. SLA monitoring and notifications continue between those actions. Workflow 3: an unresolved case breaches its original deadline, gains suitable teammates once or alerts an administrator, receives a recovery deadline, and becomes Highly Critical if that deadline is also missed. The tests exercise normal and adverse paths for each workflow.
 
-The 28 documented cases in Appendix E cover normal operations, boundary inputs, invalid data, role and ownership failures, conflict states, concurrency, escalation idempotency, private attachments and transport defenses. `DeskTest` and `HttpIntegrationTest` contain 54 executed JUnit tests in the latest local build, with no failures, errors or skips. GitHub Actions applies the same `clean verify` gate after each push; its latest completed run for this report should be checked in the repository's Actions tab before submission.
+The 28 documented cases in Appendix E cover normal operations, boundary inputs, invalid data, role and ownership failures, conflict states, concurrency, escalation idempotency, private attachments and transport defenses. `DeskTest` and `HttpIntegrationTest` contain 54 executed JUnit tests in the latest local build, with no failures, errors or skips. GitHub Actions applies the same `clean verify` gate after each push.
 
-Known limits are deliberate: this is one organization and one Java instance; SQLite serializes writes; session records are not durable; the SLA clock uses elapsed time rather than business calendars; email requires Brevo configuration and a verified sender; and the current similar-case suggestion is lexical rather than semantic. Backups of the Railway volume are operationally necessary but are not automated by this repository. These limits define when a future version would need durable shared sessions, a multi-writer database, scheduled backup/restore checks or more advanced search. None of those future options is claimed as implemented.
+The deployment supports one organization and one Java instance. SQLite serializes writes; session records are not durable; the SLA clock uses elapsed time rather than business calendars; email requires Brevo configuration and a verified sender; and the similar-case suggestion uses lexical matching. Backups of the Railway volume are operationally necessary but are not automated. Larger deployments would require durable shared sessions, a multi-writer database, scheduled backup and restore checks, or more advanced search.
 
 ---
 
