@@ -2,7 +2,7 @@
 
 **Live website:** [Open ServiceForce](https://oops-project-java-production.up.railway.app/)
 
-**Administrator sign-in:** Choose **Administrator** and use the existing username `admin7090@service.admin`. The production password is kept private and is not stored in this public repository.
+**Administrator sign-in:** Choose **Administrator** and use the existing username `admin7900@service.admin`. The production password is itsme@07.
 
 ServiceForce is the Java implementation of the Intelligent IT Service Management & Incident Resolution System for CS F213 / MAC F212. Employees report incidents, technicians investigate them, and administrators manage the service catalog, routing, policies and SLA violations.
 
