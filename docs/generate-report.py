@@ -21,8 +21,9 @@ SOURCE = ROOT / "project-report.md"
 OUTPUT = ROOT / "project-report.pdf"
 INK = colors.HexColor("#211d3e")
 MUTED = colors.HexColor("#5d5973")
-ACCENT = colors.HexColor("#6d4ed6")
-GOLD = colors.HexColor("#f2b96a")
+ACCENT = colors.HexColor("#7549df")
+GOLD = colors.HexColor("#ffce72")
+TEAL = colors.HexColor("#74e1d3")
 DEEP = colors.HexColor("#17142c")
 PALE = colors.HexColor("#f0ecfb")
 
@@ -39,6 +40,14 @@ styles = {
                             textColor=INK, spaceAfter=16, alignment=TA_LEFT),
     "meta": ParagraphStyle("Meta", fontName="Helvetica-Bold", fontSize=8.5, leading=12,
                            textColor=ACCENT, spaceAfter=19),
+    "cover_title": ParagraphStyle("CoverTitle", fontName="Helvetica-Bold", fontSize=29, leading=35,
+                                  textColor=colors.white, spaceAfter=10),
+    "cover_meta": ParagraphStyle("CoverMeta", fontName="Helvetica-Bold", fontSize=8.5, leading=12,
+                                 textColor=TEAL, spaceAfter=18),
+    "cover_heading": ParagraphStyle("CoverHeading", fontName="Helvetica-Bold", fontSize=16, leading=20,
+                                    textColor=colors.white, spaceBefore=11, spaceAfter=11, keepWithNext=True),
+    "cover_body": ParagraphStyle("CoverBody", fontName="Helvetica", fontSize=10, leading=15,
+                                 textColor=colors.HexColor("#d4cfee"), spaceAfter=12),
     "heading": ParagraphStyle("Heading", fontName="Helvetica-Bold", fontSize=15, leading=19,
                               textColor=INK, spaceBefore=12, spaceAfter=10, keepWithNext=True),
     "subheading": ParagraphStyle("Subheading", fontName="Helvetica-Bold", fontSize=11.5, leading=15,
@@ -52,25 +61,27 @@ styles = {
     "table_head": ParagraphStyle("TableHead", fontName="Helvetica-Bold", fontSize=7.3, leading=9.5,
                                 textColor=colors.white),
     "team_kicker": ParagraphStyle("TeamKicker", fontName="Helvetica-Bold", fontSize=7.4, leading=10,
-                                  textColor=ACCENT, spaceAfter=9),
+                                  textColor=TEAL, spaceAfter=9),
     "team_name": ParagraphStyle("TeamName", fontName="Helvetica-Bold", fontSize=11.2, leading=14,
-                                textColor=INK, spaceAfter=4),
+                                textColor=colors.white, spaceAfter=4),
     "team_id": ParagraphStyle("TeamId", fontName="Helvetica", fontSize=8.2, leading=11,
-                              textColor=MUTED, spaceAfter=10),
+                              textColor=colors.HexColor("#c7bedf"), spaceAfter=10),
     "team_scope": ParagraphStyle("TeamScope", fontName="Helvetica", fontSize=8.6, leading=12,
-                                 textColor=INK),
+                                 textColor=colors.HexColor("#ebe8f6")),
     "code": ParagraphStyle("Code", fontName="Courier", fontSize=7.1, leading=10,
                            textColor=INK),
     "caption": ParagraphStyle("Caption", fontName="Helvetica-Oblique", fontSize=8.3, leading=11.5,
                               textColor=MUTED, spaceAfter=9),
     "metric_number": ParagraphStyle("MetricNumber", fontName="Helvetica-Bold", fontSize=22, leading=26,
-                                    textColor=ACCENT, spaceAfter=4),
+                                    textColor=GOLD, spaceAfter=4),
     "metric_label": ParagraphStyle("MetricLabel", fontName="Helvetica", fontSize=8.1, leading=11,
-                                   textColor=INK),
+                                   textColor=colors.white),
     "cover_label": ParagraphStyle("CoverLabel", fontName="Helvetica-Bold", fontSize=8, leading=11,
-                                   textColor=ACCENT, spaceAfter=8),
+                                   textColor=TEAL, spaceAfter=8),
     "cover_statement": ParagraphStyle("CoverStatement", fontName="Helvetica-Bold", fontSize=14, leading=19,
-                                       textColor=INK, spaceAfter=9),
+                                       textColor=colors.white, spaceAfter=9),
+    "cover_small": ParagraphStyle("CoverSmall", fontName="Helvetica", fontSize=9.1, leading=13,
+                                  textColor=colors.HexColor("#d4cfee")),
     "path_title": ParagraphStyle("PathTitle", fontName="Helvetica-Bold", fontSize=8.3, leading=11,
                                  textColor=INK, spaceAfter=5),
     "path_body": ParagraphStyle("PathBody", fontName="Helvetica", fontSize=7.5, leading=10,
@@ -81,19 +92,36 @@ styles = {
 def draw_page(canvas, doc):
     width, height = A4
     canvas.saveState()
-    canvas.setFillColor(colors.HexColor("#f7f5fc"))
-    canvas.rect(0, height - 25 * mm, width, 25 * mm, fill=1, stroke=0)
-    canvas.setFillColor(ACCENT)
-    canvas.rect(20 * mm, height - 20 * mm, 3 * mm, 11 * mm, fill=1, stroke=0)
+    if doc.page == 1:
+        canvas.setFillColor(DEEP)
+        canvas.rect(0, 0, width, height, fill=1, stroke=0)
+        canvas.setStrokeColor(colors.HexColor("#2f2752"))
+        canvas.setLineWidth(28)
+        canvas.circle(width + 22 * mm, 11 * mm, 77 * mm, fill=0, stroke=1)
+        canvas.setLineWidth(1.2)
+        canvas.setStrokeColor(colors.HexColor("#4b3875"))
+        canvas.circle(width + 22 * mm, 11 * mm, 57 * mm, fill=0, stroke=1)
+        canvas.setFillColor(TEAL)
+        canvas.circle(width - 28 * mm, height - 20 * mm, 2.1 * mm, fill=1, stroke=0)
+        canvas.setFillColor(GOLD)
+        canvas.circle(width - 20 * mm, height - 20 * mm, 2.1 * mm, fill=1, stroke=0)
+    else:
+        canvas.setFillColor(colors.HexColor("#fcfbff"))
+        canvas.rect(0, 0, width, height, fill=1, stroke=0)
+        canvas.setFillColor(DEEP)
+        canvas.rect(0, height - 25 * mm, width, 25 * mm, fill=1, stroke=0)
+    canvas.setFillColor(GOLD)
+    canvas.roundRect(20 * mm, height - 20 * mm, 3 * mm, 11 * mm, 1.5 * mm, fill=1, stroke=0)
     canvas.setFont("Helvetica-Bold", 9)
-    canvas.setFillColor(INK)
+    canvas.setFillColor(colors.white)
     canvas.drawString(27 * mm, height - 14 * mm, "SERVICEFORCE")
     canvas.setFont("Helvetica", 8)
-    canvas.setFillColor(MUTED)
-    canvas.drawRightString(width - 20 * mm, height - 14 * mm, "PROJECT REPORT  /  2026")
-    canvas.setStrokeColor(colors.HexColor("#ded9ec"))
+    canvas.setFillColor(colors.HexColor("#c9bff0"))
+    canvas.drawRightString(width - 20 * mm, height - 14 * mm, "OBJECT-ORIENTED PROJECT REPORT")
+    canvas.setStrokeColor(colors.HexColor("#4b426a") if doc.page == 1 else colors.HexColor("#d9d4e8"))
     canvas.line(20 * mm, 17 * mm, width - 20 * mm, 17 * mm)
     canvas.setFont("Helvetica", 8)
+    canvas.setFillColor(colors.HexColor("#c9bff0") if doc.page == 1 else MUTED)
     canvas.drawString(20 * mm, 12 * mm, "CS F213 / MAC F212  |  Intelligent IT Service Management")
     canvas.drawRightString(width - 20 * mm, 12 * mm, str(doc.page))
     canvas.restoreState()
@@ -110,10 +138,11 @@ def build():
     doc.addPageTemplates(PageTemplate(id="report", frames=[frame], onPage=draw_page))
     story = []
     paragraphs: list[str] = []
+    cover_mode = True
 
     def flush():
         if paragraphs:
-            story.append(Paragraph(inline(" ".join(paragraphs)), styles["body"]))
+            story.append(Paragraph(inline(" ".join(paragraphs)), styles["cover_body" if cover_mode else "body"]))
             paragraphs.clear()
 
     lines = SOURCE.read_text(encoding="utf-8").splitlines()
@@ -127,15 +156,16 @@ def build():
         if len(team_rows) != 4 or any(len(row) != 4 for row in team_rows):
             raise ValueError("The team page needs exactly four rows with name, ID, area and scope")
         cards = []
-        for name, student_id, area, scope in team_rows:
+        card_colors = ["#272446", "#173b43", "#322451", "#39304d"]
+        for index, (name, student_id, area, scope) in enumerate(team_rows):
             content = [Paragraph(inline(area.upper()), styles["team_kicker"]),
                        Paragraph(inline(name), styles["team_name"]),
                        Paragraph(inline(student_id), styles["team_id"]),
                        Paragraph(inline(scope), styles["team_scope"])]
             card = Table([[content]], colWidths=[225], rowHeights=[126], hAlign="LEFT")
             card.setStyle(TableStyle([
-                ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#f7f5fc")),
-                ("BOX", (0, 0), (-1, -1), .8, colors.HexColor("#dcd6eb")),
+                ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor(card_colors[index])),
+                ("BOX", (0, 0), (-1, -1), .8, colors.HexColor("#594b83")),
                 ("VALIGN", (0, 0), (-1, -1), "TOP"),
                 ("LEFTPADDING", (0, 0), (-1, -1), 13),
                 ("RIGHTPADDING", (0, 0), (-1, -1), 13),
@@ -240,11 +270,11 @@ def build():
                 panel = Table([[[
                     Paragraph("THE SERVICEFORCE IDEA", styles["cover_label"]),
                     Paragraph("One incident. One shared record. A clear path from report to verified resolution.", styles["cover_statement"]),
-                    Paragraph("Three roles  /  two routing strategies  /  two escalation deadlines  /  one auditable timeline", styles["body"]),
+                    Paragraph("Three roles  /  two routing strategies  /  two escalation deadlines  /  one auditable timeline", styles["cover_small"]),
                 ]]], colWidths=[doc.width], hAlign="LEFT")
                 panel.setStyle(TableStyle([
-                    ("BACKGROUND", (0, 0), (-1, -1), PALE),
-                    ("LINEBEFORE", (0, 0), (0, 0), 5, ACCENT),
+                    ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#292347")),
+                    ("LINEBEFORE", (0, 0), (0, 0), 5, GOLD),
                     ("LEFTPADDING", (0, 0), (-1, -1), 18),
                     ("RIGHTPADDING", (0, 0), (-1, -1), 18),
                     ("TOPPADDING", (0, 0), (-1, -1), 16),
@@ -258,8 +288,8 @@ def build():
                          for value, label in metrics]
                 strip = Table([cells], colWidths=[doc.width / 4] * 4, hAlign="LEFT")
                 strip.setStyle(TableStyle([
-                    ("BACKGROUND", (0, 0), (-1, -1), PALE),
-                    ("LINEBELOW", (0, 0), (-1, -1), 2, GOLD),
+                    ("BACKGROUND", (0, 0), (-1, -1), DEEP),
+                    ("LINEBELOW", (0, 0), (-1, -1), 2, TEAL),
                     ("VALIGN", (0, 0), (-1, -1), "TOP"),
                     ("LEFTPADDING", (0, 0), (-1, -1), 12),
                     ("RIGHTPADDING", (0, 0), (-1, -1), 8),
@@ -300,12 +330,13 @@ def build():
         elif line == "---":
             flush()
             story.append(PageBreak())
+            cover_mode = False
         elif line.startswith("# "):
             flush()
-            story.append(Paragraph(inline(line[2:]), styles["title"]))
+            story.append(Paragraph(inline(line[2:]), styles["cover_title" if cover_mode else "title"]))
         elif line.startswith("## "):
             flush()
-            story.append(Paragraph(inline(line[3:]), styles["heading"]))
+            story.append(Paragraph(inline(line[3:]), styles["cover_heading" if cover_mode else "heading"]))
         elif line.startswith("### "):
             flush()
             story.append(Paragraph(inline(line[4:]), styles["subheading"]))
@@ -317,7 +348,7 @@ def build():
             story.append(Paragraph("<font color=\"#6d4ed6\"><b>\u2022</b></font>  " + inline(line[2:]), styles["bullet"]))
         elif line.startswith("CS F213 / MAC F212 |"):
             flush()
-            story.append(Paragraph(inline(line), styles["meta"]))
+            story.append(Paragraph(inline(line), styles["cover_meta" if cover_mode else "meta"]))
         else:
             paragraphs.append(line)
     flush()

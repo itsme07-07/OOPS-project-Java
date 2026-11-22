@@ -39,3 +39,4 @@ Earlier application features and behavior are listed in the [feature inventory](
 - Added an OOP concept-to-code matrix, an HTTP trust-boundary appendix and a reproducible repository map. Documented the three-account local demo and its empty starting incident list.
 - Regenerated the 27-page PDF and checked its extracted text and rendered pages. Counts reflect the executed 42 domain and 12 HTTP tests, rather than figures from the reference report.
 - Replaced the older screenshots with one current demo incident shown from Employee 1, Tech 1 and Admin 1 accounts. Updated the figure captions and worked-example context to match the new images.
+- Removed the update date from the report cover and redesigned the PDF with a dark team page, dark running headers, and purple, teal and gold accents while keeping technical pages readable.

@@ -1,6 +1,6 @@
 # ServiceForce
 
-CS F213 / MAC F212 | Project team | Updated 22 November 2026
+CS F213 / MAC F212 | Project team
 
 Intelligent IT Service Management and Incident Resolution
 
