@@ -10,13 +10,38 @@ This report describes the implementation as it exists in the repository. The mai
 
 An organization needs a reliable way to receive service reports, determine urgency, route work to suitable technicians and show the progress of each case. A shared incident record reduces ambiguity about ownership, deadlines and previous actions. The project aims to give employees visibility into their own requests, technicians a focused work queue, and administrators a full operational view.
 
+Existing challenges addressed by the prototype are fragmented reporting through informal channels, unclear ownership, inconsistent priority decisions, missed deadlines and loss of investigation context when work is handed to another technician. The proposed solution is one role-aware incident record with automated priority and routing, response teams, a timed SLA monitor, audit history and two notification channels.
+
 - Employee: report a problem, attach evidence, answer questions, track updates, verify a fix, leave feedback and reopen a case when needed.
 - Technician: view assigned work, acknowledge and investigate a case, add notes, consult knowledge articles and record a resolution.
 - Administrator: manage people, teams, services, routing and SLA policies; reassign work; inspect reports, audit records and escalations.
 
+Assumptions: one organization owns the service catalog and its users; each technician has one primary skill category; administrators manage policies and staffing; calendar time rather than business hours determines SLA deadlines; one Java process owns the SQLite database; Brevo and a verified sender are available when real email is required. A local demo database is separate from the production database. These assumptions bound the prototype rather than representing guarantees for a large enterprise deployment.
+
 ## 2. Scope and quality goals
 
 The implementation targets one organization and a modest service-desk workload. Records survive application restarts through SQLite storage. HTTP requests enforce role and ownership checks on the server. Forms remain usable by keyboard and on narrow screens. The Java backend and browser interface are packaged together so the application can be demonstrated locally or deployed as one Railway service.
+
+### Functional requirements and implementation evidence
+
+- FR01 User management: employee self-registration, verified recovery email, assigned username sign-in and account recovery; administrators maintain accounts and technician availability. Implemented by `Desk`, `ServiceForceServer` and the People workspace.
+- FR02 Incident lifecycle: create, view, edit, assign, investigate, resolve, verify, close and reopen with role-checked transitions. Implemented by `Incidents`, `Desk` and the incident workspace.
+- FR03 Classification and priority: choose a service/category and calculate P1-P4 from impact, urgency and service criticality. Implemented by `Incidents` and `DomainModels.Service`.
+- FR04 Assignment: provide at least two interchangeable strategies and allow administrator reassignment. Implemented by `AssignmentStrategy.SkillFirst`, `AssignmentStrategy.LeastLoad` and incident actions.
+- FR05 SLA: calculate response/resolution deadlines, show at-risk/breached states, record violations and escalate overdue work. Implemented by the scheduled monitor, `Incidents` and `sla_events`.
+- FR06 Notifications and audit: record in-app notices and complete incident history; queue email for verified recipients. Implemented by `IncidentEvent.Observer`, `audit`, `notifications` and `email_outbox`.
+- FR07 Search and reporting: filter by ID/text, status, priority, category, service, technician, SLA condition and date; show service volume, workload and overview metrics. Implemented in the browser workspace using the role-filtered `/api/state` response.
+- FR08 Intelligent assistance: suggest related cases and prior resolutions, route by skill/load, and add matching teammates after a missed deadline. Implemented by `Incidents` with deterministic rules.
+- FR09 Persistence: retain users, services, policies, incidents, attachments, audit history and resolution details across application restarts. Implemented with SQLite, JDBC transactions and a Railway volume in production.
+
+### Non-functional requirements and evidence
+
+- NFR01 Security: server-side authentication, authorization, password hashing, input validation, request-origin checks and protected incident evidence. Section 15 details the controls and their limits.
+- NFR02 Reliability: incident mutations, audit and notification writes share a transaction; email outbox entries survive restart and retry delivery. SQLite needs an operational backup.
+- NFR03 Usability: separate role entry points, responsive browser layouts, keyboard-operable controls, light/dark themes and reduced-motion CSS.
+- NFR04 Maintainability: typed domain records, documented interfaces and two explicit design patterns, Maven build, diagrams, source-controlled schema and a dated change log.
+- NFR05 Verifiability: 28 documented cases, 54 passing automated tests and a GitHub Actions verification workflow.
+- NFR06 Deployment: one reproducible Docker image with a health endpoint, private environment configuration and persistent SQLite storage. Scale-out is outside the current single-instance design.
 
 ---
 
@@ -231,7 +256,7 @@ The system has three actors: employee, technician and administrator. Employees r
 
 [[CLASS]]
 
-The diagram shows the principal Java classes and interfaces. ServiceForceServer uses Desk; Desk coordinates Incidents and Database. Incidents copies Playbooks into a new case and emits events to IncidentEvent.Observer implementations, AuditLog and NotificationOutbox. AssignmentStrategy is implemented by SkillFirst and LeastLoad. MailDelivery is an interface for the email provider. The typed Actor, Service, SlaPolicy, Technician and Incident records in DomainModels represent values passed through the core rules. The implementation uses interfaces where behavior varies; entities are not forced into an artificial inheritance hierarchy.
+The open diamond at ServiceForceServer shows aggregation: its Desk is supplied through the constructor. The filled diamond at Desk shows composition: Desk creates and owns Incidents. Solid arrows show other associations or use. Dashed hollow triangles show that SkillFirst and LeastLoad implement AssignmentStrategy. IncidentEvent.Observer has AuditLog and NotificationOutbox implementations; MailDelivery is the email-provider interface. DomainModels contains typed Actor, Service, SlaPolicy, Technician and Incident records. No artificial class inheritance is used; interchangeable behavior is expressed through interfaces.
 
 ---
 

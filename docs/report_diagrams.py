@@ -45,6 +45,15 @@ def edge(d, x1, y1, x2, y2, label=None, dashed=False, arrow=True):
         text(d, (x1 + x2) / 2, (y1 + y2) / 2 + 5, label, 7, color=MUTED, anchor="middle")
 
 
+def diamond(d, cx, cy, filled):
+    d.add(Polygon([cx, cy + 10, cx + 8, cy, cx, cy - 10, cx - 8, cy],
+                  fillColor=PURPLE if filled else colors.white, strokeColor=PURPLE, strokeWidth=1.4))
+
+
+def realization(d, points):
+    d.add(Polygon(points, fillColor=colors.white, strokeColor=PURPLE, strokeWidth=1.4))
+
+
 def architecture():
     d = Drawing(470, 330)
     box(d, 10, 205, 110, 88, "Browser UI", ["Employee / Technician", "Administrator", "HTML, CSS, JavaScript"], BLUE)
@@ -136,12 +145,17 @@ def classes():
     uml(d, 168, 5, 135, 82, "IncidentEvent.Observer", [], ["+ record(connection, event)"], BLUE, True)
     uml(d, 10, 5, 135, 65, "AuditLog", [], ["+ record(...)"], PALE)
     uml(d, 326, 5, 135, 65, "NotificationOutbox", [], ["+ record(...)"], PALE)
-    edge(d, 76, 360, 76, 400, "implements", dashed=True)
+    edge(d, 76, 360, 76, 390, "implements", dashed=True, arrow=False)
+    realization(d, [76, 400, 70, 390, 82, 390])
     edge(d, 145, 225, 155, 225, dashed=True, arrow=False)
     edge(d, 155, 225, 155, 455, "implements", dashed=True, arrow=False)
-    edge(d, 155, 455, 145, 455, dashed=True)
-    edge(d, 326, 457, 303, 457, "uses")
-    edge(d, 235, 400, 235, 370, "owns")
+    edge(d, 155, 455, 153, 455, dashed=True, arrow=False)
+    realization(d, [145, 455, 153, 461, 153, 449])
+    edge(d, 308, 457, 303, 457, arrow=False)
+    d.add(Polygon([326, 457, 318, 463, 310, 457, 318, 451],
+                  fillColor=colors.white, strokeColor=PURPLE, strokeWidth=1.4))
+    edge(d, 235, 383, 235, 370, arrow=False)
+    diamond(d, 235, 393, filled=True)
     edge(d, 168, 285, 145, 135, "uses")
     edge(d, 303, 425, 326, 331, "uses")
     edge(d, 235, 255, 235, 215, "copies")

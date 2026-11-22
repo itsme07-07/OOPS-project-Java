@@ -92,20 +92,18 @@
 			<path d="M 326,43 L 461,43 Z" style="stroke: rgb(68%,65%,76%); stroke-linecap: butt; stroke-width: 0.7;"/>
 			<text x="353.0" y="52" style="font-family: Helvetica-Bold; font-size: 9px;fill: rgb(12%,11%,24%); stroke:none;" transform="translate(0,104) scale(1,-1)">NotificationOutbox</text>
 			<text x="332" y="31" style="font-family: Helvetica; font-size: 7.2px;fill: rgb(12%,11%,24%); stroke:none;" transform="translate(0,62) scale(1,-1)">+ record(...)</text>
-			<path d="M 76,360 L 76,400 Z" style="stroke: rgb(42%,30%,83%); stroke-linecap: butt; stroke-width: 1.5; stroke-dasharray: 4, 3;"/>
-			<polygon points="76 400, 73.27407 393.5526, 78.72593 393.5526" style="stroke: rgb(42%,30%,83%); stroke-linecap: butt; stroke-width: 1; fill: rgb(42%,30%,83%); fill-rule: evenodd;"/>
-			<text x="58.108000000000004" y="385.0" style="font-family: Helvetica; font-size: 7px;fill: rgb(38%,36%,47%); stroke:none;" transform="translate(0,770) scale(1,-1)">implements</text>
+			<path d="M 76,360 L 76,390 Z" style="stroke: rgb(42%,30%,83%); stroke-linecap: butt; stroke-width: 1.5; stroke-dasharray: 4, 3;"/>
+			<text x="58.108000000000004" y="380.0" style="font-family: Helvetica; font-size: 7px;fill: rgb(38%,36%,47%); stroke:none;" transform="translate(0,760) scale(1,-1)">implements</text>
+			<polygon points="76 400, 70 390, 82 390" style="stroke: rgb(42%,30%,83%); stroke-linecap: butt; stroke-width: 1.4; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
 			<path d="M 145,225 L 155,225 Z" style="stroke: rgb(42%,30%,83%); stroke-linecap: butt; stroke-width: 1.5; stroke-dasharray: 4, 3;"/>
 			<path d="M 155,225 L 155,455 Z" style="stroke: rgb(42%,30%,83%); stroke-linecap: butt; stroke-width: 1.5; stroke-dasharray: 4, 3;"/>
 			<text x="137.108" y="345.0" style="font-family: Helvetica; font-size: 7px;fill: rgb(38%,36%,47%); stroke:none;" transform="translate(0,690) scale(1,-1)">implements</text>
-			<path d="M 155,455 L 145,455 Z" style="stroke: rgb(42%,30%,83%); stroke-linecap: butt; stroke-width: 1.5; stroke-dasharray: 4, 3;"/>
-			<polygon points="145 455, 151.4474 452.2741, 151.4474 457.7259" style="stroke: rgb(42%,30%,83%); stroke-linecap: butt; stroke-width: 1; fill: rgb(42%,30%,83%); fill-rule: evenodd;"/>
-			<path d="M 326,457 L 303,457 Z" style="stroke: rgb(42%,30%,83%); stroke-linecap: butt; stroke-width: 1.5;"/>
-			<polygon points="303 457, 309.4474 454.2741, 309.4474 459.7259" style="stroke: rgb(42%,30%,83%); stroke-linecap: butt; stroke-width: 1; fill: rgb(42%,30%,83%); fill-rule: evenodd;"/>
-			<text x="307.108" y="462.0" style="font-family: Helvetica; font-size: 7px;fill: rgb(38%,36%,47%); stroke:none;" transform="translate(0,924) scale(1,-1)">uses</text>
-			<path d="M 235,400 L 235,370 Z" style="stroke: rgb(42%,30%,83%); stroke-linecap: butt; stroke-width: 1.5;"/>
-			<polygon points="235 370, 237.7259 376.4474, 232.2741 376.4474" style="stroke: rgb(42%,30%,83%); stroke-linecap: butt; stroke-width: 1; fill: rgb(42%,30%,83%); fill-rule: evenodd;"/>
-			<text x="226.831" y="390.0" style="font-family: Helvetica; font-size: 7px;fill: rgb(38%,36%,47%); stroke:none;" transform="translate(0,780) scale(1,-1)">owns</text>
+			<path d="M 155,455 L 153,455 Z" style="stroke: rgb(42%,30%,83%); stroke-linecap: butt; stroke-width: 1.5; stroke-dasharray: 4, 3;"/>
+			<polygon points="145 455, 153 461, 153 449" style="stroke: rgb(42%,30%,83%); stroke-linecap: butt; stroke-width: 1.4; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
+			<path d="M 308,457 L 303,457 Z" style="stroke: rgb(42%,30%,83%); stroke-linecap: butt; stroke-width: 1.5;"/>
+			<polygon points="326 457, 318 463, 310 457, 318 451" style="stroke: rgb(42%,30%,83%); stroke-linecap: butt; stroke-width: 1.4; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
+			<path d="M 235,383 L 235,370 Z" style="stroke: rgb(42%,30%,83%); stroke-linecap: butt; stroke-width: 1.5;"/>
+			<polygon points="235 403, 243 393, 235 383, 227 393" style="stroke: rgb(42%,30%,83%); stroke-linecap: butt; stroke-width: 1.4; fill: rgb(42%,30%,83%); fill-rule: evenodd;"/>
 			<path d="M 168,285 L 145,135 Z" style="stroke: rgb(42%,30%,83%); stroke-linecap: butt; stroke-width: 1.5;"/>
 			<polygon points="145 135, 148.6716 140.9598, 143.2827 141.7861" style="stroke: rgb(42%,30%,83%); stroke-linecap: butt; stroke-width: 1; fill: rgb(42%,30%,83%); fill-rule: evenodd;"/>
 			<text x="149.108" y="215.0" style="font-family: Helvetica; font-size: 7px;fill: rgb(38%,36%,47%); stroke:none;" transform="translate(0,430) scale(1,-1)">uses</text>
