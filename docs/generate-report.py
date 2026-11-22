@@ -11,7 +11,7 @@ from reportlab.lib.enums import TA_LEFT
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import mm
-from reportlab.platypus import BaseDocTemplate, Frame, LongTable, PageBreak, PageTemplate, Paragraph, Spacer, TableStyle
+from reportlab.platypus import BaseDocTemplate, Frame, LongTable, PageBreak, PageTemplate, Paragraph, Spacer, Table, TableStyle
 
 from report_diagrams import DIAGRAMS, export_svgs
 
@@ -49,6 +49,14 @@ styles = {
                            textColor=INK),
     "table_head": ParagraphStyle("TableHead", fontName="Helvetica-Bold", fontSize=7.3, leading=9.5,
                                 textColor=colors.white),
+    "team_kicker": ParagraphStyle("TeamKicker", fontName="Helvetica-Bold", fontSize=7.4, leading=10,
+                                  textColor=ACCENT, spaceAfter=9),
+    "team_name": ParagraphStyle("TeamName", fontName="Helvetica-Bold", fontSize=11.2, leading=14,
+                                textColor=INK, spaceAfter=4),
+    "team_id": ParagraphStyle("TeamId", fontName="Helvetica", fontSize=8.2, leading=11,
+                              textColor=MUTED, spaceAfter=10),
+    "team_scope": ParagraphStyle("TeamScope", fontName="Helvetica", fontSize=8.6, leading=12,
+                                 textColor=INK),
 }
 
 
@@ -92,6 +100,45 @@ def build():
 
     lines = SOURCE.read_text(encoding="utf-8").splitlines()
     table_rows = []
+    team_rows = []
+    team_mode = False
+
+    def flush_team():
+        if not team_rows:
+            return
+        if len(team_rows) != 4 or any(len(row) != 4 for row in team_rows):
+            raise ValueError("The team page needs exactly four rows with name, ID, area and scope")
+        cards = []
+        for name, student_id, area, scope in team_rows:
+            content = [Paragraph(inline(area.upper()), styles["team_kicker"]),
+                       Paragraph(inline(name), styles["team_name"]),
+                       Paragraph(inline(student_id), styles["team_id"]),
+                       Paragraph(inline(scope), styles["team_scope"])]
+            card = Table([[content]], colWidths=[225], rowHeights=[126], hAlign="LEFT")
+            card.setStyle(TableStyle([
+                ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#f7f5fc")),
+                ("BOX", (0, 0), (-1, -1), .8, colors.HexColor("#dcd6eb")),
+                ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                ("LEFTPADDING", (0, 0), (-1, -1), 13),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 13),
+                ("TOPPADDING", (0, 0), (-1, -1), 13),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 13),
+            ]))
+            cards.append(card)
+        grid = Table([[cards[0], cards[1]], [cards[2], cards[3]]],
+                     colWidths=[241, 241], rowHeights=[139, 139], hAlign="LEFT")
+        grid.setStyle(TableStyle([
+            ("VALIGN", (0, 0), (-1, -1), "TOP"),
+            ("LEFTPADDING", (0, 0), (0, -1), 0),
+            ("RIGHTPADDING", (0, 0), (0, -1), 8),
+            ("LEFTPADDING", (1, 0), (1, -1), 8),
+            ("RIGHTPADDING", (1, 0), (1, -1), 0),
+            ("TOPPADDING", (0, 0), (-1, -1), 0),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 0),
+        ]))
+        story.append(grid)
+        story.append(Spacer(1, 6 * mm))
+        team_rows.clear()
 
     def flush_table():
         if not table_rows:
@@ -115,6 +162,12 @@ def build():
 
     for line in lines:
         line = line.strip()
+        if team_mode and line.startswith("- "):
+            team_rows.append([cell.strip() for cell in line[2:].split("|", 3)])
+            continue
+        if team_mode:
+            flush_team()
+            team_mode = False
         if line.startswith("|") and line.endswith("|"):
             flush()
             cells = [cell.strip() for cell in line[1:-1].split("|")]
@@ -127,8 +180,11 @@ def build():
         elif line.startswith("[[") and line.endswith("]]"):
             flush()
             name = line[2:-2]
-            story.append(DIAGRAMS[name]())
-            story.append(Spacer(1, 4 * mm))
+            if name == "TEAM_CARDS":
+                team_mode = True
+            else:
+                story.append(DIAGRAMS[name]())
+                story.append(Spacer(1, 4 * mm))
         elif line == "---":
             flush()
             story.append(PageBreak())
@@ -150,6 +206,7 @@ def build():
         else:
             paragraphs.append(line)
     flush()
+    flush_team()
     flush_table()
     story.append(Spacer(1, 2 * mm))
     doc.build(story)

@@ -4,6 +4,7 @@ This file records implementation and delivery changes. [The feature inventory](f
 
 ## 22 November 2026
 
+- Redesigned the report opening as a dedicated project-members first page with four equal cards. The technical report now begins on page two; member details remain editable in the Markdown source and render into the PDF.
 - Rebalanced the four-member responsibility allocation into frontend, identity/API, incident/OOP, and data/operations workstreams. Each includes implementation, tests, documentation and demonstration so no one person is assigned all testing or delivery work.
 - Added the four team members, their student IDs and a clear allocation of UI, API/security, incident/OOP and database/testing/deployment responsibilities to the project report. The allocation is for report and demonstration planning and should be confirmed by the team before submission.
 - Audited the report against the assignment deliverables. Added explicit problem challenges and assumptions, nine functional requirements, six non-functional requirements with implementation evidence, and UML aggregation/composition notation and explanations. Regenerated and visually checked the PDF.

@@ -1,21 +1,24 @@
-# ServiceForce: Intelligent IT Service Management and Incident Resolution
+# ServiceForce
 
-CS F213 / MAC F212 | Project report | Updated 22 November 2026
+CS F213 / MAC F212 | Project team | Updated 22 November 2026
+
+Intelligent IT Service Management and Incident Resolution
+
+## Project members
+
+[[TEAM_CARDS]]
+- Anurag Reddy Goli | 2025A7IS2423H | Frontend and experience | Role screens, incident workspace, filtering, charts and accessibility. UI checks, documentation and demonstration.
+- Angad Ahuja | 2025A7IS2409H | Identity and API | HTTP endpoints, authentication, sessions, recovery and email delivery. Security tests, documentation and demonstration.
+- Jaya Pranav Reddy Avuduri | 2025A7IS2421H | Incident and OOP | Lifecycle, priority, routing, SLA, response teams and playbooks. Domain tests, documentation and demonstration.
+- Raj Mittal | 2025A7IS2414H | Data and operations | SQLite, audit, knowledge, reporting, Docker, Railway and CI. Persistence tests, documentation and demonstration.
+
+Each member has a substantial technical workstream and is also responsible for testing, documentation and presentation. All members should understand the complete system.
+
+---
 
 ServiceForce is a Java web application for reporting, assigning, investigating and resolving IT incidents. Employees, technicians and administrators use role-specific browser workspaces backed by the same authorization and incident rules. The application is available as one deployable service; a local demonstration can run from the repository with Java 17 or later.
 
 This report describes the implementation as it exists in the repository. The maintained feature inventory is `docs/features.md`. Ideas discussed but not implemented, such as a Service Outage Hub, are excluded from the implemented feature list.
-
-## Project team and responsibility allocation
-
-- Anurag Reddy Goli — 2025A7IS2423H: frontend workstream: landing and role screens, incident workspace, filtering and charts, responsive UI and accessibility. Also owns UI checks and the frontend section of the report/demo.
-- Angad Ahuja — 2025A7IS2409H: identity workstream: HTTP endpoints, authentication, sessions and devices, email verification/recovery and notification delivery. Also owns security/API tests and the account-flow section of the report/demo.
-- Jaya Pranav Reddy Avuduri — 2025A7IS2421H: incident workstream: lifecycle and permissions, priority, routing strategies, SLA monitoring, response-team escalation and playbook rules. Also owns domain tests and the OOP/incident section of the report/demo.
-- Raj Mittal — 2025A7IS2414H: data and operations workstream: SQLite schema/migrations, audit and knowledge records, reporting data, Docker/Railway and GitHub Actions. Also owns persistence/integration tests and the database/deployment section of the report/demo.
-
-Each workstream includes implementation, testing, documentation and presentation so that workload and technical difficulty are shared across the four members. All members are responsible for understanding the complete system.
-
----
 
 ## 1. Problem and project objectives
 
