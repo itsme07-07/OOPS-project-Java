@@ -4,6 +4,7 @@ This file records implementation and delivery changes. [The feature inventory](f
 
 ## 22 November 2026
 
+- Assigned incident-search and reporting SQL queries to Anurag's workstream; Raj retains the database schema, migrations and persistence components.
 - Edited the report for submission: removed internal planning notes, editing instructions and defensive implementation disclaimers while retaining technical limitations and evidence.
 - Expanded Anurag's planned workstream to include incident search, the reporting API and integration tests alongside the interface and accessibility work.
 - Rebalanced the project-member page so each person has a major implementation area plus explicit Java/OOP design and tests. Shared documentation and presentation are stated separately; the allocation is a plan for team confirmation, not an assertion of past individual work.

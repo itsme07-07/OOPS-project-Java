@@ -7,10 +7,10 @@ Intelligent IT Service Management and Incident Resolution
 ## Project members
 
 [[TEAM_CARDS]]
-- Anurag Reddy Goli | 2025A7IS2423H | Experience and reporting | Role screens, incident views, search and reports; reporting API and Java view models; accessibility, integration tests and demo.
+- Anurag Reddy Goli | 2025A7IS2423H | Experience and reporting | Role screens and incident views; search and reporting APIs with SQL queries; Java view models, accessibility and integration tests.
 - Angad Ahuja | 2025A7IS2409H | Identity and delivery | Accounts, sessions, recovery and email; identity classes and abstraction; security tests and deployment.
 - Jaya Pranav Reddy Avuduri | 2025A7IS2421H | Incident and routing | Lifecycle, priority, SLA and teams; incident classes and strategy polymorphism; domain tests and demo.
-- Raj Mittal | 2025A7IS2414H | Data and knowledge | SQLite, audit, playbooks and knowledge; persistence classes and observer pattern; data tests and CI.
+- Raj Mittal | 2025A7IS2414H | Data and knowledge | SQLite schema and migrations, audit, playbooks and knowledge; persistence classes, observer pattern, data tests and CI.
 
 ---
 
