@@ -12,9 +12,35 @@ Intelligent IT Service Management and Incident Resolution
 - Jaya Pranav Reddy Avuduri | 2025A7IS2421H | Incident and routing | Lifecycle, priority, SLA and teams; incident classes and strategy polymorphism; domain tests and demo.
 - Raj Mittal | 2025A7IS2414H | Data and knowledge | SQLite schema and migrations, audit, playbooks and knowledge; persistence classes, observer pattern, data tests and CI.
 
+[[COVER_SUMMARY]]
+
 ---
 
+## ServiceForce in one page
+
+[[AT_A_GLANCE]]
+
 ServiceForce is a Java web application for reporting, assigning, investigating and resolving IT incidents. Employees, technicians and administrators use role-specific browser workspaces backed by the same authorization and incident rules. The application is available as one deployable service; a local demonstration can run from the repository with Java 17 or later.
+
+### Follow one incident through the system
+
+[[INCIDENT_PATH]]
+
+An employee reports a service failure. The server computes priority and two deadlines, selects a lead technician, copies a category playbook, then commits the case with audit and notification records. The response team investigates in one shared timeline. If the original resolution deadline passes, eligible teammates join once and a recovery deadline begins. A second miss marks the case Highly Critical. The reporter verifies the fix before closure.
+
+### Where to look for evidence
+
+| Question | Report sections | Source or proof |
+| --- | --- | --- |
+| What does the application do? | 1-2, 5-8 | Three role workspaces; incident lifecycle; feature inventory |
+| How is it built? | 3-4, 12-17 | Java components; `schema.sql`; API and deployment boundaries |
+| Where is the OOP work? | 3, 14, 19 | `AssignmentStrategy`, `DomainModels`, `IncidentEvent` and tests |
+| Does it work? | 9, 18, 20-21, Appendix E | Worked case, role screenshots, 54 executed tests |
+| Which diagrams are submitted? | Appendices A-D | Architecture, use case, class and ER diagrams |
+
+A fresh local demo starts with three accounts and an empty incident list; Railway uses a separate persistent database. The screenshots show an incident created using those demo accounts.
+
+---
 
 ## 1. Problem and project objectives
 
@@ -52,8 +78,6 @@ The implementation targets one organization and a modest service-desk workload. 
 - NFR04 Maintainability: typed domain records, documented interfaces and two explicit design patterns, Maven build, diagrams, source-controlled schema and a dated change log.
 - NFR05 Verifiability: 28 documented cases, 54 passing automated tests and a GitHub Actions verification workflow.
 - NFR06 Deployment: one reproducible Docker image with a health endpoint, private environment configuration and persistent SQLite storage. Scale-out is outside the current single-instance design.
-
----
 
 ## 3. Architecture and object-oriented design
 
@@ -133,7 +157,7 @@ SQLite is appropriate for a modest queue but would need reevaluation for a large
 
 ## 11. Running the project and maintained records
 
-Install Java 17 or later. Clone `https://github.com/itsme07-07/OOPS-project-Java`, run `./mvnw clean verify`, then start `java -jar target/serviceforce.jar`. Open `http://127.0.0.1:8000/`. The local demo provides role-based demo buttons; exact demo usernames vary by installation and are visible in My profile. Production administrator credentials are intentionally not published in this report or repository.
+Install Java 17 or later. Clone `https://github.com/itsme07-07/OOPS-project-Java`, run `./mvnw clean verify`, then start `java -jar target/serviceforce.jar`. Open `http://127.0.0.1:8000/`. A fresh local demo has the three fixed role usernames listed in section 16; later user accounts receive generated usernames. Production administrator credentials are intentionally not published in this report or repository.
 
 The live application is at `https://oops-project-java-production.up.railway.app/`. Supporting documents in the repository are `README.md` for setup, `docs/railway.md` for deployment, `docs/demonstration.md` for the presentation walkthrough, and `docs/features.md` for the feature inventory.
 
@@ -185,6 +209,18 @@ An email address is personal contact data, while an assigned `nameCODE@service.r
 
 ## 14. Domain rules, algorithms and object-oriented design
 
+The design uses interfaces for substitutable behavior. User and incident rules live in dedicated classes, while typed records carry the values those rules need. The following map links each course concept to its implementation.
+
+| OOP concept | ServiceForce implementation | Why it matters |
+| --- | --- | --- |
+| Encapsulation | `Incidents` owns lifecycle and response-team mutations; `Desk` does not expose direct table edits to the browser | Illegal state changes are rejected at the domain boundary |
+| Abstraction | `AssignmentStrategy` and `IncidentEvent.Observer` define small contracts | Routing and side effects can vary without rewriting incident creation |
+| Interface polymorphism | `SkillFirst` and `LeastLoad` rank the same `Technician` records differently | An administrator can switch a strategy at runtime |
+| Composition | `Desk` creates and owns `Incidents`; `ServiceForceServer` receives a `Desk` | HTTP concerns remain outside incident rules |
+| Value objects | `DomainModels.Actor`, `Service`, `SlaPolicy`, `Technician` and `Incident` are typed records | Core calculations use named fields rather than untyped row positions |
+| Event observer | `AuditLog` and `NotificationOutbox` process an `IncidentEvent` in one transaction | A failed write rolls back the incident change and its records together |
+| Exceptions | `Problem` carries a status and safe message for invalid requests | Authorization and validation failures are distinct from server faults |
+
 ### Priority, routing and lifecycle
 
 Incident priority uses `impact × urgency × service criticality`, with each factor in the range 1-3. Scores of 18 or more are P1; 9-17 are P2; 4-8 are P3; and lower scores are P4. The selected priority maps to a policy row containing response and resolution minutes. Seeded policies are P1: 5/30 minutes; P2: 15/120; P3: 60/480; and P4: 240/1440. Administrators can edit policy targets. An incident stores its calculated deadlines at creation; changing a policy affects future cases rather than retroactively rewriting existing deadlines.
@@ -230,9 +266,9 @@ The authoritative schema is `src/main/resources/schema.sql`, with startup migrat
 - `knowledge_articles`: service-linked reusable reference articles with author and timestamps. `playbook_templates` defines category checklists; `incident_playbook_steps` stores the copied per-case steps, actor, result, status and update time.
 - `incident_reviews`: one optional post-incident review per case with root cause, impact, prevention and author.
 
-A new local demo database seeds nine categories, six services, four priority policies, five demo accounts and six sample incidents. These records let a reviewer exercise employee, technician and administrator workflows. Exact generated usernames vary because the four-digit code is random; the demo password is documented in the README for local demonstrations only. Railway production starts without demo accounts and bootstraps the first administrator from private variables when necessary. SQLite resides in the persistent Railway volume, so a redeploy can keep the incident history. Multiple running replicas are outside the current design because each would need coordinated persistent data and sessions.
+A new local demo database seeds nine categories, six services, four priority policies and exactly three role accounts. It starts with no incidents, so presenters can create cases during the demonstration. The local demo usernames are `admin1111@service.adm`, `tech2222@service.tech` and `emp3333@service.emp`; their shared demo password is documented in the README. Accounts subsequently created through the application receive system-generated four-digit codes. Railway production starts without demo accounts and bootstraps the first administrator from private variables when necessary. SQLite resides in the persistent Railway volume, so a redeploy can keep the incident history. Multiple running replicas are outside the current design because each would need coordinated persistent data and sessions.
 
-Representative local seed records include Alex Morgan as administrator, Sam Rivera as an Application technician, Jordan Lee as employee, Priya Shah as a Network technician and Noah Chen as an Authentication technician. The six seeded services are Payment gateway, Corporate network, Identity platform, Analytics database, Cloud storage and Workplace devices. Sample incident titles include Checkout requests timing out, VPN drops during video calls and Shared drive sync stalled. These are demonstration records, not production incidents or real customer data.
+The three local demo accounts are Admin 1, Tech 1 (an Application technician) and Employee 1. The six seeded services are Payment gateway, Corporate network, Identity platform, Analytics database, Cloud storage and Workplace devices. These accounts and catalog entries are demonstration records, not production users or real customer data.
 
 ## 17. API boundaries, workflows, validation evidence and limits
 
@@ -243,6 +279,104 @@ Workflow 1: an employee reports an incident. The server validates service, categ
 The 28 documented cases in Appendix E cover normal operations, boundary inputs, invalid data, role and ownership failures, conflict states, concurrency, escalation idempotency, private attachments and transport defenses. `DeskTest` and `HttpIntegrationTest` contain 54 executed JUnit tests in the latest local build, with no failures, errors or skips. GitHub Actions applies the same `clean verify` gate after each push.
 
 The deployment supports one organization and one Java instance. SQLite serializes writes; session records are not durable; the SLA clock uses elapsed time rather than business calendars; email requires Brevo configuration and a verified sender; and the similar-case suggestion uses lexical matching. Backups of the Railway volume are operationally necessary but are not automated. Larger deployments would require durable shared sessions, a multi-writer database, scheduled backup and restore checks, or more advanced search.
+
+---
+
+## 18. Worked incident: priority, assignment and deadlines
+
+Consider an employee who reports that checkout requests time out on the Payment gateway. The service has criticality 3; the employee selects impact 3 and urgency 3. `DomainModels.Service.priorityScore` multiplies these values, producing `3 × 3 × 3 = 27`. The P1 threshold is 18, so the new incident is P1. The configured P1 policy gives a five-minute response target and a 30-minute resolution target. If the incident is created at 10:00, its stored response and original resolution deadlines are 10:05 and 10:30. The score determines the SLA policy; the deadline timestamps are saved with the incident rather than recalculated from later policy edits.
+
+| Stage | Time in example | Rule and visible evidence |
+| --- | --- | --- |
+| Submission | 10:00 | P1 priority, incident ID, two deadlines, creation audit and notifications. |
+| Automatic assignment | At creation | Skill-first ranks an available Application technician below capacity ahead of a non-matching technician; the assigned lead is recorded. |
+| Response at risk | After 10:04 | The last fifth of the five-minute response interval is flagged at risk. |
+| Missed response | After 10:05 | If the P1 case is still unacknowledged, one escalation event and administrator alert are recorded. |
+| Resolution at risk | After 10:24 | The last fifth of the 30-minute resolution interval is flagged at risk. |
+| Missed original resolution | First monitor pass after 10:30 | Eligible Application teammates may be added once; the original deadline stays visible and a recovery deadline is set 15 minutes after this monitor pass. |
+| Missed recovery | First monitor pass after the recovery deadline | The incident becomes Highly Critical and administrators are alerted once. |
+
+The monitor runs every 15 seconds while the Java process is active, so displayed events can occur just after, rather than exactly at, a deadline. A candidate teammate must be active, available, below capacity, not already on the incident, and free of equal- or higher-priority competing work. The system adds at most two in this automatic stage and never lists the lead again as an additional responder. If no candidate qualifies, an administrator alert replaces an automatic team addition. Unique SLA event keys and the stored escalation stage prevent repeated monitor passes from duplicating either result.
+
+The current local example shown in the following figures is `INC-0002`, a Payment gateway case reported by Employee 1 and assigned to Tech 1. The screenshots were captured shortly after creation, while the P1 case was Assigned and on track. No additional technician had joined. The worked 10:00 timeline above is a separate illustration of what the SLA rules would do if deadlines were missed.
+
+---
+
+## 19. Source evidence for object-oriented design
+
+### Strategy: replaceable technician ranking
+
+`AssignmentStrategy` defines one selection contract. `Incidents.create` constructs eligible candidates and calls the active strategy through this interface. The two implementations rank the same candidate type differently; the incident creation path does not need a separate version for each policy.
+
+```java
+interface AssignmentStrategy {
+    Comparator<Technician> ranking(String category);
+
+    default Technician choose(List<Technician> candidates, String category) {
+        return candidates.stream().min(ranking(category)).orElse(null);
+    }
+}
+```
+
+In `AssignmentStrategy.java`, `LeastLoad` uses workload and ID as tie-breakers. `SkillFirst` first places a technician whose primary skill matches the incident category ahead of other eligible candidates, then applies the same workload order. This is runtime polymorphism: the configured strategy object supplies the ranking without changing the caller. Availability and capacity filtering happen before either ranking. The `loadRoutingChoosesLeastBusyEligibleTechnician` test checks a concrete least-load choice; other routing and capacity cases are listed in Appendix E.
+
+### Observer: one incident event, separate records
+
+The incident service creates one event and passes it to observers using the same database connection. `IncidentEvent.AuditLog` writes the history row; `IncidentEvent.NotificationOutbox` creates recipient notices and, for verified recipients, queued email work. The small excerpt below is from `Incidents.event`.
+
+```java
+var change = new IncidentEvent(i, actor.toString(), action,
+        message, before, after, at);
+for (var observer : observers) observer.record(c, change);
+```
+
+`Desk.mutate` opens a write transaction before invoking the incident action. Because both observers use the same connection, a SQL or runtime failure rolls back the incident change and its associated audit and notification writes together. Adding another observer would implement `IncidentEvent.Observer` without changing the event dispatch loop. The real email send happens later from the outbox, so a provider outage does not roll back a completed incident action. The `verifiedIncidentParticipantsReceiveQueuedEmailUpdates` and `nearbyUpdatesForOneIncidentArriveInOneEmail` tests check queued and grouped delivery behavior.
+
+---
+
+## 20. One incident across three role workspaces
+
+The following screenshots show the same current demo case, `INC-0002`, in three role workspaces. The incident key, Payment gateway service, P1 priority, reporter and lead technician agree across the views. The controls change with the signed-in role; server-side visibility and mutation checks remain authoritative.
+
+### Employee: report and follow progress
+
+[[SCREEN_EMPLOYEE]]
+
+Figure 1. Employee 1 sees the submitted incident, its response team and original deadlines. The employee can edit the report or provide more information, but has no technician acknowledgment or administrator reassignment control.
+
+---
+
+### Technician: investigate the assigned case
+
+[[SCREEN_TECHNICIAN]]
+
+Figure 2. Tech 1 sees `INC-0002` with Acknowledge, Request information and Add note actions. The incident response playbook begins below the summary. This role can record diagnostic work while the reporter remains able to track the case.
+
+---
+
+### Administrator: oversee staffing and escalation
+
+[[SCREEN_ADMIN]]
+
+Figure 3. Admin 1 sees `INC-0002` with Reassign and Add teammate controls, along with People, Teams, Service settings and Audit log navigation. The case is still on track at the time of capture.
+
+---
+
+## 21. Executed tests and traceable behavior
+
+On 22 November 2026, `./mvnw clean verify` completed successfully using JDK 25 to compile the Java 17 target. Maven Surefire recorded 42 `DeskTest` methods and 12 `HttpIntegrationTest` methods: 54 tests run, zero failures, zero errors and zero skipped. The source-controlled GitHub Actions workflow runs the same Maven verification on pushes and pull requests. The local test reports are in `target/surefire-reports`; they are generated build output rather than submitted source files.
+
+| Behavior checked | Automated evidence | Result |
+| --- | --- | --- |
+| Verified email and username-only sign-in | `DeskTest.registrationRequiresVerifiedEmailAndOnlyUsernameCanSignIn` | Passed |
+| Least-workload routing | `DeskTest.loadRoutingChoosesLeastBusyEligibleTechnician` | Passed |
+| One-time P1 response escalation | `DeskTest.monitoringIsIdempotent` | Passed |
+| Team addition and second missed deadline | `DeskTest.resolutionBreachAddsMatchingTeammatesOnceAndThenMarksHighlyCritical` | Passed |
+| Private attachment download | `HttpIntegrationTest.attachmentDownloadRequiresIncidentAccess` | Passed |
+| Sign out of another device | `HttpIntegrationTest.userCanSeeAndSignOutAnotherDevice` | Passed |
+| Group nearby incident emails | `DeskTest.nearbyUpdatesForOneIncidentArriveInOneEmail` | Passed |
+
+These selected assertions tie a user-visible feature to the Java rule that implements it. Appendix E lists 28 documented test cases spanning normal workflows, invalid input, unauthorized access, lifecycle conflicts, SLA boundaries, persistence and HTTP behavior. The successful build verifies automated paths; the three current role screenshots separately document the browser presentation of one demo incident.
 
 ---
 
@@ -312,3 +446,39 @@ Each row states a test condition and the observable expected result. The evidenc
 | T26 | Call mutation endpoint from another origin | Cross-origin request is rejected | H: blocksCrossOriginMutation |
 | T27 | Submit oversized request content | HTTP payload limit is enforced | H: enforcesPayloadLimit |
 | T28 | Request attachment without incident permission | Download is denied | H: attachmentDownloadRequiresIncidentAccess |
+
+---
+
+## Appendix F. HTTP interface and trust boundaries
+
+The browser and Java server share one origin. Public account endpoints validate input and apply sign-in rate limits; private endpoints resolve the session cookie before reading or changing data. `/api/action` accepts an `action` name and flat JSON fields, then delegates to role-checked commands in `Desk`. It is not a generic table-write API.
+
+| Route | Access | Behavior |
+| --- | --- | --- |
+| `GET /healthz`, `GET /api/config` | Public | Health response and local demo configuration |
+| `POST /api/register`, `POST /api/login` | Public | Begin verified registration; sign in by username and selected role |
+| `POST /api/verify-email`, `POST /api/recover-username` | Public, rate limited | Verify account email; send a username to a verified recovery address |
+| `POST /api/request-reset`, `POST /api/reset-password` | Public, rate limited | Issue a reset code; replace the password and revoke sessions |
+| `GET /api/state`, `POST /api/action` | Signed in | Read a role-filtered snapshot; perform an authorized workspace command |
+| `GET /api/devices`, `POST /api/revoke-device` | Signed in | List this account's sessions; revoke one selected device |
+| `POST /api/attachment`, `GET /api/attachment/{id}` | Incident participant | Upload validated evidence; download only with incident access |
+
+Responses are JSON except static assets and attachment downloads. HTTP tests cover authentication, cross-origin mutation rejection, payload size, private attachments and malformed requests. The server also checks the role and incident relationship inside the application; a hidden button in the browser is never the only protection.
+
+## Appendix G. Repository map and reproducibility
+
+```text
+pom.xml                         Java 17, dependencies, tests, runnable JAR
+src/main/java/relay/            HTTP, identity, incidents, routing, events, email
+src/main/resources/schema.sql   Relational schema, constraints and indexes
+src/main/resources/static/      Browser interface and website assets
+src/test/java/relay/            Domain and HTTP integration tests
+docs/project-report.md          Editable source for this report
+docs/project-report.pdf         Submitted PDF generated from the source
+docs/diagrams/                  Architecture, use-case, class and ER figures
+docs/features.md                Maintained feature inventory
+.github/workflows/ci.yml        Automated clean verification
+Dockerfile                      One service with persistent database mount
+```
+
+From a fresh clone, run `./mvnw clean verify` and then `java -jar target/serviceforce.jar`. The local server uses port 8000 and creates a SQLite file under `data/`. The first launch has three fixed demo users and no incidents; the demo password is in the README. The source tree and report are sufficient to reproduce the same checks without access to the Railway account. A live Railway deployment uses its own volume and private variables, so deleting a local demo database does not clear production data.

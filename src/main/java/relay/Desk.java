@@ -90,42 +90,13 @@ public final class Desk {
         exec(c, "INSERT INTO settings VALUES('strategy','skill')");
         if (!demo) return;
         String[][] accounts = {
-            {"Alex Morgan", "admin", "admin", ""}, {"Sam Rivera", "tech", "technician", "Application"},
-            {"Jordan Lee", "employee", "employee", ""}, {"Priya Shah", "priya", "technician", "Network"},
-            {"Noah Chen", "noah", "technician", "Authentication"}
+            {"Admin 1", "admin", "admin1111@service.adm", "admin", ""},
+            {"Tech 1", "tech", "tech2222@service.tech", "technician", "Application"},
+            {"Employee 1", "employee", "emp3333@service.emp", "employee", ""}
         };
         for (String[] a : accounts) {
-            exec(c, "INSERT INTO users(name,email,role,skill,password,email_verified) VALUES(?,?,?,?,?,1)",
-                    a[0], a[1] + "@relay.test", a[2], a[3], hash("RelayDemo2026!"));
-        }
-        seedIncidents(c);
-    }
-
-    private record Example(String title, int service, int impact, int urgency, int ageMinutes, int transitions) {}
-
-    private void seedIncidents(Connection c) throws SQLException {
-        var examples = List.of(
-            new Example("Checkout requests timing out", 1, 3, 3, 7, 0),
-            new Example("VPN drops during video calls", 2, 2, 2, 22, 2),
-            new Example("Password reset link expired", 3, 1, 1, 16, 0),
-            new Example("Warehouse query latency", 4, 2, 3, 52, 1),
-            new Example("Shared drive sync stalled", 5, 2, 1, 18, 3),
-            new Example("Laptop docking station offline", 6, 1, 1, 25, 5)
-        );
-        var states = List.of("Acknowledged", "In progress", "Resolved", "Verified", "Closed");
-        var reporter = user(c, 3);
-        var now = Instant.now().truncatedTo(ChronoUnit.SECONDS);
-        for (var example : examples) {
-            var at = now.minus(example.ageMinutes(), ChronoUnit.MINUTES);
-            var data = Map.<String,Object>of("title", example.title(), "description", example.title() + ". Please investigate.",
-                    "service_id", example.service(), "impact", example.impact(), "urgency", example.urgency());
-            int id = incidents.create(c, reporter, data, at);
-            for (int i = 0; i < example.transitions(); i++) {
-                var incident = one(c, "SELECT * FROM incidents WHERE id=?", id);
-                var actor = i >= 3 ? reporter : user(c, ((Number) incident.get("technician_id")).intValue());
-                incidents.transition(c, actor, id, Map.of("status", states.get(i), "resolution", "Restored service and confirmed normal operation."),
-                        at.plus(i + 1L, ChronoUnit.MINUTES));
-            }
+            exec(c, "INSERT INTO users(name,email,username,role,skill,password,email_verified) VALUES(?,?,?,?,?,?,1)",
+                    a[0], a[1] + "@relay.test", a[2], a[3], a[4], hash("RelayDemo2026!"));
         }
     }
 

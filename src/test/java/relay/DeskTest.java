@@ -206,9 +206,11 @@ class DeskTest {
         var adminAccount=(Map<?,?>)((Map<?,?>)desk.snapshot(admin)).get("user");
         int technician=id(desk.login(username(db,"tech@relay.test"),PASSWORD));
         var technicianAccount=(Map<?,?>)((Map<?,?>)desk.snapshot(technician)).get("user");
-        assertTrue(employeeAccount.get("username").toString().matches("jordanlee[0-9]{4}@service\\.emp"));
-        assertTrue(adminAccount.get("username").toString().matches("alexmorgan[0-9]{4}@service\\.adm"));
-        assertTrue(technicianAccount.get("username").toString().matches("samrivera[0-9]{4}@service\\.tech"));
+        assertEquals("emp3333@service.emp",employeeAccount.get("username"));
+        assertEquals("admin1111@service.adm",adminAccount.get("username"));
+        assertEquals("tech2222@service.tech",technicianAccount.get("username"));
+        assertEquals(3,list(admin,"users").size());
+        assertTrue(list(admin,"incidents").isEmpty());
         assertEquals(employee,id(desk.login(employeeAccount.get("username").toString(),PASSWORD)));
         assertEquals(401,assertThrows(Problem.class,()->desk.login("employee@relay.test",PASSWORD)).status);
         assertTrue(list(admin,"users").stream().noneMatch(u->u.containsKey("username")));
@@ -229,7 +231,7 @@ class DeskTest {
         var upgraded=new Desk(old,true);
         int existing=id(upgraded.login(username(old,"admin@relay.test"),PASSWORD));
         var current=(Map<?,?>)((Map<?,?>)upgraded.snapshot(existing)).get("user");
-        assertTrue(current.get("username").toString().matches("alexmorgan[0-9]{4}@service\\.adm"));
+        assertEquals("admin1111@service.adm",current.get("username"));
     }
 
     @Test void oldUsernameFormatReceivesNumericCode() throws Exception {
@@ -241,7 +243,7 @@ class DeskTest {
         }
         var upgraded=new Desk(db,false);
         var current=(Map<?,?>)((Map<?,?>)upgraded.snapshot(employee)).get("user");
-        assertTrue(current.get("username").toString().matches("jordanlee[0-9]{4}@service\\.emp"));
+        assertTrue(current.get("username").toString().matches("employee1[0-9]{4}@service\\.emp"));
         assertEquals(employee,id(upgraded.login(current.get("username").toString(),PASSWORD)));
     }
 

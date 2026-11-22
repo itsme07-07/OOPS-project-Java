@@ -112,7 +112,12 @@ class HttpIntegrationTest {
     @Test void attachmentDownloadRequiresIncidentAccess() throws Exception {
         var login=post("/api/login",JSON.toJson(Map.of("identifier",demoUsername("employee"),"password","RelayDemo2026!","role","employee")));
         String cookie=login.headers().firstValue("Set-Cookie").orElseThrow().split(";",2)[0];
-        var upload=post("/api/attachment",JSON.toJson(Map.of("incident_id",1,"file_name","error.txt",
+        var created=post("/api/action",JSON.toJson(Map.of("action","create",
+                "title","Attachment test incident","description","Upload a diagnostic file.",
+                "service_id",1,"impact",1,"urgency",1)),"Cookie",cookie);
+        assertEquals(200,created.statusCode());
+        int incidentId=JsonParser.parseString(created.body()).getAsJsonObject().get("id").getAsInt();
+        var upload=post("/api/attachment",JSON.toJson(Map.of("incident_id",incidentId,"file_name","error.txt",
                 "media_type","text/plain","content","SGVsbG8=")),"Cookie",cookie);
         assertEquals(200,upload.statusCode());
         int id=JsonParser.parseString(upload.body()).getAsJsonObject().get("id").getAsInt();

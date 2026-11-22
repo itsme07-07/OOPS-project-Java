@@ -4,6 +4,7 @@ This file records implementation and delivery changes. [The feature inventory](f
 
 ## 22 November 2026
 
+- Expanded the project report with a worked P1 priority and SLA example, source excerpts explaining Strategy and Observer, three screenshots of one local demo incident across roles, and a current 54-test Maven result. Regenerated and visually checked the PDF.
 - Assigned incident-search and reporting SQL queries to Anurag's workstream; Raj retains the database schema, migrations and persistence components.
 - Edited the report for submission: removed internal planning notes, editing instructions and defensive implementation disclaimers while retaining technical limitations and evidence.
 - Expanded Anurag's planned workstream to include incident search, the reporting API and integration tests alongside the interface and accessibility work.
@@ -25,3 +26,16 @@ This file records implementation and delivery changes. [The feature inventory](f
 - Documented 28 test cases with links to automated JUnit methods. The 54-test suite passed when the report was generated.
 
 Earlier application features and behavior are listed in the [feature inventory](features.md). Future changes should add a dated entry here and update that inventory and report when behavior changes.
+
+## 22 November 2026: local demo reset
+
+- Cleared the existing local SQLite databases and started a fresh one with exactly three fixed role accounts: `admin1111@service.adm`, `tech2222@service.tech` and `emp3333@service.emp`.
+- Removed automatically seeded incidents. The local demo now starts with an empty incident list so presenters can create cases live; service catalog, categories, policies and playbook templates remain available.
+- Kept production Railway data separate. The local demo password and sign-in steps are in the README.
+
+## 22 November 2026: report presentation and evidence map
+
+- Reworked the report opening with a ServiceForce-specific incident journey, measured project snapshot and guide to implementation evidence. Kept the four team members on a separate first page.
+- Added an OOP concept-to-code matrix, an HTTP trust-boundary appendix and a reproducible repository map. Documented the three-account local demo and its empty starting incident list.
+- Regenerated the 27-page PDF and checked its extracted text and rendered pages. Counts reflect the executed 42 domain and 12 HTTP tests, rather than figures from the reference report.
+- Replaced the older screenshots with one current demo incident shown from Employee 1, Tech 1 and Admin 1 accounts. Updated the figure captions and worked-example context to match the new images.

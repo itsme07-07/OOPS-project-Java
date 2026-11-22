@@ -11,7 +11,7 @@ from reportlab.lib.enums import TA_LEFT
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import mm
-from reportlab.platypus import BaseDocTemplate, Frame, LongTable, PageBreak, PageTemplate, Paragraph, Spacer, Table, TableStyle
+from reportlab.platypus import BaseDocTemplate, Frame, Image, LongTable, PageBreak, PageTemplate, Paragraph, Preformatted, Spacer, Table, TableStyle
 
 from report_diagrams import DIAGRAMS, export_svgs
 
@@ -23,6 +23,8 @@ INK = colors.HexColor("#211d3e")
 MUTED = colors.HexColor("#5d5973")
 ACCENT = colors.HexColor("#6d4ed6")
 GOLD = colors.HexColor("#f2b96a")
+DEEP = colors.HexColor("#17142c")
+PALE = colors.HexColor("#f0ecfb")
 
 
 def inline(text: str) -> str:
@@ -57,6 +59,22 @@ styles = {
                               textColor=MUTED, spaceAfter=10),
     "team_scope": ParagraphStyle("TeamScope", fontName="Helvetica", fontSize=8.6, leading=12,
                                  textColor=INK),
+    "code": ParagraphStyle("Code", fontName="Courier", fontSize=7.1, leading=10,
+                           textColor=INK),
+    "caption": ParagraphStyle("Caption", fontName="Helvetica-Oblique", fontSize=8.3, leading=11.5,
+                              textColor=MUTED, spaceAfter=9),
+    "metric_number": ParagraphStyle("MetricNumber", fontName="Helvetica-Bold", fontSize=22, leading=26,
+                                    textColor=ACCENT, spaceAfter=4),
+    "metric_label": ParagraphStyle("MetricLabel", fontName="Helvetica", fontSize=8.1, leading=11,
+                                   textColor=INK),
+    "cover_label": ParagraphStyle("CoverLabel", fontName="Helvetica-Bold", fontSize=8, leading=11,
+                                   textColor=ACCENT, spaceAfter=8),
+    "cover_statement": ParagraphStyle("CoverStatement", fontName="Helvetica-Bold", fontSize=14, leading=19,
+                                       textColor=INK, spaceAfter=9),
+    "path_title": ParagraphStyle("PathTitle", fontName="Helvetica-Bold", fontSize=8.3, leading=11,
+                                 textColor=INK, spaceAfter=5),
+    "path_body": ParagraphStyle("PathBody", fontName="Helvetica", fontSize=7.5, leading=10,
+                                textColor=MUTED),
 }
 
 
@@ -145,7 +163,14 @@ def build():
             return
         rows = [[Paragraph(inline(cell), styles["table_head" if index == 0 else "table"])
                  for cell in row] for index, row in enumerate(table_rows)]
-        table = LongTable(rows, colWidths=[31, 115, 164, 172], repeatRows=1,
+        header = table_rows[0][0]
+        widths = ([90, 100, 292] if len(table_rows[0]) == 3 and header == "Stage"
+                  else [145, 92, 245] if len(table_rows[0]) == 3 and header == "Question"
+                  else [96, 195, 191] if len(table_rows[0]) == 3 and header == "OOP concept"
+                  else [178, 93, 211] if len(table_rows[0]) == 3 and header == "Route"
+                  else [145, 290, 47] if len(table_rows[0]) == 3
+                  else [31, 115, 164, 172])
+        table = LongTable(rows, colWidths=widths, repeatRows=1,
                           hAlign="LEFT", splitByRow=1)
         table.setStyle(TableStyle([
             ("BACKGROUND", (0, 0), (-1, 0), ACCENT),
@@ -158,10 +183,39 @@ def build():
             ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
         ]))
         story.append(table)
+        story.append(Spacer(1, 3 * mm))
         table_rows.clear()
 
-    for line in lines:
-        line = line.strip()
+    code_lines = None
+    screens = {
+        "SCREEN_EMPLOYEE": "incident-employee.png",
+        "SCREEN_TECHNICIAN": "incident-technician.png",
+        "SCREEN_ADMIN": "incident-admin.png",
+    }
+    for raw_line in lines:
+        line = raw_line.strip()
+        if line.startswith("```"):
+            flush()
+            if code_lines is None:
+                code_lines = []
+            else:
+                block = Preformatted("\n".join(code_lines), styles["code"])
+                box = Table([[block]], colWidths=[doc.width], hAlign="LEFT")
+                box.setStyle(TableStyle([
+                    ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#f7f5fc")),
+                    ("BOX", (0, 0), (-1, -1), .5, colors.HexColor("#dcd6eb")),
+                    ("LEFTPADDING", (0, 0), (-1, -1), 10),
+                    ("RIGHTPADDING", (0, 0), (-1, -1), 10),
+                    ("TOPPADDING", (0, 0), (-1, -1), 9),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 9),
+                ]))
+                story.append(box)
+                story.append(Spacer(1, 3 * mm))
+                code_lines = None
+            continue
+        if code_lines is not None:
+            code_lines.append(raw_line.rstrip())
+            continue
         if team_mode and line.startswith("- "):
             team_rows.append([cell.strip() for cell in line[2:].split("|", 3)])
             continue
@@ -182,6 +236,64 @@ def build():
             name = line[2:-2]
             if name == "TEAM_CARDS":
                 team_mode = True
+            elif name == "COVER_SUMMARY":
+                panel = Table([[[
+                    Paragraph("THE SERVICEFORCE IDEA", styles["cover_label"]),
+                    Paragraph("One incident. One shared record. A clear path from report to verified resolution.", styles["cover_statement"]),
+                    Paragraph("Three roles  /  two routing strategies  /  two escalation deadlines  /  one auditable timeline", styles["body"]),
+                ]]], colWidths=[doc.width], hAlign="LEFT")
+                panel.setStyle(TableStyle([
+                    ("BACKGROUND", (0, 0), (-1, -1), PALE),
+                    ("LINEBEFORE", (0, 0), (0, 0), 5, ACCENT),
+                    ("LEFTPADDING", (0, 0), (-1, -1), 18),
+                    ("RIGHTPADDING", (0, 0), (-1, -1), 18),
+                    ("TOPPADDING", (0, 0), (-1, -1), 16),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 12),
+                ]))
+                story.append(panel)
+            elif name == "AT_A_GLANCE":
+                metrics = [("3", "ROLE WORKSPACES"), ("54", "EXECUTED TESTS"),
+                           ("2", "ROUTING STRATEGIES"), ("28", "DOCUMENTED CASES")]
+                cells = [[Paragraph(value, styles["metric_number"]), Paragraph(label, styles["metric_label"])]
+                         for value, label in metrics]
+                strip = Table([cells], colWidths=[doc.width / 4] * 4, hAlign="LEFT")
+                strip.setStyle(TableStyle([
+                    ("BACKGROUND", (0, 0), (-1, -1), PALE),
+                    ("LINEBELOW", (0, 0), (-1, -1), 2, GOLD),
+                    ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                    ("LEFTPADDING", (0, 0), (-1, -1), 12),
+                    ("RIGHTPADDING", (0, 0), (-1, -1), 8),
+                    ("TOPPADDING", (0, 0), (-1, -1), 12),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 12),
+                ]))
+                story.append(strip)
+                story.append(Spacer(1, 5 * mm))
+            elif name == "INCIDENT_PATH":
+                steps = [("01  REPORT", "Employee describes the issue"),
+                         ("02  ROUTE", "Priority, SLA and lead"),
+                         ("03  INVESTIGATE", "Team shares work and evidence"),
+                         ("04  ESCALATE", "Deadlines trigger action"),
+                         ("05  VERIFY", "Reporter confirms the fix")]
+                cells = [[Paragraph(title, styles["path_title"]), Paragraph(body, styles["path_body"])]
+                         for title, body in steps]
+                path = Table([cells], colWidths=[doc.width / 5] * 5, hAlign="LEFT")
+                path.setStyle(TableStyle([
+                    ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#faf8fe")),
+                    ("LINEBELOW", (0, 0), (-1, -1), 2, ACCENT),
+                    ("LINEBEFORE", (1, 0), (-1, 0), .5, colors.HexColor("#dcd6eb")),
+                    ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                    ("LEFTPADDING", (0, 0), (-1, -1), 8),
+                    ("RIGHTPADDING", (0, 0), (-1, -1), 7),
+                    ("TOPPADDING", (0, 0), (-1, -1), 10),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 12),
+                ]))
+                story.append(path)
+                story.append(Spacer(1, 4 * mm))
+            elif name in screens:
+                path = ROOT / "screenshots" / screens[name]
+                picture = Image(str(path), width=doc.width, height=doc.width * 900 / 1440)
+                story.append(picture)
+                story.append(Spacer(1, 3 * mm))
             else:
                 story.append(DIAGRAMS[name]())
                 story.append(Spacer(1, 4 * mm))
@@ -197,6 +309,9 @@ def build():
         elif line.startswith("### "):
             flush()
             story.append(Paragraph(inline(line[4:]), styles["subheading"]))
+        elif line.startswith("Figure "):
+            flush()
+            story.append(Paragraph(inline(line), styles["caption"]))
         elif line.startswith("- "):
             flush()
             story.append(Paragraph("<font color=\"#6d4ed6\"><b>\u2022</b></font>  " + inline(line[2:]), styles["bullet"]))
@@ -206,6 +321,8 @@ def build():
         else:
             paragraphs.append(line)
     flush()
+    if code_lines is not None:
+        raise ValueError("Unclosed code block in project report")
     flush_team()
     flush_table()
     story.append(Spacer(1, 2 * mm))
