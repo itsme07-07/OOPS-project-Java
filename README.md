@@ -6,21 +6,13 @@
 
 ServiceForce is the Java implementation of the Intelligent IT Service Management & Incident Resolution System for CS F213 / MAC F212. Employees report incidents, technicians investigate them, and administrators manage the service catalog, routing, policies and SLA violations.
 
-## Demo sign-in
-
-Open [ServiceForce on this computer](http://127.0.0.1:8000/) after starting the Java server. A fresh local demo database contains exactly three accounts:
-
-| Role | Display name | Username | Demo password |
-| --- | --- | --- | --- |
-| Administrator | Admin 1 | `admin1111@service.adm` | `RelayDemo2026!` |
-| Technician | Tech 1 | `tech2222@service.tech` | `RelayDemo2026!` |
-| Employee | Employee 1 | `emp3333@service.emp` | `RelayDemo2026!` |
-
-Choose the matching role on the sign-in screen. The sign-in form accepts only the assigned username. New accounts created after setup receive a unique, system-generated four-digit code. After sign-in, **My profile** shows the username and reminds users to use it for future sign-ins. New employees receive a verification code by email and enter their workspace immediately after verification. Their verified email is used for account recovery and incident updates. Account passwords are stored as hashes; production passwords are not in Git. The shared password above is only for disposable local demo accounts.
-
 ## Run locally
 
-Install a **JDK version 17 or later**. In Terminal, download the repository, build it and start the server:
+You need **JDK 17 or later** and an internet connection for the first build to download Maven and the project dependencies. You do not need to install Maven separately. These steps run a server on **your computer**; they do not change the live Railway site.
+
+### First time: clone, build, and start
+
+In Terminal on macOS or Linux:
 
 ```sh
 git clone https://github.com/itsme07-07/OOPS-project-Java.git
@@ -29,11 +21,46 @@ cd OOPS-project-Java
 java -jar target/serviceforce.jar
 ```
 
-On Windows use `mvnw.cmd clean verify`. The first build downloads Maven and the pinned dependencies. The resulting JAR includes the server, database driver and browser interface. Open [http://127.0.0.1:8000/](http://127.0.0.1:8000/) in the browser. Stop the server with Ctrl+C.
+On Windows, use `mvnw.cmd clean verify` instead of `./mvnw clean verify`. Run the commands from the cloned `OOPS-project-Java` folder. Leave the terminal open while the server runs, then open **[http://127.0.0.1:8000/](http://127.0.0.1:8000/)** in your browser. Stop the server with **Ctrl+C** in that terminal.
 
-The first local launch creates `data/itsm.sqlite3`, the three demo accounts above, a service catalog and SLA policies. The incident list starts empty. Existing databases retain their existing accounts; to start over, stop the server and delete `data/itsm.sqlite3` before restarting it. Sign in again after restarting the server.
+The first launch creates `data/itsm.sqlite3`, the three local demo accounts below, the service catalog, and the default SLA policies. The incident list starts empty.
 
-If you already cloned the repository, stop the running server with Ctrl+C, then run `git pull`, `./mvnw clean verify`, and `java -jar target/serviceforce.jar` from the repository directory. A browser refresh alone cannot load a new Java build into an old server process.
+### Local demo sign-in
+
+On the role selection page, choose the role that matches the account. A fresh local demo database contains exactly these three accounts:
+
+| Role | Display name | Username | Demo password |
+| --- | --- | --- | --- |
+| Administrator | Admin 1 | `admin1111@service.adm` | `RelayDemo2026!` |
+| Technician | Tech 1 | `tech2222@service.tech` | `RelayDemo2026!` |
+| Employee | Employee 1 | `emp3333@service.emp` | `RelayDemo2026!` |
+
+Use the **username**, not an email address, to sign in. New accounts created later receive a unique, system-generated four-digit code. After sign-in, **My profile** shows the username and reminds users to use it for future sign-ins. New employees receive a verification code by email and enter their workspace immediately after verification when email delivery is configured. Their verified email is used for account recovery and incident updates. Account passwords are stored as hashes; production passwords are not in Git. The shared password above is only for disposable local demo accounts.
+
+### Already cloned? Update and restart
+
+Stop the running server with **Ctrl+C**. In Terminal, go to your existing `OOPS-project-Java` folder and run:
+
+```sh
+git pull
+./mvnw clean verify
+java -jar target/serviceforce.jar
+```
+
+On Windows, replace `./mvnw clean verify` with `mvnw.cmd clean verify`. A browser refresh alone does not load a new Java build into an old server process. `git pull` keeps your existing local database and accounts.
+
+### Start over with a fresh local database
+
+Stop the server with **Ctrl+C**. From the repository folder, move the old database aside, then start the server again:
+
+```sh
+mv data/itsm.sqlite3 data/itsm.sqlite3.backup
+java -jar target/serviceforce.jar
+```
+
+If the database file does not exist yet, skip the `mv` command. On Windows PowerShell, use `Move-Item data/itsm.sqlite3 data/itsm.sqlite3.backup` instead. This resets **local** incidents, users, and settings and recreates the three demo accounts; the backup keeps the old data available. If `data/itsm.sqlite3.backup` already exists, give the new backup a different name. Sign in again after restarting. This does **not** reset Railway's database. You do not need to delete and re-clone the repository to get a fresh local database.
+
+If the demo credentials do not work, check that you selected the matching role and are opening `127.0.0.1:8000`, not the Railway link. An older local database keeps its existing credentials; use the reset steps above if you want the three demo accounts. If the server says port 8000 is already in use, stop the other running copy with **Ctrl+C**, or start this one with `java -jar target/serviceforce.jar --port 8001` and open `http://127.0.0.1:8001/`.
 
 For a separate installation with your own administrator, use a fresh database:
 
