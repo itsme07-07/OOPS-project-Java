@@ -1,4 +1,4 @@
-package relay;
+package serviceforce;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -15,7 +15,7 @@ import java.util.*;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 
-import static relay.Database.*;
+import static serviceforce.Database.*;
 
 public final class Desk {
     private static final SecureRandom RANDOM = new SecureRandom();
@@ -96,7 +96,7 @@ public final class Desk {
         };
         for (String[] a : accounts) {
             exec(c, "INSERT INTO users(name,email,username,role,skill,password,email_verified) VALUES(?,?,?,?,?,?,1)",
-                    a[0], a[1] + "@relay.test", a[2], a[3], a[4], hash("RelayDemo2026!"));
+                    a[0], a[1] + "@serviceforce.test", a[2], a[3], a[4], hash("ServiceForceDemo2026!"));
         }
     }
 
@@ -284,7 +284,7 @@ public final class Desk {
     public Map<String,String> demoUsers() {
         return database.transaction(false, c -> {
             var result = new HashMap<String,String>();
-            for (var row : rows(c, "SELECT role,username FROM users WHERE email IN ('admin@relay.test','tech@relay.test','employee@relay.test')"))
+            for (var row : rows(c, "SELECT role,username FROM users WHERE email IN ('admin@serviceforce.test','tech@serviceforce.test','employee@serviceforce.test')"))
                 result.put(row.get("role").toString(), row.get("username").toString());
             return result;
         });

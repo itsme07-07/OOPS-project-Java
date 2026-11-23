@@ -1,4 +1,4 @@
-package relay;
+package serviceforce;
 
 import com.google.gson.Gson;
 import java.net.URI;

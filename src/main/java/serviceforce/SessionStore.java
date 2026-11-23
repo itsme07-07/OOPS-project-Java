@@ -1,4 +1,4 @@
-package relay;
+package serviceforce;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;

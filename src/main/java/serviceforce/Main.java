@@ -1,4 +1,4 @@
-package relay;
+package serviceforce;
 
 import java.io.Console;
 import java.net.InetAddress;
@@ -71,7 +71,7 @@ public final class Main {
             desk.bootstrapAdmin(name, email, password);
         }
         ServiceForceServer server = new ServiceForceServer(new InetSocketAddress(address, port), desk, demo, secureCookie);
-        Runtime.getRuntime().addShutdownHook(new Thread(server::close, "relay-shutdown"));
+        Runtime.getRuntime().addShutdownHook(new Thread(server::close, "serviceforce-shutdown"));
         server.start();
         String displayHost = host.contains(":") && !host.startsWith("[") ? "[" + host + "]" : host;
         System.out.printf("ServiceForce is listening at http://%s:%d%n", displayHost, server.port());

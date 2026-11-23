@@ -1,4 +1,4 @@
-package relay;
+package serviceforce;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonParser;
@@ -72,11 +72,11 @@ class HttpIntegrationTest {
 
     @Test void wrongPasswordIsRejected() throws Exception {
         assertEquals(401, post("/api/login", JSON.toJson(Map.of("identifier",demoUsername("admin"),"password","wrong","role","admin"))).statusCode());
-        assertEquals(401, post("/api/login", JSON.toJson(Map.of("identifier",demoUsername("admin"),"password","RelayDemo2026!","role","employee"))).statusCode());
+        assertEquals(401, post("/api/login", JSON.toJson(Map.of("identifier",demoUsername("admin"),"password","ServiceForceDemo2026!","role","employee"))).statusCode());
     }
 
     @Test void sessionPermitsWorkspaceAccessUntilLogout() throws Exception {
-        var res = post("/api/login", JSON.toJson(Map.of("identifier", demoUsername("employee"), "password", "RelayDemo2026!", "role", "employee")));
+        var res = post("/api/login", JSON.toJson(Map.of("identifier", demoUsername("employee"), "password", "ServiceForceDemo2026!", "role", "employee")));
         assertEquals(200, res.statusCode());
         String cookie = res.headers().firstValue("Set-Cookie").orElseThrow();
         assertTrue(cookie.contains("HttpOnly"));
@@ -90,7 +90,7 @@ class HttpIntegrationTest {
     }
 
     @Test void userCanSeeAndSignOutAnotherDevice() throws Exception {
-        String credentials=JSON.toJson(Map.of("identifier",demoUsername("employee"),"password","RelayDemo2026!","role","employee"));
+        String credentials=JSON.toJson(Map.of("identifier",demoUsername("employee"),"password","ServiceForceDemo2026!","role","employee"));
         String first=post("/api/login",credentials,"User-Agent","Mozilla/5.0 (Mac OS X) Chrome/120").headers()
                 .firstValue("Set-Cookie").orElseThrow().split(";",2)[0];
         String second=post("/api/login",credentials,"User-Agent","Mozilla/5.0 (iPhone) Safari/605").headers()
@@ -110,7 +110,7 @@ class HttpIntegrationTest {
     }
 
     @Test void attachmentDownloadRequiresIncidentAccess() throws Exception {
-        var login=post("/api/login",JSON.toJson(Map.of("identifier",demoUsername("employee"),"password","RelayDemo2026!","role","employee")));
+        var login=post("/api/login",JSON.toJson(Map.of("identifier",demoUsername("employee"),"password","ServiceForceDemo2026!","role","employee")));
         String cookie=login.headers().firstValue("Set-Cookie").orElseThrow().split(";",2)[0];
         var created=post("/api/action",JSON.toJson(Map.of("action","create",
                 "title","Attachment test incident","description","Upload a diagnostic file.",
@@ -140,7 +140,7 @@ class HttpIntegrationTest {
     }
 
     @Test void rejectsStaticTraversalAndMissingEndpoints() throws Exception {
-        for (String path : new String[]{"/%2e%2e/schema.sql", "/relay/Main.class", "/api/unknown"}) {
+        for (String path : new String[]{"/%2e%2e/schema.sql", "/serviceforce/Main.class", "/api/unknown"}) {
             assertEquals(404, get(path).statusCode(), path);
         }
     }

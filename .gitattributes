@@ -3,5 +3,5 @@
 # Exclude generated Maven launchers from language statistics.
 mvnw linguist-generated=true
 mvnw.cmd linguist-generated=true
-# These browser resources are maintained as part of Relay.
+# These browser resources are maintained as part of ServiceForce.
 src/main/resources/static/** linguist-vendored=false

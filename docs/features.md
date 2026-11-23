@@ -2,7 +2,7 @@
 
 ## Finding demo accounts and usernames
 
-Start the local server and open [http://127.0.0.1:8000/](http://127.0.0.1:8000/). A fresh local demo database contains exactly three accounts: Admin 1 (`admin1111@service.adm`), Tech 1 (`tech2222@service.tech`) and Employee 1 (`emp3333@service.emp`). All three use the demo password `RelayDemo2026!`. The incident list starts empty. Later accounts receive a system-generated username in `nameCODE@service.role` format; the code has exactly four digits. **My profile** shows the signed-in user's assigned username. Account passwords are stored as hashes; the shared local demo password is public only for the disposable demo accounts.
+Start the local server and open [http://127.0.0.1:8000/](http://127.0.0.1:8000/). A fresh local demo database contains exactly three accounts: Admin 1 (`admin1111@service.adm`), Tech 1 (`tech2222@service.tech`) and Employee 1 (`emp3333@service.emp`). All three use the demo password `ServiceForceDemo2026!`. The incident list starts empty. Later accounts receive a system-generated username in `nameCODE@service.role` format; the code has exactly four digits. **My profile** shows the signed-in user's assigned username. Account passwords are stored as hashes; the shared local demo password is public only for the disposable demo accounts.
 
 ## Accounts and access
 

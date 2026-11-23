@@ -1,4 +1,4 @@
-package relay;
+package serviceforce;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -6,9 +6,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static relay.Database.*;
-import static relay.Desk.number;
-import static relay.Desk.required;
+import static serviceforce.Database.*;
+import static serviceforce.Desk.number;
+import static serviceforce.Desk.required;
 
 /** Category templates are copied into incidents so later edits do not rewrite investigation history. */
 final class Playbooks {

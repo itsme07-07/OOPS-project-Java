@@ -1,4 +1,4 @@
-package relay;
+package serviceforce;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -28,7 +28,7 @@ import java.util.concurrent.TimeUnit;
 
 final class ServiceForceServer implements AutoCloseable {
     private static final Gson JSON = new GsonBuilder().serializeNulls().create();
-    private static final String COOKIE = "relay_session";
+    private static final String COOKIE = "serviceforce_session";
     private static final int MAX_BODY = 65536;
     private static final int MAX_ATTACHMENT_BODY = 1500000;
     private static final Map<String, String> ASSETS = Map.of(

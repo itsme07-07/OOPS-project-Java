@@ -2,6 +2,10 @@
 
 This file records implementation and delivery changes. [The feature inventory](features.md) is the current list of application capabilities; [the project report](project-report.md) explains their design and tests. Entries describe changes made in this repository, not proposed features.
 
+## 23 November 2026
+
+- Replaced the remaining legacy project name in the Java package, Maven coordinates, session cookie, demo seed addresses and password, browser demo sign-in, tests, README, feature inventory, demonstration guide and report. Moved Java source and tests under `serviceforce` and regenerated the report PDF. Existing local demo databases retain their previous credentials; use the README's fresh-database steps to get the new demo password.
+
 ## 22 November 2026
 
 - Expanded the project report with a worked P1 priority and SLA example, source excerpts explaining Strategy and Observer, three screenshots of one local demo incident across roles, and a current 54-test Maven result. Regenerated and visually checked the PDF.

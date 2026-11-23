@@ -469,10 +469,10 @@ Responses are JSON except static assets and attachment downloads. HTTP tests cov
 
 ```text
 pom.xml                         Java 17, dependencies, tests, runnable JAR
-src/main/java/relay/            HTTP, identity, incidents, routing, events, email
+src/main/java/serviceforce/            HTTP, identity, incidents, routing, events, email
 src/main/resources/schema.sql   Relational schema, constraints and indexes
 src/main/resources/static/      Browser interface and website assets
-src/test/java/relay/            Domain and HTTP integration tests
+src/test/java/serviceforce/            Domain and HTTP integration tests
 docs/project-report.md          Editable source for this report
 docs/project-report.pdf         Submitted PDF generated from the source
 docs/diagrams/                  Architecture, use-case, class and ER figures

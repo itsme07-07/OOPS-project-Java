@@ -31,11 +31,11 @@ On the role selection page, choose the role that matches the account. A fresh lo
 
 | Role | Display name | Username | Demo password |
 | --- | --- | --- | --- |
-| Administrator | Admin 1 | `admin1111@service.adm` | `RelayDemo2026!` |
-| Technician | Tech 1 | `tech2222@service.tech` | `RelayDemo2026!` |
-| Employee | Employee 1 | `emp3333@service.emp` | `RelayDemo2026!` |
+| Administrator | Admin 1 | `admin1111@service.adm` | `ServiceForceDemo2026!` |
+| Technician | Tech 1 | `tech2222@service.tech` | `ServiceForceDemo2026!` |
+| Employee | Employee 1 | `emp3333@service.emp` | `ServiceForceDemo2026!` |
 
-Use the **username**, not an email address, to sign in. New accounts created later receive a unique, system-generated four-digit code. After sign-in, **My profile** shows the username and reminds users to use it for future sign-ins. New employees receive a verification code by email and enter their workspace immediately after verification when email delivery is configured. Their verified email is used for account recovery and incident updates. Account passwords are stored as hashes; production passwords are not in Git. The shared password above is only for disposable local demo accounts.
+Use the **username**, not an email address, to sign in. New accounts created later receive a unique, system-generated four-digit code. After sign-in, **My profile** shows the username and reminds users to use it for future sign-ins. New employees receive a verification code by email and enter their workspace immediately after verification when email delivery is configured. Their verified email is used for account recovery and incident updates. Account passwords are stored as hashes in the database. The shared password above is only for disposable local demo accounts.
 
 ### Already cloned? Update and restart
 
@@ -60,7 +60,7 @@ java -jar target/serviceforce.jar
 
 If the database file does not exist yet, skip the `mv` command. On Windows PowerShell, use `Move-Item data/itsm.sqlite3 data/itsm.sqlite3.backup` instead. This resets **local** incidents, users, and settings and recreates the three demo accounts; the backup keeps the old data available. If `data/itsm.sqlite3.backup` already exists, give the new backup a different name. Sign in again after restarting. This does **not** reset Railway's database. You do not need to delete and re-clone the repository to get a fresh local database.
 
-If the demo credentials do not work, check that you selected the matching role and are opening `127.0.0.1:8000`, not the Railway link. An older local database keeps its existing credentials; use the reset steps above if you want the three demo accounts. If the server says port 8000 is already in use, stop the other running copy with **Ctrl+C**, or start this one with `java -jar target/serviceforce.jar --port 8001` and open `http://127.0.0.1:8001/`.
+If the demo credentials do not work, check that you selected the matching role and are opening `127.0.0.1:8000`, not the Railway link. An older local database keeps its existing credentials, including its old demo password; use the reset steps above to get the three accounts and password shown here. If the server says port 8000 is already in use, stop the other running copy with **Ctrl+C**, or start this one with `java -jar target/serviceforce.jar --port 8001` and open `http://127.0.0.1:8001/`.
 
 For a separate installation with your own administrator, use a fresh database:
 
@@ -78,11 +78,11 @@ pom.xml                     Java version, dependencies, build and packaging
 mvnw, mvnw.cmd, .mvn/       Maven wrapper for macOS, Linux and Windows
 src/
   main/
-    java/relay/             HTTP, sessions, users, incidents, routing and SQLite access
+    java/serviceforce/             HTTP, sessions, users, incidents, routing and SQLite access
     resources/
       schema.sql            Relational schema, keys and indexes
       static/               HTML, CSS and JavaScript for all three workspaces
-  test/java/relay/          JUnit tests for domain rules and HTTP behavior
+  test/java/serviceforce/          JUnit tests for domain rules and HTTP behavior
 .github/workflows/ci.yml     Build, test and package on pushes and pull requests
 docs/
   project-report.pdf        Analysis, requirements, design, diagrams and testing

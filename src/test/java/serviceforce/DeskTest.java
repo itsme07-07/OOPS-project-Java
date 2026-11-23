@@ -1,4 +1,4 @@
-package relay;
+package serviceforce;
 
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.*;
@@ -19,13 +19,13 @@ class DeskTest {
     final Map<String,String> sent = new HashMap<>();
     final List<String> allSent = new ArrayList<>();
     int employee, admin;
-    static final String PASSWORD = "RelayDemo2026!";
+    static final String PASSWORD = "ServiceForceDemo2026!";
 
     @BeforeEach void setup() throws Exception {
         db = folder.resolve("desk.sqlite3");
         desk = new Desk(db, true, (to, subject, body) -> { sent.put(to, body); allSent.add(to+" "+body); });
-        employee = id(desk.login(username(db,"employee@relay.test"), PASSWORD));
-        admin = id(desk.login(username(db,"admin@relay.test"), PASSWORD));
+        employee = id(desk.login(username(db,"employee@serviceforce.test"), PASSWORD));
+        admin = id(desk.login(username(db,"admin@serviceforce.test"), PASSWORD));
     }
 
     String username(Path path, String email) throws Exception {
@@ -117,7 +117,7 @@ class DeskTest {
             p.setString(1,"2000-01-01T00:00:00Z");p.executeUpdate();
         }
         desk.monitor();
-        assertTrue(allSent.stream().anyMatch(s->s.startsWith("employee@relay.test ") && s.contains("Incident #"+ticket)));
+        assertTrue(allSent.stream().anyMatch(s->s.startsWith("employee@serviceforce.test ") && s.contains("Incident #"+ticket)));
         try(var c=DriverManager.getConnection("jdbc:sqlite:"+db);
             var p=c.prepareStatement("SELECT count(*) FROM email_outbox WHERE status='sent'")) {
             try(var r=p.executeQuery()) { assertTrue(r.next()); assertTrue(r.getInt(1)>0); }
@@ -131,7 +131,7 @@ class DeskTest {
         int stepId = id(steps.get(0));
         assertEquals(403, assertThrows(Problem.class, () -> desk.mutate(employee, "playbook-step",
                 Map.of("id", ticket, "step_id", stepId, "status", "completed", "result", "Private diagnostic"))).status);
-        int technician = id(desk.login(username(db, "tech@relay.test"), PASSWORD));
+        int technician = id(desk.login(username(db, "tech@serviceforce.test"), PASSWORD));
         desk.mutate(technician, "playbook-step", Map.of("id", ticket, "step_id", stepId,
                 "status", "completed", "result", "Checked application logs"));
         var updated = (List<Map<String,Object>>)incident(ticket).get("playbook");
@@ -177,14 +177,14 @@ class DeskTest {
             try(var id=c.createStatement().executeQuery("SELECT last_insert_rowid()")) {
                 o.setInt(1,id.next()?id.getInt(1):0);
             }
-            o.setString(2,"employee@relay.test");o.setString(3,"ServiceForce incident update");
+            o.setString(2,"employee@serviceforce.test");o.setString(3,"ServiceForce incident update");
             o.setString(4,"Incident #"+ticket+": In progress\n\nTechnician is investigating");
             o.setString(5,"2000-01-01T00:00:00Z");o.executeUpdate();
             c.createStatement().executeUpdate("UPDATE email_outbox SET next_attempt_at='2000-01-01T00:00:00Z'");
         }
         desk.monitor();
-        assertEquals(1,allSent.stream().filter(s->s.startsWith("employee@relay.test ")&&s.contains("Incident #"+ticket)).count());
-        assertTrue(sent.get("employee@relay.test").contains("Technician is investigating"));
+        assertEquals(1,allSent.stream().filter(s->s.startsWith("employee@serviceforce.test ")&&s.contains("Incident #"+ticket)).count());
+        assertTrue(sent.get("employee@serviceforce.test").contains("Technician is investigating"));
     }
 
     @Test void invalidEmailIsRejected() {
@@ -204,7 +204,7 @@ class DeskTest {
     @Test void systemGeneratesPrivateRoleBasedUsernames() throws Exception {
         var employeeAccount=(Map<?,?>)((Map<?,?>)desk.snapshot(employee)).get("user");
         var adminAccount=(Map<?,?>)((Map<?,?>)desk.snapshot(admin)).get("user");
-        int technician=id(desk.login(username(db,"tech@relay.test"),PASSWORD));
+        int technician=id(desk.login(username(db,"tech@serviceforce.test"),PASSWORD));
         var technicianAccount=(Map<?,?>)((Map<?,?>)desk.snapshot(technician)).get("user");
         assertEquals("emp3333@service.emp",employeeAccount.get("username"));
         assertEquals("admin1111@service.adm",adminAccount.get("username"));
@@ -212,7 +212,7 @@ class DeskTest {
         assertEquals(3,list(admin,"users").size());
         assertTrue(list(admin,"incidents").isEmpty());
         assertEquals(employee,id(desk.login(employeeAccount.get("username").toString(),PASSWORD)));
-        assertEquals(401,assertThrows(Problem.class,()->desk.login("employee@relay.test",PASSWORD)).status);
+        assertEquals(401,assertThrows(Problem.class,()->desk.login("employee@serviceforce.test",PASSWORD)).status);
         assertTrue(list(admin,"users").stream().noneMatch(u->u.containsKey("username")));
         desk.mutate(admin,"user",Map.of("id",employee,"username","example00000000@service.emp"));
         assertEquals(employeeAccount.get("username"),((Map<?,?>)((Map<?,?>)desk.snapshot(employee)).get("user")).get("username"));
@@ -229,7 +229,7 @@ class DeskTest {
                 """);
         }
         var upgraded=new Desk(old,true);
-        int existing=id(upgraded.login(username(old,"admin@relay.test"),PASSWORD));
+        int existing=id(upgraded.login(username(old,"admin@serviceforce.test"),PASSWORD));
         var current=(Map<?,?>)((Map<?,?>)upgraded.snapshot(existing)).get("user");
         assertEquals("admin1111@service.adm",current.get("username"));
     }
@@ -255,16 +255,16 @@ class DeskTest {
             ps.executeUpdate();
         }
         var upgraded=new Desk(db,false);
-        assertEquals("admin7090@service.admin",username(db,"admin@relay.test"));
+        assertEquals("admin7090@service.admin",username(db,"admin@serviceforce.test"));
         assertEquals(admin,id(upgraded.login("admin7090@service.admin",PASSWORD)));
         var person=(Map<?,?>)((Map<?,?>)upgraded.snapshot(admin)).get("user");
         upgraded.mutate(admin,"profile",Map.of("name",person.get("name"),"email",person.get("email"),
                 "current_password",PASSWORD));
-        assertEquals("admin7090@service.admin",username(db,"admin@relay.test"));
+        assertEquals("admin7090@service.admin",username(db,"admin@serviceforce.test"));
     }
 
     @Test void everyRoleCanEditOnlyItsOwnProfile() throws Exception {
-        int technician=id(desk.login(username(db,"tech@relay.test"),PASSWORD));
+        int technician=id(desk.login(username(db,"tech@serviceforce.test"),PASSWORD));
         for (int actor : List.of(employee, technician, admin)) {
             String original=((Map<?,?>)((Map<?,?>)desk.snapshot(actor)).get("user")).get("username").toString();
             String code=original.substring(original.indexOf('@')-4,original.indexOf('@'));
@@ -291,12 +291,12 @@ class DeskTest {
                 Map.of("id",incident(ticket).get("technician_id")))).status);
         assertEquals(400,assertThrows(Problem.class,()->desk.mutate(admin,"remove-user",Map.of("id",admin))).status);
         desk.mutate(admin,"remove-user",Map.of("id",employee));
-        assertThrows(Problem.class,()->desk.login(username(db,"employee@relay.test"),PASSWORD));
+        assertThrows(Problem.class,()->desk.login(username(db,"employee@serviceforce.test"),PASSWORD));
         assertEquals(401,assertThrows(Problem.class,()->desk.snapshot(employee)).status);
         assertEquals(ticket,id(incident(ticket)));
         assertFalse(list(admin,"users").stream().anyMatch(u->id(u)==employee));
-        desk.register(registration("employee@relay.test",PASSWORD));
-        assertEquals("employee",desk.verifyEmail("employee@relay.test",code("employee@relay.test")).get("role"));
+        desk.register(registration("employee@serviceforce.test",PASSWORD));
+        assertEquals("employee",desk.verifyEmail("employee@serviceforce.test",code("employee@serviceforce.test")).get("role"));
     }
 
     @Test void employeeCannotConfigureRouting() {
@@ -398,7 +398,7 @@ class DeskTest {
     }
 
     @Test void knowledgeArticlesAreReadableAndStaffManaged() throws Exception {
-        int technician=id(desk.login(username(db,"tech@relay.test"),PASSWORD));
+        int technician=id(desk.login(username(db,"tech@serviceforce.test"),PASSWORD));
         var article=Map.<String,Object>of("title","Restore checkout","summary","Check gateway status",
                 "steps","Restart the gateway after approval.","service_id",1);
         assertEquals(403,assertThrows(Problem.class,()->desk.mutate(employee,"article-save",article)).status);

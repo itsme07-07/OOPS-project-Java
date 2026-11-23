@@ -1,4 +1,4 @@
-package relay;
+package serviceforce;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -7,14 +7,14 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
-import static relay.Database.*;
-import static relay.Desk.number;
-import static relay.Desk.required;
-import relay.DomainModels.Incident;
-import relay.DomainModels.Actor;
-import relay.DomainModels.Service;
-import relay.DomainModels.SlaPolicy;
-import relay.DomainModels.Technician;
+import static serviceforce.Database.*;
+import static serviceforce.Desk.number;
+import static serviceforce.Desk.required;
+import serviceforce.DomainModels.Incident;
+import serviceforce.DomainModels.Actor;
+import serviceforce.DomainModels.Service;
+import serviceforce.DomainModels.SlaPolicy;
+import serviceforce.DomainModels.Technician;
 
 /** Incident lifecycle, assignment, visibility and SLA rules, executed within the caller's transaction. */
 final class Incidents {

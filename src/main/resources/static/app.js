@@ -173,7 +173,7 @@ document.addEventListener("click",async e=>{const el=e.target.closest("[data-cmd
   if(cmd==="auth-mode"){authMode=el.dataset.mode;location.hash=authMode==="login"?"login/"+selectedRole:authMode;auth();return;}
   if(cmd==="request-verification"){const email=document.querySelector('#authform [name="email"]').value;pendingEmail=email;await api("request-verification",{email});notify("If this address needs verification, a code has been sent.");return;}
   if(cmd==="request-reset"){const email=document.querySelector('#authform [name="recovery_email"]').value;await api("request-reset",{email});notify("If this is a verified address, a code has been sent.");return;}
-  if(cmd==="demo"){el.disabled=true;const role=el.dataset.role;selectedRole=role;const username=demoUsers[role];await signin({identifier:username,password:"RelayDemo2026!"});return;}
+  if(cmd==="demo"){el.disabled=true;const role=el.dataset.role;selectedRole=role;const username=demoUsers[role];await signin({identifier:username,password:"ServiceForceDemo2026!"});return;}
   if(cmd==="password-code"){await api("password-code",{});notify("A password code was sent to your recovery email.");return;}
   if(cmd==="profile-verify-send"){await api("request-verification",{email:state.user.email});notify("A verification code was sent.");return;}
   if(cmd==="profile-verify"){const code=document.querySelector('[name="verify_code"]').value;await api("verify-email",{email:state.user.email,code});await refresh();notify("Recovery email verified.");return;}
